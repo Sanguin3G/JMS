@@ -172,35 +172,11 @@ namespace APIServer.Services
             return user;
         }
 
-        public AdminDTO getAdminInformationByToken(string? token)
+        public AdminDTO GetAdminInformation(int adminId)
         {
-            try
-            {
-                if (Validation.checkStringIsEmpty(token))
-                {
-                    throw new Exception("token not valid");
-                }
-                var handler = new JwtSecurityTokenHandler();
-                var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
-
-                if (jsonToken == null)
-                {
-                    throw new Exception("your token not valid");
-                }
-                if (jsonToken.ValidTo < DateTime.UtcNow)
-                    throw new Exception("token has expired");
-                var canId = jsonToken.Claims.FirstOrDefault(x => x.Type == "UserId").Value;
-                var username = jsonToken.Claims.FirstOrDefault(x => x.Type == "UserName").Value;
-                var can = _adminContext.GetById((int)Validation.ConvertInt(canId));
-                if (can.UserName != username)
-                    throw new Exception("token not valid");
-                var rs = _mapper.Map<AdminDTO>(can);
-                return rs;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var admin = _adminContext.GetById(adminId)
+                ?? throw new KeyNotFoundException("Admin not found.");
+            return _mapper.Map<AdminDTO>(admin);
         }
 
         private bool VerifyPassword(string password, string hashedPassword)

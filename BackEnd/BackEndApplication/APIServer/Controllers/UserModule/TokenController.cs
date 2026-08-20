@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
+using System.Security.Claims;
 
 namespace APIServer.Controllers.UserModule
 {
@@ -127,15 +128,16 @@ namespace APIServer.Controllers.UserModule
         [HttpPost]
         [Route("get-data-candidate")]
         [Authorize(Roles = GlobalStrings.ROLE_CANDIDATE)]
-        public BaseResponseBody<CandidateDTO> getCandidateInformation(string? token)
+        public BaseResponseBody<CandidateDTO> getCandidateInformation()
         {
             try
             {
+                var candidateId = GetAuthenticatedUserId();
                 return new BaseResponseBody<CandidateDTO>()
                 {
                     message = GlobalStrings.SUCCESSFULLY,
                     statusCode = HttpStatusCode.OK,
-                    data = candidateService.getCandidateInformationByToken(token),
+                    data = candidateService.GetCandidateInformation(candidateId),
                 };
             }
             catch (Exception ex)
@@ -151,15 +153,16 @@ namespace APIServer.Controllers.UserModule
         [HttpPost]
         [Route("get-data-recruiter")]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
-        public BaseResponseBody<RecuirterDTO> getRecruiterInformation(string? token)
+        public BaseResponseBody<RecuirterDTO> getRecruiterInformation()
         {
             try
             {
+                var recruiterId = GetAuthenticatedUserId();
                 return new BaseResponseBody<RecuirterDTO>()
                 {
                     message = GlobalStrings.SUCCESSFULLY,
                     statusCode = HttpStatusCode.OK,
-                    data = recuirterService.getRecruiterInformationByToken(token),
+                    data = recuirterService.GetRecruiterInformation(recruiterId),
                 };
             }
             catch (Exception ex)
@@ -174,15 +177,16 @@ namespace APIServer.Controllers.UserModule
         [HttpPost]
         [Route("get-data-admin")]
         [Authorize(Roles = GlobalStrings.ROLE_ADMIN)]
-        public BaseResponseBody<AdminDTO> getAdminInformation(string? token)
+        public BaseResponseBody<AdminDTO> getAdminInformation()
         {
             try
             {
+                var adminId = GetAuthenticatedUserId();
                 return new BaseResponseBody<AdminDTO>()
                 {
                     message = GlobalStrings.SUCCESSFULLY,
                     statusCode = HttpStatusCode.OK,
-                    data = adminService.getAdminInformationByToken(token),
+                    data = adminService.GetAdminInformation(adminId),
                 };
             }
             catch (Exception ex)
@@ -193,6 +197,14 @@ namespace APIServer.Controllers.UserModule
                     statusCode = HttpStatusCode.Unauthorized,
                 };
             }
+        }
+
+        private int GetAuthenticatedUserId()
+        {
+            var userId = User.FindFirstValue("UserId");
+            if (!int.TryParse(userId, out var parsedUserId))
+                throw new UnauthorizedAccessException("Authenticated user id is missing.");
+            return parsedUserId;
         }
     }
 }

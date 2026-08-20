@@ -38,7 +38,7 @@ export class CandidateSignInComponent {
                saveToken(res.data)
                setItem(CANDIDATE_TOKEN, res.data)
 
-               this.getProfileUser(res?.data)
+               this.getProfileUser()
 
             }else if(res?.statusCode == 401){
                if(res.message == "Account cannot access"){
@@ -54,8 +54,8 @@ export class CandidateSignInComponent {
          })
    }
 
-   getProfileUser(token: string) {
-      postRequest(apiCandidate.GET_PROFILE_USER + "?token=" + token, AuthorizationMode.BEARER_TOKEN, {})
+   getProfileUser() {
+      postRequest(apiCandidate.GET_PROFILE_USER, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
             if (res.statusCode == 200) {
 

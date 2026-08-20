@@ -24,7 +24,7 @@ export class AdminSignInComponent {
           signOut()
           setItem(ADMIN_TOKEN, res.data)
           saveToken(res.data)
-          await this.getAdminProfile(res.data)
+          await this.getAdminProfile()
           showSuccess(this.toarst, "Đăng nhập thành công!")
           this.router.navigate(['/admin/'])
         } else {
@@ -37,10 +37,10 @@ export class AdminSignInComponent {
       })
   }
 
-  async getAdminProfile(token: any) {
+  async getAdminProfile() {
     console.log('here');
     
-    await postRequest(apiAdmin.GET_ADMIN_PROFILE + token, AuthorizationMode.BEARER_TOKEN, {})
+    await postRequest(apiAdmin.GET_ADMIN_PROFILE, AuthorizationMode.BEARER_TOKEN, {})
       .then(async res => {
         if (res?.statusCode == 200) {
           await saveItem(ADMIN_PROFILE, res.data)

@@ -58,9 +58,7 @@ export class ProfileComponent {
    }
 
    getProfile = () => {
-      var token = getToken()
-
-      postRequest(apiCandidate.GET_PROFILE_USER + "?token=" + token, AuthorizationMode.BEARER_TOKEN, {})
+      postRequest(apiCandidate.GET_PROFILE_USER, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
             if (res.statusCode == 200) {
                this.profile = res.data

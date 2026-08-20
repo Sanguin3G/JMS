@@ -102,7 +102,7 @@ export enum apiAdmin{
     GET_JD_BY_ID = '/api/Admin/get-jd-by-id',
     GET_ALL_CV_BY_ID = '/api/Admin/get-all-cv-by-candidateid?candidateId=',
     LOGIN_ADMIN = '/api/Token/login-admin',
-    GET_ADMIN_PROFILE = '/api/Token/get-data-admin?token=',
+    GET_ADMIN_PROFILE = '/api/Token/get-data-admin',
     CHANGE_ACTIVE_CANDIDATE = '/api/Admin/update-active-status?candidateId=',
     CHANGE_ACTIVE_RECRUITER = '/api/Admin/update-active-status?recruiterId=',
     GET_STATISTIC = '/api/Admin/get-statistic',

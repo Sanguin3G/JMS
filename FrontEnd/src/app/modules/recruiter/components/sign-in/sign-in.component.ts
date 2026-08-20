@@ -36,7 +36,7 @@ export class RecruiterSignInComponent {
                saveToken(res.data)
                setItem(RECRUITER_TOKEN, res.data)
 
-               postRequest(apiRecruiter.GET_PROFILE_RECRUITER + "?token=" + res.data, AuthorizationMode.BEARER_TOKEN, {})
+               postRequest(apiRecruiter.GET_PROFILE_RECRUITER, AuthorizationMode.BEARER_TOKEN, {})
                   .then(res => {
 
                      if (res.statusCode == 200) {
@@ -59,7 +59,7 @@ export class RecruiterSignInComponent {
                      }
                   })
                   .catch(data => {
-                     console.log(apiRecruiter.GET_PROFILE_RECRUITER + "?token=" + res.data, data);
+                     console.log(apiRecruiter.GET_PROFILE_RECRUITER, data);
                   })
             }else if(res?.statusCode == 401){
                if(res.message == "Account cannot access"){

@@ -426,35 +426,11 @@ namespace APIServer.Services
             return _cVMatchingRepository.UpdateRejectedStatus(recruiterId, jobDescriptionId, CVMatchingId);
         }
 
-        public RecuirterDTO getRecruiterInformationByToken(string? token)
+        public RecuirterDTO GetRecruiterInformation(int recruiterId)
         {
-            try
-            {
-                if (Validation.checkStringIsEmpty(token))
-                {
-                    throw new Exception("token not valid");
-                }
-                var handler = new JwtSecurityTokenHandler();
-                var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
-
-                if (jsonToken == null)
-                {
-                    throw new Exception("your token not valid");
-                }
-                if (jsonToken.ValidTo < DateTime.UtcNow)
-                    throw new Exception("token has expired");
-                var canId = jsonToken.Claims.FirstOrDefault(x => x.Type == "UserId").Value;
-                var email = jsonToken.Claims.FirstOrDefault(x => x.Type == "Email").Value;
-                var can = _recRepository.GetById((int)Validation.ConvertInt(canId));
-                if (can.Email != email)
-                    throw new Exception("token not valid");
-                var rs = _mapper.Map<RecuirterDTO>(can);
-                return rs;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            var recruiter = _recRepository.GetById(recruiterId)
+                ?? throw new KeyNotFoundException("Recruiter not found.");
+            return _mapper.Map<RecuirterDTO>(recruiter);
         }
 
         private bool IsInputValid(string? fullname)

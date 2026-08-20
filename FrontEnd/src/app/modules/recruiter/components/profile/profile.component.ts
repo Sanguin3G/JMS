@@ -255,9 +255,7 @@ export class ProfileComponent {
    }
 
    getProfile = () => {
-      var token = getToken()
-
-      postRequest(apiRecruiter.GET_PROFILE_RECRUITER + "?token=" + token, AuthorizationMode.BEARER_TOKEN, {})
+      postRequest(apiRecruiter.GET_PROFILE_RECRUITER, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
             if (res.statusCode == 200) {
                this.profile = res.data
