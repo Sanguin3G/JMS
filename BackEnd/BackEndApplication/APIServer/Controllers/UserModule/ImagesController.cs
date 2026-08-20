@@ -24,13 +24,13 @@ namespace APIServer.Controllers.UserModule
 
         [HttpPost]
         [Route("update-img-candidate/{id}")]
-        public BaseResponseBody<string> UpdateImgCandidate(int id, [FromForm] IFormFile file)
+        public BaseResponseBody<string> UpdateImgCandidate(int id, [FromForm] ImageUploadForm upload)
         {
             try
             {
                 return new BaseResponseBody<string>
                 {
-                    data = imageService.updateImageCandidate(id, file),
+                    data = imageService.updateImageCandidate(id, upload.File),
                     message = GlobalStrings.SUCCESSFULLY_SAVED,
                     statusCode = HttpStatusCode.OK
                 };
@@ -47,13 +47,13 @@ namespace APIServer.Controllers.UserModule
 
         [HttpPost]
         [Route("update-img-recuirter/{id}")]
-        public BaseResponseBody<string> UpdateImgRecuirter(int id, [FromForm] IFormFile file)
+        public BaseResponseBody<string> UpdateImgRecuirter(int id, [FromForm] ImageUploadForm upload)
         {
             try
             {
                 return new BaseResponseBody<string>
                 {
-                    data = imageService.updateImageRecuirter(id, file),
+                    data = imageService.updateImageRecuirter(id, upload.File),
                     message = GlobalStrings.SUCCESSFULLY_SAVED,
                     statusCode = HttpStatusCode.OK
                 };
@@ -70,13 +70,13 @@ namespace APIServer.Controllers.UserModule
 
         [HttpPost]
         [Route("update-img-cv/{candidateId}/{cvId}")]
-        public BaseResponseBody<string> UpdateImgCV(int candidateId, int cvId, [FromForm] IFormFile file)
+        public BaseResponseBody<string> UpdateImgCV(int candidateId, int cvId, [FromForm] ImageUploadForm upload)
         {
             try
             {
                 return new BaseResponseBody<string>
                 {
-                    data = imageService.updateImageCV(candidateId, cvId, file),
+                    data = imageService.updateImageCV(candidateId, cvId, upload.File),
                     message = GlobalStrings.SUCCESSFULLY_SAVED,
                     statusCode = HttpStatusCode.OK
                 };
@@ -93,13 +93,13 @@ namespace APIServer.Controllers.UserModule
 
         [HttpPost]
         [Route("update-img-avt-company/{recuirterId}/{companyId}")]
-        public BaseResponseBody<string> UpdateImgCompanyAvt(int recuirterId, int companyId, [FromForm] IFormFile file)
+        public BaseResponseBody<string> UpdateImgCompanyAvt(int recuirterId, int companyId, [FromForm] ImageUploadForm upload)
         {
             try
             {
                 return new BaseResponseBody<string>
                 {
-                    data = imageService.updateImageAvtCompany(companyId, recuirterId, file),
+                    data = imageService.updateImageAvtCompany(companyId, recuirterId, upload.File),
                     message = GlobalStrings.SUCCESSFULLY_SAVED,
                     statusCode = HttpStatusCode.OK
                 };
@@ -116,13 +116,13 @@ namespace APIServer.Controllers.UserModule
 
         [HttpPost]
         [Route("update-img-bgr-company/{recuirterId}/{companyId}")]
-        public BaseResponseBody<string> UpdateImgCompanyBgr(int recuirterId, int companyId, [FromForm] IFormFile file)
+        public BaseResponseBody<string> UpdateImgCompanyBgr(int recuirterId, int companyId, [FromForm] ImageUploadForm upload)
         {
             try
             {
                 return new BaseResponseBody<string>
                 {
-                    data = imageService.updateImageBgrCompany(companyId, recuirterId, file),
+                    data = imageService.updateImageBgrCompany(companyId, recuirterId, upload.File),
                     message = GlobalStrings.SUCCESSFULLY_SAVED,
                     statusCode = HttpStatusCode.OK
                 };
@@ -151,13 +151,13 @@ namespace APIServer.Controllers.UserModule
 
         [HttpPost]
         [Route("new-slider")]
-        public BaseResponseBody<string> createNewSlider([FromForm] Slider slider, [FromForm] IFormFile file)
+        public BaseResponseBody<string> createNewSlider([FromForm] SliderUploadForm upload)
         {
             try
             {
                 return new BaseResponseBody<string>
                 {
-                    data = imageService.addImgSlider(file, slider),
+                    data = imageService.addImgSlider(upload.File, upload),
                     message = GlobalStrings.SUCCESSFULLY_SAVED,
                     statusCode = HttpStatusCode.OK,
                 };
@@ -196,5 +196,15 @@ namespace APIServer.Controllers.UserModule
                 };
             }
         }
+    }
+
+    public sealed class ImageUploadForm
+    {
+        public IFormFile File { get; set; } = null!;
+    }
+
+    public sealed class SliderUploadForm : Slider
+    {
+        public IFormFile File { get; set; } = null!;
     }
 }
