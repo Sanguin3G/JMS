@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { themeList } from './constant';
 import { environment } from 'src/environments/environment';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -44,6 +44,8 @@ export class UpdateCvComponent {
    selectLevel: any
    selectEmploymentTypes: any
    theme: any
+
+   @ViewChild('avatarInput') private avatarInput?: ElementRef<HTMLInputElement>;
 
    convertDate(date: string) {
       const d = date.split("/");
@@ -435,6 +437,10 @@ export class UpdateCvComponent {
 
          this.onChangeAvatar = true
       }
+   }
+
+   chooseAvatar() {
+      this.avatarInput?.nativeElement.click();
    }
 
    selectedFont(event: any) {

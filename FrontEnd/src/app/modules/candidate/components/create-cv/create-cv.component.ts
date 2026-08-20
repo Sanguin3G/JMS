@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { themeList } from './constant';
 import { environment } from 'src/environments/environment';
 import { ActivatedRoute } from '@angular/router';
@@ -39,6 +39,8 @@ export class CandidateCreateCvComponent {
    profile: any
    onChangeAvatar = false
    isAllDataValid = true
+
+   @ViewChild('avatarInput') private avatarInput?: ElementRef<HTMLInputElement>;
 
    getAllCategory() {
       getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
@@ -474,6 +476,10 @@ export class CandidateCreateCvComponent {
 
          this.onChangeAvatar = true
       }
+   }
+
+   chooseAvatar() {
+      this.avatarInput?.nativeElement.click();
    }
 
    selectedFont(event: any) {

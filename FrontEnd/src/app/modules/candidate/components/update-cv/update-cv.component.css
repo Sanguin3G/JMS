@@ -465,6 +465,7 @@ option {
    padding: 5px;
    border-radius: 12px;
    border: 1px #ccc solid;
+   background: transparent;
 }
 
 
@@ -477,6 +478,11 @@ option {
 .file-upload-btn:active {
    border: 0;
    transition: all .2s ease;
+}
+
+.file-upload-btn:focus-visible {
+   outline: 3px solid currentColor;
+   outline-offset: 3px;
 }
 
 

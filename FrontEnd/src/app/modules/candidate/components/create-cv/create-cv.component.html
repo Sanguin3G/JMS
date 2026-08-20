@@ -121,7 +121,7 @@
             <div class="avatar-candidate">
                <div class="file-upload">
                   <div class="image-upload-wrap" ng-hide="true" [style.display]="hideImage">
-                     <input class="file-upload-input" type='file' id="avatarCv" multiple=false
+                     <input #avatarInput class="file-upload-input" type='file' id="avatarCv" multiple=false
                         (change)="getFile($event);" accept="image/*" />
                      <div class="drag-text">
                         <h3 [class]="ThemStyle">Kéo thả ảnh hoặc chọn ảnh</h3>
@@ -130,8 +130,9 @@
                   <div class="file-upload-content" [style.display]="displayImage">
                      <img class="file-upload-image" [src]="fileSrc" alt="your image" />
                      <div class="btn-Change-Image">
-                        <i class="fa-solid fa-plus file-upload-btn" onclick="$('.file-upload-input').trigger( 'click' )"
-                           [style.display]="displayChange"></i>
+                        <button type="button" class="fa-solid fa-plus file-upload-btn" (click)="chooseAvatar()"
+                           aria-label="Choose a different profile image"
+                           [style.display]="displayChange"></button>
                      </div>
                   </div>
                </div>
