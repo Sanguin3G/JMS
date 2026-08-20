@@ -17,7 +17,7 @@ namespace APIServer
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -86,7 +86,7 @@ namespace APIServer
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddDbContext<JMSDBContext>(options =>
             {
-                options.UseSqlServer(builder.Configuration.GetConnectionString("JobConstr"));
+                options.UseSqlite(builder.Configuration.GetConnectionString("JobConstr"));
                 //options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
 
@@ -97,6 +97,10 @@ namespace APIServer
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                await using var scope = app.Services.CreateAsyncScope();
+                var dbContext = scope.ServiceProvider.GetRequiredService<JMSDBContext>();
+                await dbContext.Database.MigrateAsync();
+
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }

@@ -266,6 +266,11 @@ ServiceFabricBackup/
 *.ldf
 *.ndf
 
+# Local SQLite development database
+BackEnd/BackEndApplication/APIServer/App_Data/*.db
+BackEnd/BackEndApplication/APIServer/App_Data/*.db-shm
+BackEnd/BackEndApplication/APIServer/App_Data/*.db-wal
+
 # Business Intelligence projects
 *.rdl.data
 *.bim.layout

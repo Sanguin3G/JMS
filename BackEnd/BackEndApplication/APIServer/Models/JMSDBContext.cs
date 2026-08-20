@@ -41,7 +41,7 @@ namespace APIServer.Models
                 var conStr = config.GetConnectionString("JobConstr");
                 if (!optionsBuilder.IsConfigured)
                 {
-                    optionsBuilder.UseSqlServer(conStr);
+                    optionsBuilder.UseSqlite(conStr);
                 }
             }
         }
