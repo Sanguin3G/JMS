@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ApiResponse, deleteRequest, getRequest, postRequest, putRequest } from 'src/app/service/api-requests';
 import { apiAdmin, AuthorizationMode } from 'src/app/service/constant';
 import { AiConnectionTestResult, AiModelCapability, AiProviderProfile, AiProviderProfileDraft } from 'src/app/core/models/ai.models';
@@ -43,9 +43,12 @@ export class AdminSettingComponent implements OnInit {
     this.createCatalogPanel('employment-types', 'Employment types', 'The development catalogue for work arrangements and contract labels.'),
   ];
 
+  constructor(private changeDetector: ChangeDetectorRef) {}
+
   async ngOnInit(): Promise<void> {
     await Promise.all([this.loadOptions(), this.loadProfiles(), this.loadFaqEntries(), this.loadCatalogs()]);
     this.isLoading = false;
+    this.changeDetector.detectChanges();
   }
 
   get selectedModel(): AiModelCapability | undefined {
@@ -106,6 +109,7 @@ export class AdminSettingComponent implements OnInit {
       this.errorMessage = 'The provider profile could not be saved.';
     } finally {
       this.isSaving = false;
+      this.changeDetector.detectChanges();
     }
   }
 
@@ -141,6 +145,7 @@ export class AdminSettingComponent implements OnInit {
       this.errorMessage = 'The connection test could not be completed.';
     } finally {
       this.testingProfileId = null;
+      this.changeDetector.detectChanges();
     }
   }
 
@@ -192,6 +197,7 @@ export class AdminSettingComponent implements OnInit {
       this.errorMessage = 'The FAQ entry could not be saved.';
     } finally {
       this.faqSaving = false;
+      this.changeDetector.detectChanges();
     }
   }
 
@@ -235,6 +241,7 @@ export class AdminSettingComponent implements OnInit {
       this.errorMessage = `The ${panel.title.toLowerCase()} entry could not be saved.`;
     } finally {
       this.catalogSaving = null;
+      this.changeDetector.detectChanges();
     }
   }
 

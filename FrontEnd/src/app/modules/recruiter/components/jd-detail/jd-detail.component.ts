@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ListCandidateComponent } from '../list-candidate/list-candidate.component';
 import { ApiResponse, getRequest, postRequest } from 'src/app/service/api-requests';
@@ -36,7 +36,7 @@ export class JdDetailComponent {
    Url = environment.Url;
    profile: UserProfile | null
 
-   constructor(public dialog: MatDialog, private route: ActivatedRoute, private toastr: ToastrService, private viewportScroller: ViewportScroller) {
+   constructor(public dialog: MatDialog, private route: ActivatedRoute, private toastr: ToastrService, private viewportScroller: ViewportScroller, private changeDetector: ChangeDetectorRef) {
       this.route.params.subscribe(params => {
          this.id = params['id'];
       });
@@ -49,6 +49,7 @@ export class JdDetailComponent {
          .then(res => {
             this.jdDetail = res.data ?? null
             this.handleData();
+            this.changeDetector.detectChanges();
          })
          .catch(data => {
             console.warn(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, data);
@@ -81,6 +82,7 @@ export class JdDetailComponent {
                      showError(this.toastr, "Đề xuất thất bại <br/> Vui lòng thử lại sau")
                   }
                   console.log(res);
+                  this.changeDetector.detectChanges();
                })
                .catch(data => {
                   showError(this.toastr, "Đề xuất thất bại <br/> Vui lòng thử lại sau")
@@ -99,6 +101,7 @@ export class JdDetailComponent {
       await getRequest<ApiResponse<MatchingRecord[]>>(typeCandidate, AuthorizationMode.BEARER_TOKEN, { recruiterId: this.jdDetail.recuirterId, jobDescriptionId: this.jdDetail.jobId, pageIndex: 1 })
          .then(async res => {
             this.listCandidate = res.data ?? []
+            this.changeDetector.detectChanges();
             const dialogData: RecruiterCandidateDialogData = {
                listType: type,
                recruiterId: this.jdDetail?.recuirterId ?? 0,

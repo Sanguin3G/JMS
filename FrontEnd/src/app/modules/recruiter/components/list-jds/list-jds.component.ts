@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectorRef, Component, ViewEncapsulation } from '@angular/core';
 import { getRequest, postRequest, postFileRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
 import { Router } from '@angular/router';
@@ -44,7 +44,7 @@ export class ListJdsComponent {
       return list
    }
 
-   constructor(private router: Router, public dialog: MatDialog, private toastr: ToastrService) {
+   constructor(private router: Router, public dialog: MatDialog, private toastr: ToastrService, private changeDetector: ChangeDetectorRef) {
       this.profile = getProfile()
 
       getRequest(`${apiRecruiter.GET_COMPANY_JDS_PAGING}/${this.profile.companyId}/${this.page}`, AuthorizationMode.BEARER_TOKEN)
@@ -60,9 +60,11 @@ export class ListJdsComponent {
                
                this.firstTabTitle = 'ĐANG TUYỂN DỤNG (' + res.data.length + ')'
                this.listJds = this.listRunning
+               this.changeDetector.detectChanges();
             }else{
                this.firstTabTitle = 'ĐANG TUYỂN DỤNG (0)'
                this.listJds = []
+               this.changeDetector.detectChanges();
             }
             
          })
@@ -79,6 +81,7 @@ export class ListJdsComponent {
          .then(res => {
             this.listJds = res?.data
             this.totalItems = res?.objectLength
+            this.changeDetector.detectChanges();
          })
          .catch(data => {
             console.warn('Lỗi', `${apiRecruiter.GET_COMPANY_JDS_PAGING}/${this.profile.companyId}/${this.page}`, data);
@@ -129,6 +132,7 @@ export class ListJdsComponent {
          .then(res => {
             console.log(res?.data);
             this.listExpired = res?.data
+            this.changeDetector.detectChanges();
 
             for (let i = 0; i < this.listExpired.length; i++) {
                this.listExpired[i]['isShow'] = true;
@@ -136,6 +140,7 @@ export class ListJdsComponent {
             this.secondTabTitle = 'ĐÃ HẾT HẠN (' + this.listExpired.length + ')'
          })
          .catch(data => {
+            this.changeDetector.detectChanges();
             console.warn('Fail to get api list expired jd', data);
          })
    }
