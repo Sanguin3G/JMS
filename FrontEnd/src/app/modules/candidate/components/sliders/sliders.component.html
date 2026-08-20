@@ -8,7 +8,8 @@
       <div class="carousel-inner">
          <div *ngFor="let slide of slides; index as index" class="carousel-item" [class.active]="activeSlide === index"
             [attr.aria-hidden]="activeSlide !== index">
-            <img [src]="slide" class="d-block w-100" [alt]="'Featured company ' + (index + 1)">
+            <img [src]="slide.url" class="d-block w-100" [alt]="slide.title"
+               [attr.fetchpriority]="index === 0 ? 'high' : 'low'" [attr.loading]="index === 0 ? null : 'lazy'">
          </div>
       </div>
       <button class="carousel-control-prev" type="button" (click)="previousSlide()" aria-label="Previous featured company">

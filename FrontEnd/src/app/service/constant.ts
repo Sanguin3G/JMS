@@ -62,6 +62,9 @@ export enum apiRecruiter {
 }
 
 export enum apiCandidate {
+   //Public content
+   GET_ALL_SLIDERS = "/api/Images/all-slider",
+
    //Job
    GET_ALL_JDS_PAGING = "/api/JobDesc/get-all-jd",
    GET_JD_BY_ID = "/api/JobDesc/get-jd-by-id",
