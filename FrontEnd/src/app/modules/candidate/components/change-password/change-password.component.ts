@@ -5,8 +5,6 @@ import { showError, showSuccess } from 'src/app/service/common';
 import { AuthorizationMode, apiCandidate } from 'src/app/service/constant';
 import { getProfile } from 'src/app/service/localstorage';
 
-declare var $: any;
-
 @Component({
   standalone: false,
    selector: 'candidate-change-password',

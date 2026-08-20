@@ -33,6 +33,7 @@ export class JdDetailComponent {
    selectedCV = "0"
    isLogin = false
    pending = false
+   isApplyModalOpen = false
 
    convertStringDateInput(str: string) {
       const dateStr: string = str;
@@ -94,6 +95,14 @@ export class JdDetailComponent {
       return true
    }
 
+   openApplyModal() {
+      if (this.isLogin && !this.isExpiredDate) this.isApplyModalOpen = true;
+   }
+
+   closeApplyModal() {
+      if (!this.pending) this.isApplyModalOpen = false;
+   }
+
 
    submitCv(event: any) {
       if (this.validateSubmitCv()) {
@@ -103,6 +112,7 @@ export class JdDetailComponent {
                if (res?.statusCode == 200) {
                   showSuccess(this.toastr, "Nhà tuyển dụng sẽ duyệt hồ sơ của bạn")
                   console.log(res);
+                  this.isApplyModalOpen = false
                   this.pending = false
                }
                if (res?.statusCode == 204) {

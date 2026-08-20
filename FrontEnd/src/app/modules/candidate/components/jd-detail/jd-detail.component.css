@@ -103,15 +103,24 @@
 }
 
 
-.modal {
-   top: 70px;
-   max-width: 800px !important;
-   height: 800px !important;
+.application-modal-backdrop {
+   position: fixed;
+   inset: 0;
+   z-index: 1050;
+   display: grid;
+   place-items: start center;
+   padding: 70px 16px 24px;
+   overflow-y: auto;
+   background: rgb(17 24 39 / 48%);
 }
 
-.modal a.close-modal {
-   top: 10px !important;
-   right: 10px !important;
+.application-modal {
+   width: min(800px, 100%);
+   max-height: calc(100vh - 94px);
+   overflow-y: auto;
+   border-radius: 14px;
+   background: var(--bs-body-bg, #fff);
+   box-shadow: 0 24px 70px rgb(17 24 39 / 25%);
 }
 
 
@@ -124,6 +133,7 @@
 }
 
 .btnRecruiment {
+   border: 0;
    padding: 12px 17px 12px 17px;
    background-color: var(--blueLight2);
    text-decoration: none;

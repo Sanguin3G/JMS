@@ -6,7 +6,6 @@ import { saveToken, saveItem, setItem } from 'src/app/service/localstorage';
 import { Router } from '@angular/router';
 import { showError, showSuccess } from 'src/app/service/common';
 
-declare var $: any;
 @Component({
   standalone: false,
    selector: 'app-sign-in',
