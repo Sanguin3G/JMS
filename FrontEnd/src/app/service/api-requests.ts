@@ -141,3 +141,10 @@ export function putRequest<T = ApiResponse>(
       jsonBody: true,
    });
 }
+
+export function deleteRequest<T = ApiResponse>(
+   url: string,
+   authorizationMode: AuthorizationMode,
+): Promise<T> {
+   return request<T>('DELETE', url, authorizationMode);
+}

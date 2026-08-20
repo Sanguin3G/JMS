@@ -5,7 +5,14 @@
 **/bin
 **/obj
 **/dist
+FrontEnd/node_modules
+FrontEnd/.angular
+BackEnd/BackEndApplication/APIServer/bin
+BackEnd/BackEndApplication/APIServer/obj
+BackEnd/BackEndApplication/APIServer.Tests/bin
+BackEnd/BackEndApplication/APIServer.Tests/obj
 **/*.db
 **/*.db-shm
 **/*.db-wal
 FrontEnd/yarn.lock
+FrontEnd/ckeditor5-custom-build

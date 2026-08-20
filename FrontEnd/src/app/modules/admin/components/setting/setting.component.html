@@ -74,4 +74,38 @@
   </section>
 
   <ng-template #loading><p class="ai-settings__empty">Loading the lab controls…</p></ng-template>
+  <section class="faq-admin" aria-labelledby="faq-admin-title">
+    <header class="faq-admin__header">
+      <div>
+        <p class="ai-settings__eyebrow">ADMIN / HELP CONTENT</p>
+        <h2 id="faq-admin-title">Curated FAQ entries</h2>
+        <p>Deterministic FAQ search is the always-on fallback for candidate and recruiter help. Keep this content factual and development-scoped.</p>
+      </div>
+      <button *ngIf="faqEditingId" type="button" class="ai-settings__text-button" (click)="cancelFaqEditing()">New entry</button>
+    </header>
+
+    <div class="faq-admin__grid">
+      <form class="ai-settings__panel" (ngSubmit)="saveFaq()">
+        <div class="ai-settings__panel-heading"><h3>{{ faqEditingId ? 'Edit entry' : 'New entry' }}</h3></div>
+        <label>Question <input name="faqQuestion" [(ngModel)]="faqDraft.question" maxlength="200" required></label>
+        <label>Answer <textarea name="faqAnswer" [(ngModel)]="faqDraft.answer" maxlength="4000" rows="7" required></textarea></label>
+        <label>Search keywords <input name="faqKeywords" [(ngModel)]="faqDraft.keywords" maxlength="500" placeholder="cv, matching, privacy"></label>
+        <div class="faq-admin__row">
+          <label>Category <input name="faqCategory" [(ngModel)]="faqDraft.category" maxlength="80"></label>
+          <label>Sort order <input name="faqSortOrder" type="number" [(ngModel)]="faqDraft.sortOrder" min="0" max="999"></label>
+        </div>
+        <label class="ai-settings__toggle"><input type="checkbox" name="faqPublished" [(ngModel)]="faqDraft.isPublished"> Published in help search</label>
+        <button type="submit" class="ai-settings__save" [disabled]="faqSaving">{{ faqSaving ? 'Saving...' : 'Save FAQ entry' }}</button>
+      </form>
+
+      <section class="ai-settings__panel" aria-label="Saved FAQ entries">
+        <div class="ai-settings__panel-heading"><h3>Saved entries</h3><span>{{ faqEntries.length }} configured</span></div>
+        <article class="faq-admin__entry" *ngFor="let entry of faqEntries">
+          <div><h4>{{ entry.question }}</h4><p>{{ entry.category }} · {{ entry.isPublished === false ? 'Draft' : 'Published' }}</p></div>
+          <div class="faq-admin__actions"><button type="button" (click)="beginFaqEditing(entry)">Edit</button><button type="button" (click)="deleteFaq(entry)">Delete</button></div>
+        </article>
+        <p *ngIf="faqEntries.length === 0" class="ai-settings__empty">No FAQ entries are configured.</p>
+      </section>
+    </div>
+  </section>
 </main>

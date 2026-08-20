@@ -240,10 +240,20 @@ export interface FaqEntry {
    id: number;
    question: string;
    answer: string;
+   keywords?: string | null;
    category: string;
    isPublished?: boolean;
    sortOrder?: number;
    updatedAt?: string;
+}
+
+export interface FaqEntryRequest {
+   question: string;
+   answer: string;
+   keywords: string;
+   category: string;
+   isPublished: boolean;
+   sortOrder: number;
 }
 
 export interface FaqChatResponse {

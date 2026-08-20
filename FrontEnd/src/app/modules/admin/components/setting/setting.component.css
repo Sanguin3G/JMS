@@ -93,7 +93,22 @@
 .ai-settings__profile-actions { flex-wrap: wrap; justify-content: end; }
 .ai-settings__active { padding: .22rem .45rem; border-radius: 99rem; background: #d3ecd9; color: #0d572c; font-size: .78rem; font-weight: 800; }
 
+.faq-admin { display: grid; gap: 1rem; margin-block-start: 1rem; }
+.faq-admin__header { display: flex; justify-content: space-between; gap: 1rem; align-items: start; }
+.faq-admin__header h2 { margin: .35rem 0; font: 700 1.7rem Georgia, 'Times New Roman', serif; }
+.faq-admin__header p:not(.ai-settings__eyebrow) { max-inline-size: 52rem; margin: 0; color: var(--muted-text-color, #56605a); }
+.faq-admin__grid { display: grid; grid-template-columns: minmax(18rem, .85fr) minmax(20rem, 1.15fr); gap: 1rem; align-items: start; }
+.faq-admin__row { display: grid; grid-template-columns: 1fr 8rem; gap: .75rem; }
+.faq-admin textarea { resize: vertical; min-block-size: 8rem; padding: .6rem .7rem; border: 1px solid #7f9882; border-radius: .5rem; background: #fff; color: inherit; font: inherit; }
+.faq-admin__entry { display: flex; justify-content: space-between; gap: .75rem; align-items: start; padding: .85rem 0; border-block-start: 1px dashed #a4b8a6; }
+.faq-admin__entry h4 { margin: 0; font-size: 1rem; }
+.faq-admin__entry p { margin: .3rem 0 0; color: #56605a; font-size: .85rem; }
+.faq-admin__actions { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: end; }
+.faq-admin__actions button:last-child { border-color: #a35b5b; color: #7d2222; }
+
 @media (max-width: 38rem) {
   .ai-settings__panel-heading, .ai-settings__profile { align-items: start; flex-direction: column; }
   .ai-settings__profile-actions { justify-content: start; }
+  .faq-admin__header, .faq-admin__grid { display: grid; grid-template-columns: 1fr; }
+  .faq-admin__row { grid-template-columns: 1fr; }
 }

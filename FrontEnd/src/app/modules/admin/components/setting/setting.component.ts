@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { ApiResponse, getRequest, postRequest, putRequest } from 'src/app/service/api-requests';
+import { ApiResponse, deleteRequest, getRequest, postRequest, putRequest } from 'src/app/service/api-requests';
 import { apiAdmin, AuthorizationMode } from 'src/app/service/constant';
 import { AiConnectionTestResult, AiModelCapability, AiProviderProfile, AiProviderProfileDraft } from 'src/app/core/models/ai.models';
+import { FaqEntry, FaqEntryRequest } from 'src/app/core/models/api.models';
 
 
 @Component({
@@ -21,9 +22,13 @@ export class AdminSettingComponent implements OnInit {
   successMessage = '';
   testingProfileId: number | null = null;
   draft: AiProviderProfileDraft = this.createDraft();
+  faqEntries: FaqEntry[] = [];
+  faqEditingId: number | null = null;
+  faqSaving = false;
+  faqDraft: FaqEntryRequest = this.createFaqDraft();
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([this.loadOptions(), this.loadProfiles()]);
+    await Promise.all([this.loadOptions(), this.loadProfiles(), this.loadFaqEntries()]);
     this.isLoading = false;
   }
 
@@ -123,6 +128,70 @@ export class AdminSettingComponent implements OnInit {
     }
   }
 
+  beginFaqEditing(entry: FaqEntry): void {
+    this.faqEditingId = entry.id;
+    this.faqDraft = {
+      question: entry.question,
+      answer: entry.answer,
+      keywords: entry.keywords ?? '',
+      category: entry.category,
+      isPublished: entry.isPublished !== false,
+      sortOrder: entry.sortOrder ?? 0,
+    };
+  }
+
+  cancelFaqEditing(): void {
+    this.faqEditingId = null;
+    this.faqDraft = this.createFaqDraft();
+  }
+
+  async saveFaq(): Promise<void> {
+    this.errorMessage = '';
+    this.successMessage = '';
+    if (!this.faqDraft.question.trim() || !this.faqDraft.answer.trim()) {
+      this.errorMessage = 'FAQ question and answer are required.';
+      return;
+    }
+
+    this.faqSaving = true;
+    const payload: FaqEntryRequest = {
+      ...this.faqDraft,
+      question: this.faqDraft.question.trim(),
+      answer: this.faqDraft.answer.trim(),
+      keywords: this.faqDraft.keywords.trim(),
+      category: this.faqDraft.category.trim() || 'JMS basics',
+    };
+    try {
+      const response = this.faqEditingId
+        ? await putRequest<ApiResponse<FaqEntry>>(`${apiAdmin.FAQ}/${this.faqEditingId}`, AuthorizationMode.BEARER_TOKEN, payload)
+        : await postRequest<ApiResponse<FaqEntry>>(apiAdmin.FAQ, AuthorizationMode.BEARER_TOKEN, payload);
+      if (response?.statusCode >= 200 && response.statusCode < 300) {
+        this.successMessage = 'FAQ entry saved. Public answers use the curated content immediately.';
+        this.cancelFaqEditing();
+        await this.loadFaqEntries();
+      } else {
+        this.errorMessage = response?.message ?? 'The FAQ entry could not be saved.';
+      }
+    } catch {
+      this.errorMessage = 'The FAQ entry could not be saved.';
+    } finally {
+      this.faqSaving = false;
+    }
+  }
+
+  async deleteFaq(entry: FaqEntry): Promise<void> {
+    if (typeof window !== 'undefined' && !window.confirm(`Delete “${entry.question}”?`)) return;
+    this.errorMessage = '';
+    this.successMessage = '';
+    try {
+      await deleteRequest<ApiResponse<string>>(`${apiAdmin.FAQ}/${entry.id}`, AuthorizationMode.BEARER_TOKEN);
+      this.successMessage = 'FAQ entry deleted.';
+      await this.loadFaqEntries();
+    } catch {
+      this.errorMessage = 'The FAQ entry could not be deleted.';
+    }
+  }
+
   private async loadOptions(): Promise<void> {
     const response = await getRequest<AiModelCapability[]>(apiAdmin.AI_CAPABILITIES, AuthorizationMode.BEARER_TOKEN);
     this.modelOptions = Array.isArray(response) ? response : [];
@@ -137,6 +206,11 @@ export class AdminSettingComponent implements OnInit {
     this.profiles = response?.data ?? [];
   }
 
+  private async loadFaqEntries(): Promise<void> {
+    const response = await getRequest<ApiResponse<FaqEntry[]>>(apiAdmin.FAQ, AuthorizationMode.BEARER_TOKEN);
+    this.faqEntries = response?.data ?? [];
+  }
+
   private createDraft(): AiProviderProfileDraft {
     return {
       provider: 'gemini',
@@ -147,6 +221,17 @@ export class AdminSettingComponent implements OnInit {
       isEnabled: true,
       isDefaultForMatching: true,
       isEnabledForAssistant: false,
+    };
+  }
+
+  private createFaqDraft(): FaqEntryRequest {
+    return {
+      question: '',
+      answer: '',
+      keywords: '',
+      category: 'JMS basics',
+      isPublished: true,
+      sortOrder: 0,
     };
   }
 

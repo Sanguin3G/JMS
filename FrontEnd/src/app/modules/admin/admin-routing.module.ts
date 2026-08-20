@@ -12,7 +12,7 @@ import { authGuard } from './auth.guard';
 import { ProfileComponent } from './components/profile/profile.component';
 
 const routes: Routes = [
-   { path: "setting", component: AdminSettingComponent },
+   { path: "setting", component: AdminSettingComponent, canActivate: [authGuard] },
    { path: "sign-in", component: AdminSignInComponent },
    { path: "sign-up", component: AdminSignUpComponent },
    { path: "company-page", component: CompanyComponent, canActivate: [authGuard] },
