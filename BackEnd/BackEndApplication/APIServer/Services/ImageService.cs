@@ -41,7 +41,7 @@ namespace APIServer.Services
                 var com = companyRepo.GetById(companyId);
                 if (rec == null || com == null)
                     throw new Exception("Not found");
-                if (com.EmployeeInCompanies.Any(x => x.RecuirterId == recuirterId) || com.RecuirterId != recuirterId)
+                if (!com.EmployeeInCompanies.Any(x => x.RecuirterId == recuirterId) && com.RecuirterId != recuirterId)
                 {
                     throw new Exception("Permission denied");
                 }
@@ -75,7 +75,7 @@ namespace APIServer.Services
                 var com = companyRepo.GetById(companyId);
                 if (rec == null || com == null)
                     throw new Exception("Not found");
-                if (com.EmployeeInCompanies.Any(x => x.RecuirterId == recuirterId) || com.RecuirterId != recuirterId)
+                if (!com.EmployeeInCompanies.Any(x => x.RecuirterId == recuirterId) && com.RecuirterId != recuirterId)
                 {
                     throw new Exception("Permission denied");
                 }

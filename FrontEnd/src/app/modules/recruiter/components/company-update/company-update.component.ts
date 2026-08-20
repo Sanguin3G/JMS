@@ -211,7 +211,7 @@ export class CompanyUpdateComponent {
          console.log(formData);
 
 
-         postFileRequest(`${apiRecruiter.UPDATE_IMAGE_COMPANY_AVATAR}/${this.profile.id}/${this.profile.companyId}`, AuthorizationMode.PUBLIC, formData)
+         postFileRequest(`${apiRecruiter.UPDATE_IMAGE_COMPANY_AVATAR}/${this.profile.id}/${this.profile.companyId}`, AuthorizationMode.BEARER_TOKEN, formData)
             .then(res => {
                console.log(res);
                showSuccess(this.toastr, "Cập nhật logo thành công")
@@ -242,7 +242,7 @@ export class CompanyUpdateComponent {
             let file: File = fileList[0];
             formData.append('file', file, file.name);
          }
-         postFileRequest(`${apiRecruiter.UPDATE_IMAGE_COMPANY_BACKGROUND}/${this.profile.id}/${this.profile.companyId}`, AuthorizationMode.PUBLIC, formData)
+         postFileRequest(`${apiRecruiter.UPDATE_IMAGE_COMPANY_BACKGROUND}/${this.profile.id}/${this.profile.companyId}`, AuthorizationMode.BEARER_TOKEN, formData)
             .then(res => {
                showSuccess(this.toastr, "Cập nhật ảnh nền thành công")
                console.log(res);

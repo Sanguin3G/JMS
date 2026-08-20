@@ -73,10 +73,22 @@ export async function postRequest(url: string, authorizationMode: AuthorizationM
 }
 
 export async function postFileRequest(url: string, authorizationMode: AuthorizationMode, data: FormData) {
+   const headers: Record<string, string> = {
+      'Accept': 'application/json',
+   };
+
+   if (authorizationMode === AuthorizationMode.BEARER_TOKEN) {
+      const accessToken = localStorage.getItem("token");
+      if (accessToken) {
+         headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+   }
+
    const response = await fetch(`${apiURL}${url}`, {
       method: "POST",
       cache: "no-cache",
-      body: data
+      headers,
+      body: data,
    })
    const res = await response.json();
    return res
