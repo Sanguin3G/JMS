@@ -1,50 +1,85 @@
+# JMS
 
-# Lệnh github
+JMS is a development-only portfolio project for exploring the candidate → job → matching → recruiter review loop. It uses fictional seed data and deterministic matching as the source of truth. Gemini can add a bounded explanation, but it never makes a hiring decision.
 
-- git git remote -v
+## Stack
 
-- git remote add origin linkGit                   Thêm remote vào project
+- ASP.NET Core / .NET 10 Web API
+- SQLite with EF Core migrations and an idempotent Development seeder
+- Angular 21 with npm, TypeScript, and the existing feature modules
+- Node 24 LTS for the client toolchain
+- Gemini AI Studio as the first provider adapter (optional)
 
-- git remote remove origin                        Remove remote
+## Run locally
 
-- git remote set-url origin                       Set origin
+Prerequisites: .NET SDK 10.0.301 (or a compatible 10.0 SDK), Node 24, and npm.
 
-- git status 							          Kiểm tra code trên nhánh
+Start the API:
 
-- git commit -am "implement search ui"            Add và commit cùng lúc
+```powershell
+cd BackEnd/BackEndApplication
+dotnet restore
+dotnet run --project APIServer/APIServer.csproj
+```
 
-- git add .						                  Add file ở git
+Start the Angular client in a second terminal:
 
-- git commit --m "nameCommit"                     Tạo commit
+```powershell
+cd FrontEnd
+npm ci
+npm start
+```
 
-- git branch branchName                           Tạo branch trên local
+The development client uses `http://localhost:8080` for the API and serves at `http://localhost:4200`. The API exposes Swagger at `http://localhost:8080/swagger` and readiness probes at `/health/live` and `/health/ready`.
 
-- git checkout branchName                         Chuyển branch trên local
- 
-- git pull origin main                            Kéo code từ repository web về main local
+The API creates and migrates its SQLite database only in Development. User uploads and Data Protection keys stay in local `App_Data` folders and are not repository data.
 
-- git config --global user.name "John Doe"        Config tài khoản
+## Demo accounts
 
-- git config --global user.email "johndoe@example.net"  
+The Development-only seeder uses the same fictional password for these accounts: `JmsDemo!2026`.
 
-- git clone https://github.com/tuan-708/api-demo.git
+| Role | Username |
+| --- | --- |
+| Admin | `demo.admin` |
+| Recruiter | `minh.northstar` |
+| Recruiter | `linh.paperkite` |
+| Candidate | `an.le` |
+| Candidate | `duc.pham` |
 
-- git pull origin "tên nhánh"
+These credentials are for local walkthroughs only. Do not reuse them outside this development project.
 
-- git add .						                  Add file ở git
+## Docker demo
 
-- git commit --m "nameCommit"                     Tạo commit
+Docker Desktop must be running. From the repository root:
 
-- git push origin "tên nhánh"
+```powershell
+docker compose up --build
+```
 
+Open `http://localhost:4200`. The frontend container serves the Angular build and proxies `/api/*` and `/health/*` to the API container. SQLite is stored in the named `jms-data` volume. The compose file contains only development defaults; provide `JMS_JWT_KEY` locally if you want to replace the placeholder development key.
 
+## AI configuration
 
-# Tác giả
+AI is optional. An admin can configure an encrypted Gemini provider profile from the admin settings screen. The backend validates the provider/model/reasoning combination against its current capability catalogue, never returns API keys to the browser, bounds requests, and exposes a safe connection test. Without a configured key, deterministic matching and the curated FAQ still work.
 
-- Vũ Văn Tuấn (tuanlbs78@gmail.com)
-- Tống Việt Anh (tva8320@gmail.com)
-- Bạch Văn Anh (anhbvhe141759@fpt.edu.vn)
-- Thái Minh Quang (superteo0712@gmail.com)
-- Đặng Tất Thành (thanhsunflower2001@gmail.com)
-- Võ Quang Huy (huyvqhe163784@fpt.edu.vn)
+The default approved model is the economical `gemini-3.1-flash-lite` with minimal reasoning. Historical matching records retain their rules version, provider/model status, deterministic eligibility, explanation, and fallback state.
 
+## Themes and calibration
+
+The client has persisted `System`, `Light`, and `Dark` modes. System mode follows the operating-system preference and falls back safely when it changes.
+
+The `/candidate/calibration` Career Calibration Terminal is a replayable parody questionnaire. Its collectible endings are entertainment only and never affect matching, ranking, recruiter visibility, or hiring recommendations.
+
+## Verification
+
+```powershell
+cd BackEnd/BackEndApplication
+dotnet build BackEndApplication.sln
+dotnet test APIServer.Tests/APIServer.Tests.csproj
+
+cd ../../FrontEnd
+npm ci
+npm run build -- --configuration prod
+```
+
+The frontend test target requires a locally installed Chrome/Chromium binary for `ChromeHeadless`.
