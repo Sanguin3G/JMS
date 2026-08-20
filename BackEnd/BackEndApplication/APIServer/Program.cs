@@ -16,6 +16,8 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
@@ -139,6 +141,8 @@ namespace APIServer
                 options.UseSqlite(builder.Configuration.GetConnectionString("JobConstr"));
                 //options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             });
+            builder.Services.AddHealthChecks()
+                .AddCheck<SqliteHealthCheck>("sqlite");
 
             configurationInterfce(builder);
 
@@ -163,6 +167,26 @@ namespace APIServer
             app.UseAuthorization();
 
             app.MapControllers();
+            app.MapHealthChecks("/health/live", new HealthCheckOptions
+            {
+                Predicate = _ => false,
+                ResultStatusCodes =
+                {
+                    [HealthStatus.Healthy] = StatusCodes.Status200OK,
+                    [HealthStatus.Degraded] = StatusCodes.Status200OK,
+                    [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+                }
+            });
+            app.MapHealthChecks("/health/ready", new HealthCheckOptions
+            {
+                ResultStatusCodes =
+                {
+                    [HealthStatus.Healthy] = StatusCodes.Status200OK,
+                    [HealthStatus.Degraded] = StatusCodes.Status200OK,
+                    [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable
+                }
+            });
+            app.Logger.LogInformation("JMS API started in {EnvironmentName}; SQLite health checks are enabled.", app.Environment.EnvironmentName);
 
             app.UseDefaultFiles();
 

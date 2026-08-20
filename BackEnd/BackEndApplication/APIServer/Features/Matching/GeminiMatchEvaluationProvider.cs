@@ -14,6 +14,7 @@ public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, 
 {
     private const string DefaultModel = GeminiModelCatalog.DefaultModelId;
     private const int MaximumSourceCharacters = 18_000;
+    private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(20);
 
     public string ProviderName => "gemini";
 
@@ -48,6 +49,8 @@ public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, 
 
         try
         {
+            using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCancellation.CancelAfter(RequestTimeout);
             using var client = new Client(apiKey: apiKey);
             var response = await client.Models.GenerateContentAsync(
                 model: model,
@@ -61,7 +64,7 @@ public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, 
                         ThinkingLevel = ToThinkingLevel(reasoningLevel)
                     }
                 },
-                cancellationToken: cancellationToken);
+                cancellationToken: timeoutCancellation.Token);
 
             var json = response.Candidates?
                 .FirstOrDefault()?
@@ -96,6 +99,11 @@ public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, 
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Gemini match evaluation timed out for job {JobId} and CV {CurriculumVitaeId}.", job.JobId, curriculumVitae.Id);
+            return Failed(model, "Gemini matching timed out; the deterministic score remains available.");
         }
         catch (Exception exception)
         {
