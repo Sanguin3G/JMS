@@ -1,9 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { getRequest, postRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
-
-declare var $: any;
 
 @Component({
    selector: 'candidate-sliders',
@@ -13,18 +11,31 @@ declare var $: any;
 export class SlidersComponent {
    Url = environment.Url;
    companies: any;
+   activeSlide = 0;
+   readonly slides = [
+      'https://www.vietnamworks.com/_next/image?url=https%3A%2F%2Fimages.vietnamworks.com%2Flogo%2Fspinmaster_hrbn.JPG_124709.jpg&w=1920&q=75',
+      'https://www.vietnamworks.com/_next/image?url=https%3A%2F%2Fimages.vietnamworks.com%2Flogo%2Fonpoint_hrbn.JPG_124824.jpg&w=1920&q=75',
+      'https://www.vietnamworks.com/_next/image?url=https%3A%2F%2Fimages.vietnamworks.com%2Flogo%2Fbanvien_hrbn_124682.png&w=1920&q=75'
+   ];
 
-   ngAfterViewInit() {
-      $('#prev1').on('click', function () {
-         $('#cards').animate({
-            scrollLeft: '-=250'
-         }, 300, 'swing');
-      });
+   @ViewChild('companyScroller') private companyScroller?: ElementRef<HTMLUListElement>;
 
-      $('#next1').on('click', function () {
-         $('#cards').animate({
-            scrollLeft: '+=250'
-         }, 300, 'swing');
+   previousSlide() {
+      this.activeSlide = (this.activeSlide + this.slides.length - 1) % this.slides.length;
+   }
+
+   nextSlide() {
+      this.activeSlide = (this.activeSlide + 1) % this.slides.length;
+   }
+
+   selectSlide(index: number) {
+      this.activeSlide = index;
+   }
+
+   scrollCompanies(direction: 1 | -1) {
+      this.companyScroller?.nativeElement.scrollBy({
+         left: direction * 250,
+         behavior: 'smooth'
       });
    }
 

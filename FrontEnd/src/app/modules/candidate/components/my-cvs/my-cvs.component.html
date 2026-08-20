@@ -5,15 +5,15 @@
          <section class="mt-0 p-3 blockTemplate">
             <div class="textHeader1">Các mẫu CV</div>
             <div id="menu">
-               <div id="nav">
-                  <div id="prev">
+               <div class="carousel-nav">
+                  <button type="button" class="carousel-scroll previous" (click)="scrollTemplates(-1)" aria-label="Previous CV templates">
                      <i class="fa-solid fa-chevron-left"></i>
-                  </div>
-                  <div id="next">
+                  </button>
+                  <button type="button" class="carousel-scroll next" (click)="scrollTemplates(1)" aria-label="Next CV templates">
                      <i class="fa-solid fa-chevron-right"></i>
-                  </div>
+                  </button>
                </div>
-               <ul id="cards">
+               <ul #templateScroller class="cards-scroller">
                   <li id="box1" class="list" *ngFor="let com of list">
                      <a href="{{Url}}/candidate/create-cv/{{com-1}}">
                         <div class="imageSize">

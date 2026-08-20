@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { getRequest, postRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiCandidate } from 'src/app/service/constant';
@@ -9,7 +9,6 @@ import { Router } from '@angular/router';
 import { ConfirmDialogComponent } from 'src/app/components/confirm-dialog/confirm-dialog.component';
 import { ToastrService } from 'ngx-toastr';
 import { showError, showSuccess } from 'src/app/service/common';
-declare var $: any;
 
 @Component({
    selector: 'app-my-cvs',
@@ -24,17 +23,12 @@ export class CandidateMyCvsComponent {
    profile: any
    listJds: any
 
-   ngAfterViewInit() {
-      $('#prev').on('click', function () {
-         $('#cards').animate({
-            scrollLeft: '-=250'
-         }, 300, 'swing');
-      });
+   @ViewChild('templateScroller') private templateScroller?: ElementRef<HTMLUListElement>;
 
-      $('#next').on('click', function () {
-         $('#cards').animate({
-            scrollLeft: '+=250'
-         }, 300, 'swing');
+   scrollTemplates(direction: 1 | -1) {
+      this.templateScroller?.nativeElement.scrollBy({
+         left: direction * 250,
+         behavior: 'smooth'
       });
    }
 

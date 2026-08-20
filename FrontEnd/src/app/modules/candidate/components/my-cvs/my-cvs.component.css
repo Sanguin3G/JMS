@@ -135,9 +135,9 @@
    /* box-shadow: var(--boxShadow); */
 }
 
-#cards {
+.cards-scroller {
    width: 90%;
-   overflow: hidden;
+   overflow-x: auto;
    white-space: nowrap;
    display: block;
    list-style: none;
@@ -145,6 +145,7 @@
    position: relative;
    left: 5%;
    bottom: 90px;
+   scrollbar-width: thin;
 
 }
 
@@ -152,14 +153,15 @@
    width: 300px hidden;
 }
 
-#prev {
+.carousel-scroll {
    display: inline-block;
    position: absolute;
-   left: 0px;
    cursor: pointer;
    font-size: 20px;
    z-index: 1;
    width: 34px;
+   padding: 0;
+   border: 0;
    background-color: var(--blueLight1);
    border-radius: 17px;
    color: white;
@@ -167,36 +169,19 @@
    top: 105px
 }
 
-#prev:hover {
+.carousel-scroll:hover:not(:disabled) {
    background-color: var(--blueLight2);
 }
 
-#next {
-   display: inline-block;
-   position: absolute;
-   right: 0px;
-   cursor: pointer;
-   font-size: 20px;
-   z-index: 1;
-   width: 34px;
-   height: 34px;
-   top: 105px;
-   color: white;
-   background-color: var(--blueLight1);
-   border-radius: 17px;
+.carousel-scroll.previous {
+   left: 0;
 }
 
-#next:hover {
-   background-color: var(--blueLight2);
+.carousel-scroll.next {
+   right: 0;
 }
 
-#next i {
-   display: flex;
-   justify-content: center;
-   line-height: 34px;
-}
-
-#prev i {
+.carousel-scroll i {
    display: flex;
    justify-content: center;
    line-height: 34px;

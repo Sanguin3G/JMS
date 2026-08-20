@@ -1,49 +1,36 @@
 <div class="container">
-   <div id="carouselExampleIndicators" class="carousel slide mt-3" data-ride="carousel">
-      <ol class="carousel-indicators">
-         <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
-         <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
-         <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
-      </ol>
+   <section class="carousel mt-3" aria-roledescription="carousel" aria-label="Featured companies">
+      <div class="carousel-indicators" role="tablist" aria-label="Choose featured company">
+         <button *ngFor="let slide of slides; index as index" type="button" class="carousel-indicator"
+            [class.active]="activeSlide === index" [attr.aria-label]="'Show featured company ' + (index + 1)"
+            [attr.aria-selected]="activeSlide === index" (click)="selectSlide(index)"></button>
+      </div>
       <div class="carousel-inner">
-         <div class="carousel-item active">
-            <img
-               src="https://www.vietnamworks.com/_next/image?url=https%3A%2F%2Fimages.vietnamworks.com%2Flogo%2Fspinmaster_hrbn.JPG_124709.jpg&w=1920&q=75"
-               class="d-block w-100" alt="...">
-         </div>
-         <div class="carousel-item">
-            <img
-               src="https://www.vietnamworks.com/_next/image?url=https%3A%2F%2Fimages.vietnamworks.com%2Flogo%2Fonpoint_hrbn.JPG_124824.jpg&w=1920&q=75"
-               class="d-block w-100" alt="...">
-         </div>
-         <div class="carousel-item">
-            <img
-               src="https://www.vietnamworks.com/_next/image?url=https%3A%2F%2Fimages.vietnamworks.com%2Flogo%2Fbanvien_hrbn_124682.png&w=1920&q=75"
-               class="d-block w-100" alt="...">
+         <div *ngFor="let slide of slides; index as index" class="carousel-item" [class.active]="activeSlide === index"
+            [attr.aria-hidden]="activeSlide !== index">
+            <img [src]="slide" class="d-block w-100" [alt]="'Featured company ' + (index + 1)">
          </div>
       </div>
-      <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+      <button class="carousel-control-prev" type="button" (click)="previousSlide()" aria-label="Previous featured company">
          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-         <span class="sr-only">Previous</span>
-      </a>
-      <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+      </button>
+      <button class="carousel-control-next" type="button" (click)="nextSlide()" aria-label="Next featured company">
          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-         <span class="sr-only">Next</span>
-      </a>
-   </div>
+      </button>
+   </section>
 
    <section class="mt-5">
       <div class="textHeader1">Danh sách công ty</div>
       <div id="menu">
-         <div id="nav">
-            <div id="prev1">
+         <div class="carousel-nav">
+            <button type="button" class="carousel-scroll previous" (click)="scrollCompanies(-1)" aria-label="Previous companies">
                <i class="fa-solid fa-chevron-left"></i>
-            </div>
-            <div id="next1">
+            </button>
+            <button type="button" class="carousel-scroll next" (click)="scrollCompanies(1)" aria-label="Next companies">
                <i class="fa-solid fa-chevron-right"></i>
-            </div>
+            </button>
          </div>
-         <ul id="cards">
+         <ul #companyScroller class="cards-scroller">
             <div *ngIf="!companies" style="height: 400px;">
                <app-view-loading></app-view-loading>
             </div>
