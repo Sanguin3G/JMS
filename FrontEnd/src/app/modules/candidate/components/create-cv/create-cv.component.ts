@@ -1,578 +1,190 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { themeList } from './constant';
-import { environment } from 'src/environments/environment';
 import { ActivatedRoute } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import { environment } from 'src/environments/environment';
 import { getRequest, postFileRequest, postRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiCandidate, apiRecruiter } from 'src/app/service/constant';
-import { ToastrService } from 'ngx-toastr';
-import { getProfile, isLogin } from 'src/app/service/localstorage';
+import { getProfile } from 'src/app/service/localstorage';
 import { showError, showSuccess } from 'src/app/service/common';
+import { themeList } from './constant';
 
-declare var $: any;
+interface SkillDraft { title: string; skillDescription: string; }
+interface CertificateDraft { certificateName: string; certificateProvider: string; issuedDate: string; expiredDate: string; credentialURL: string; }
+interface AwardDraft { fromYear: string; awardName: string; description: string; }
+interface ExperienceDraft { ComapanyName: string; position: string; fromDate: string; toDate: string; description: string; employmentTypeName: string; }
+interface ProjectDraft { projectName: string; fromDate: string; toDate: string; description: string; isStillWorking: boolean; }
+interface EducationDraft { schoolName: string; majorName: string; description: string; fromYear: string; toYear: string; stillLearning: boolean; }
 
 @Component({
    selector: 'app-create-cv',
    templateUrl: './create-cv.component.html',
    styleUrls: ['./create-cv.component.css'],
 })
-
-
 export class CandidateCreateCvComponent {
-   categories: any
-   levels: any
-   employmentTypes: any
+   categories: any[] = [];
+   levels: any[] = [];
+   employmentTypes: any[] = [];
+   readonly apiURL = environment.Url;
+   hideImage = 'block';
+   displayImage = 'none';
+   displayChange = 'none';
+   fileSrc?: string | ArrayBuffer | null;
+   fontCV = 'Sans-serif';
+   colorLeftHeader = '#444444';
+   colorRightHeader = '#111111';
+   colorLeftInput = '#111111';
+   ThemStyle = 'Theme6';
+   backgroundSelectedLink = `${environment.Url}/assets/images/theme6.jpg`;
+   themeId = 6;
+   profile: any;
+   isSaving = false;
 
-   hideImage = "block"
-   displayImage = "none"
-   displayChange = "none"
-   apiURL = environment.Url;
-   fileSrc: any;
-   fontCV = "Sans-serif"
-
-   colorLeftHeader = "#444444"
-   colorRightHeader = "#111111"
-   colorLeftInput = "#111111"
-   ThemStyle = "Theme6"
-   backgroundSelectedLink = `${environment.Url}/assets/images/theme6.jpg`
-   id: any;
-
-   profile: any
-   onChangeAvatar = false
-   isAllDataValid = true
+   form = {
+      displayEmail: '', phone: '', dob: '', gender: '1', address: '', displayName: '', careerGoal: '', cvTitle: '',
+      categoryId: '0', levelId: '0', employmentTypeId: '0',
+   };
+   skills: SkillDraft[] = [this.createSkill()];
+   certificates: CertificateDraft[] = [this.createCertificate()];
+   awards: AwardDraft[] = [this.createAward()];
+   experiences: ExperienceDraft[] = [this.createExperience()];
+   projects: ProjectDraft[] = [this.createProject()];
+   educations: EducationDraft[] = [this.createEducation()];
+   private avatarFile?: File;
 
    @ViewChild('avatarInput') private avatarInput?: ElementRef<HTMLInputElement>;
 
+   constructor(private readonly route: ActivatedRoute, private readonly toastr: ToastrService) {
+      this.profile = getProfile();
+      this.form.displayEmail = this.profile?.email ?? '';
+      this.form.displayName = this.profile?.fullName ?? '';
+      this.route.params.subscribe(params => this.selectTheme(Number(params['id'])));
+      this.getAllCategory();
+      this.getAllTitle();
+      this.getAllEmploymentType();
+   }
+
    getAllCategory() {
       getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
-         .then(res => {
-            this.categories = res.data
-         })
-         .catch(data => {
-            console.warn(apiRecruiter.GET_ALL_CATEGORY, data);
-         })
+         .then(res => this.categories = res.data ?? [])
+         .catch(error => console.warn(apiRecruiter.GET_ALL_CATEGORY, error));
    }
 
    getAllTitle() {
       getRequest(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 })
-         .then(res => {
-            this.levels = res.data
-         })
-         .catch(data => {
-            console.warn(apiRecruiter.GET_ALL_LEVEL_TITLE, data);
-         })
+         .then(res => this.levels = res.data ?? [])
+         .catch(error => console.warn(apiRecruiter.GET_ALL_LEVEL_TITLE, error));
    }
 
    getAllEmploymentType() {
       getRequest(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 })
-         .then(res => {
-            this.employmentTypes = res.data
-         })
-         .catch(data => {
-            console.warn(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, data);
-         })
+         .then(res => this.employmentTypes = res.data ?? [])
+         .catch(error => console.warn(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, error));
    }
 
+   async submitCV() {
+      if (this.isSaving || !this.validateForm()) return;
+      this.isSaving = true;
+      const data = {
+         id: 0, candidateId: 1, careerGoal: this.form.careerGoal, employmentTypeName: this.form.employmentTypeId.toString(),
+         phone: this.form.phone, displayName: this.form.displayName, genderDisplay: this.form.gender, gender: this.form.gender,
+         displayEmail: this.form.displayEmail, address: this.form.address, dob: this.form.dob, createdDateDisplay: null,
+         lastUpdateDateDisplay: null, jobExperiences: this.experiences, skills: this.skills, educations: this.educations,
+         projects: this.projects, certificates: this.certificates, awards: this.awards, avatarURL: null, categoryName: '',
+         categoryId: this.form.categoryId, genderId: this.form.gender, isFindingJob: true, levelTitle: this.form.levelId.toString(),
+         cvTitle: this.form.cvTitle, theme: this.themeId, font: this.fontCV,
+      };
 
-   constructor(private route: ActivatedRoute, private toastr: ToastrService) {
-      this.profile = getProfile()
-
-      this.route.params.subscribe(params => {
-         this.id = params['id'];
-      });
-
-      this.colorLeftHeader = themeList[this.id].colorLeftHeader
-      this.colorRightHeader = themeList[this.id].colorRightHeader
-      this.colorLeftInput = themeList[this.id].colorLeftInput
-      this.ThemStyle = themeList[this.id].ThemStyle
-      this.backgroundSelectedLink = themeList[this.id].backgroundSelectedLink
-
-      this.getAllCategory()
-      this.getAllTitle()
-      this.getAllEmploymentType()
-   }
-
-   getValueSkills() {
-      var descriptionSkills: any[] = [];
-
-      var inputs = $(".skillDescription");
-      for (const input of inputs) {
-         if (!this.checkAllDataValid(input, "Kỹ năng")) return
-         descriptionSkills.push($(input).val())
-      }
-
-      var skills = [];
-      for (var i = 0; i < descriptionSkills.length; i++) {
-         var dict: any = {}; dict["title"] = ""; dict["skillDescription"] = descriptionSkills[i];
-         skills.push(dict);
-      }
-      return skills
-   }
-
-   getValueCertificates() {
-      var certificateName: any[] = [];
-      var certificateProvider: any[] = [];
-      var issuedDate: any[] = [];
-      var expiredDate: any[] = [];
-      var credentialURL: any[] = [];
-
-      var inputs = $(".certificateName");
-      for (const input of inputs) { certificateName.push($(input).val()) }
-
-      var inputs = $(".issuedDateCertificate");
-      for (const input of inputs) { issuedDate.push($(input).val()) }
-
-      var inputs = $(".expiredDateCertificate");
-      for (const input of inputs) { expiredDate.push($(input).val()) }
-
-      var inputs = $(".credentialURLCertificate");
-      for (const input of inputs) { credentialURL.push($(input).val()) }
-
-      var inputs = $(".certificateProvider");
-      for (const input of inputs) { certificateProvider.push($(input).val()) }
-
-      var certificates = [];
-      for (var i = 0; i < certificateName.length; i++) {
-         var dict: any = {};
-         dict["certificateName"] = certificateName[i]; dict["issuedDate"] = issuedDate[i];
-         dict["expiredDate"] = expiredDate[i]; dict["credentialURL"] = credentialURL[i]; dict["certificateProvider"] = certificateProvider[i];
-         certificates.push(dict);
-      }
-      return certificates
-   }
-
-   getValueAwards() {
-      var fromYear: any[] = [];
-      var awardName: any[] = [];
-      var description: any[] = [];
-
-      var inputs = $(".fromYearAwards");
-      for (const input of inputs) { fromYear.push($(input).val()) }
-
-      var inputs = $(".awardName");
-      for (const input of inputs) { awardName.push($(input).val()) }
-
-      var inputs = $(".awardDescription");
-      for (const input of inputs) { description.push($(input).val()) }
-
-      var awards = [];
-      for (var i = 0; i < fromYear.length; i++) {
-         var dict: any = {};
-         dict["fromYear"] = fromYear[i]; dict["awardName"] = awardName[i];
-         dict["description"] = description[i];
-         awards.push(dict);
-      }
-      return awards
-   }
-
-   getValuesExperiences() {
-      var companyName: any[] = [];
-      var position: any[] = [];
-      var fromDate: any[] = [];
-      var toDate: any[] = [];
-      var description: any[] = [];
-      //check condition of data to submit
-      this.isAllDataValid = true
-
-      var inputs = $(".companyName");
-      for (const input of inputs) {
-         if (!this.checkAllDataValid(input, "Tên công ty")) return
-         companyName.push($(input).val())
-      }
-
-      var inputs = $(".positionOfCompany");
-      for (const input of inputs) {
-         if (!this.checkAllDataValid(input, "Vị trí công việc")) return
-         position.push($(input).val())
-      }
-
-      var inputs = $(".fromDateExperience");
-      for (const input of inputs) { fromDate.push($(input).val()) }
-
-      var inputs = $(".toDateExperience");
-      for (const input of inputs) { toDate.push($(input).val()) }
-
-      var inputs = $(".experienceDescription");
-      for (const input of inputs) {
-         if (!this.checkAllDataValid(input, "Mô tả công việc")) return
-         description.push($(input).val())
-      }
-
-      var experiences = [];
-      for (var i = 0; i < companyName.length; i++) {
-         var dict: any = {};
-         dict["ComapanyName"] = companyName[i]; dict["position"] = position[i];
-         dict["fromDate"] = fromDate[i]; dict["toDate"] = toDate[i];
-         dict["description"] = description[i];
-         dict["employmentTypeName"] = "1";
-         experiences.push(dict);
-      }
-
-      return experiences
-   }
-
-   getValuesProjects() {
-      var projectName: any[] = [];
-      var fromDate: any[] = [];
-      var toDate: any[] = [];
-      var description: any[] = [];
-      var isStillWorking: any[] = [];
-
-      var inputs = $(".projectName");
-      for (const input of inputs) { projectName.push($(input).val()) }
-
-      var inputs = $(".fromDateProject");
-      for (const input of inputs) { fromDate.push($(input).val()) }
-
-      var inputs = $(".toDateProject");
-      for (const input of inputs) { toDate.push($(input).val()) }
-
-      var inputs = $(".projectDescription");
-      for (const input of inputs) { description.push($(input).val()) }
-
-      var inputs = $(".isStillWorking");
-      for (const input of inputs) { isStillWorking.push($(input).prop('checked')) }
-
-
-      var projects = [];
-      for (var i = 0; i < projectName.length; i++) {
-         var dict: any = {};
-         dict["projectName"] = projectName[i]; dict["fromDate"] = fromDate[i]; dict["toDate"] = toDate[i];
-         dict["description"] = description[i]; dict["isStillWorking"] = isStillWorking[i];
-         projects.push(dict);
-      }
-      return projects
-   }
-
-   getValueEducation() {
-      var schoolName: any[] = [];
-      var majorName: any[] = [];
-      var description: any[] = [];
-      var fromYear: any[] = [];
-      var toYear: any[] = [];
-      var stillLearning: any[] = [];
-
-      var inputs = $(".schoolName");
-      for (const input of inputs) {
-         if (!this.checkAllDataValid(input, "Tên trường học")) return
-         schoolName.push($(input).val())
-      }
-
-      var inputs = $(".majorName");
-      for (const input of inputs) {
-         if (!this.checkAllDataValid(input, "Tên ngành")) return
-         majorName.push($(input).val())
-      }
-
-      var inputs = $(".educationDescription");
-      for (const input of inputs) { description.push($(input).val()) }
-
-      var inputs = $(".fromYearEducation");
-      for (const input of inputs) { fromYear.push($(input).val()) }
-
-      var inputs = $(".toYearEducation");
-      for (const input of inputs) { toYear.push($(input).val()) }
-
-      var inputs = $(".stillLearning");
-      for (const input of inputs) { stillLearning.push($(input).prop('checked')) }
-
-      var educations = [];
-      for (var i = 0; i < schoolName.length; i++) {
-         var dict: any = {};
-         dict["schoolName"] = schoolName[i]; dict["majorName"] = majorName[i]; dict["description"] = description[i];
-         dict["fromYear"] = fromYear[i]; dict["toYear"] = toYear[i]; dict["stillLearning"] = stillLearning[i];
-         educations.push(dict);
-      }
-      return educations
-   }
-
-   isValidDate(date: string) {
-      const regex = /^(0?[1-9]|1[0-2])\/\d{4}$/;
-      return regex.test(date)
-   }
-
-   validInput() {
-      var massage = ""
-      var valid = true;
-      if ($(".categoryId")[0].value == "0") {
-         massage += "- Lĩnh vực không được để trống <br/>"
-         var valid = false;
-      }
-
-      if ($(".levelId")[0].value == "0") {
-         massage += "- Cấp bậc không được để trống <br/>"
-         var valid = false;
-      }
-
-      if ($(".employmentTypeId")[0].value == "0") {
-         massage += "- loại việc làm không được để trống <br/>"
-         var valid = false;
-      }
-
-      if ($(".inputPhone")[0].value === "") {
-         massage += "- Số điện thoại không được để trống <br/>";
-         var valid = false;
-      } else {
-         var phoneNumber = $(".inputPhone")[0].value;
-         if (!/^\d{9,10}$/.test(phoneNumber)) {
-            massage += "- Số điện thoại phải có 9 hoặc 10 chữ số <br/>";
-            var valid = false;
+      try {
+         const response = await postRequest(`${apiCandidate.CREATE_CV_BY_CANDIDATE_ID}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, data);
+         if (response?.statusCode !== 201) throw new Error('The CV could not be created.');
+         if (this.avatarFile) {
+            const formData = new FormData();
+            formData.append('file', this.avatarFile, this.avatarFile.name);
+            await postFileRequest(`${apiCandidate.UPDATE_IMAGES_CV}/${this.profile.id}/${response.data}`, AuthorizationMode.BEARER_TOKEN, formData);
          }
-      }
-
-      if ($(".inputDob")[0].value == "") {
-         massage += "- Ngày sinh không được để trống <br/>"
-         var valid = false;
-      } else {
-         var dob = $(".inputDob")[0].value;
-         const birthDate = new Date(dob);
-         const currentDate = new Date();
-         const age = currentDate.getFullYear() - birthDate.getFullYear();
-         if(!(age >= 16 && age <= 100)){
-            massage += "- Ngày sinh không hợp lệ<br/>"
-            var valid = false;
-         }
-      }
-
-      if ($(".cvTitle")[0].value == "") {
-         massage += "- Tên hồ sơ không được để trống <br/>"
-         var valid = false;
-      }
-
-      var fromDate = []
-      var inputs = $(".fromDateExperience");
-      for (const input of inputs) { fromDate.push($(input).val()) }
-
-      let isValidFromDate = fromDate.every((item: any) => this.isValidDate(item))
-      if (!isValidFromDate) {
-         massage += "- Năm băt đầu kinh nghiệm là trường bắt buộc (mm/yyyy)<br/>"
-         var valid = false;
-      }
-
-      var toDate = []
-      var inputs = $(".toDateExperience");
-      for (const input of inputs) { toDate.push($(input).val()) }
-
-      let isValidToDate = fromDate.every((item: any) => this.isValidDate(item))
-      if (!isValidToDate) {
-         massage += "- Năm kết thúc kinh nghiệm là trường bắt buộc (mm/yyyy)<br/>"
-         var valid = false;
-      }
-
-      if (!valid) {
-         showError(this.toastr, massage)
-      }
-
-      return valid
-   }
-
-
-   SubmitCV(event: any) {
-      if (this.validInput()) {
-         const displayEmail = $(".inputEmail")[0].value;
-         const phone = $(".inputPhone")[0].value;
-         const address = $(".inputAddress")[0].value;
-         const dob = $(".inputDob")[0].value;
-         const displayName = $(".displayName")[0].value;
-         const careerGoal = $(".careerGoal")[0].value;
-         const cvTitle = $(".cvTitle")[0].value;
-         const levelId = $(".levelId")[0].value;
-         const categoryId = $(".categoryId")[0].value;
-         const employmentTypeName = $(".employmentTypeId")[0].value;
-         const theme = this.id;
-         const font = this.fontCV;
-         const gender = $("input[name='gender']:checked").val();
-
-
-         const skills = this.getValueSkills()
-         const certificates = this.getValueCertificates()
-         const awards = this.getValueAwards()
-         const experiences = this.getValuesExperiences()
-         const projects = this.getValuesProjects()
-         const educations = this.getValueEducation()
-
-         const data = {
-            'id': 0,
-            'candidateId': 1,
-            'careerGoal': careerGoal,
-            'employmentTypeName': employmentTypeName.toString(),
-            'phone': phone,
-            'displayName': displayName,
-            'genderDisplay': gender,
-            'gender': gender,
-            'displayEmail': displayEmail,
-            'address': address,
-            'dob': dob,
-            "createdDateDisplay": null,
-            "lastUpdateDateDisplay": null,
-            'jobExperiences': experiences,
-            'skills': skills,
-            'educations': educations,
-            'projects': projects,
-            'certificates': certificates,
-            'awards': awards,
-            'avatarURL': null,
-            'categoryName': "",
-            'categoryId': categoryId,
-            'genderId': gender,
-            'isFindingJob': true,
-            'levelTitle': levelId.toString(),
-            'cvTitle': cvTitle,
-            'theme': theme,
-            'font': font
-         }
-
-         if (!this.isAllDataValid) {
-            return
-         }
-
-         postRequest(`${apiCandidate.CREATE_CV_BY_CANDIDATE_ID}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, data)
-            .then(res => {
-               if (res?.statusCode == 201) {
-                  const cvIdCreated = res?.data
-
-                  if (this.onChangeAvatar) {
-                     if ($('#avatarCv')[0].files[0]) {
-
-                        let formData: FormData = new FormData();
-                        let file: File = $('#avatarCv')[0].files[0];
-                        formData.append('file', file, file.name);
-
-                        postFileRequest(`${apiCandidate.UPDATE_IMAGES_CV}/${this.profile.id}/${cvIdCreated}`, AuthorizationMode.BEARER_TOKEN, formData)
-                           .then(res => {
-                              console.log(res);
-                           })
-                           .catch(data => {
-                              showError(this.toastr, "Lỗi đăng ảnh hồ sơ")
-                              console.log(data);
-                           })
-                     }
-                  }
-
-                  showSuccess(this.toastr, "Tạo hồ sơ thành công")
-               }
-            })
-            .catch(data => {
-               showError(this.toastr, "Đã có lỗi xảy ra, xem lại trường dữ liệu")
-               console.log(data);
-            })
+         showSuccess(this.toastr, 'Tạo hồ sơ thành công');
+      } catch (error) {
+         console.error(error);
+         showError(this.toastr, 'Đã có lỗi xảy ra, xem lại trường dữ liệu');
+      } finally {
+         this.isSaving = false;
       }
    }
 
+   getFile(event: Event) {
+      const input = event.target as HTMLInputElement;
+      const [file] = Array.from(input.files ?? []);
+      if (!file) return;
+      this.avatarFile = file;
+      this.hideImage = 'none';
+      this.displayImage = 'block';
+      this.displayChange = 'block';
+      const reader = new FileReader();
+      reader.onload = () => this.fileSrc = reader.result;
+      reader.readAsDataURL(file);
+   }
 
-   getFile(event: any) {
-      if (event.target.files && event.target.files[0]) {
+   chooseAvatar() { this.avatarInput?.nativeElement.click(); }
 
-         this.hideImage = "none"
-         this.displayImage = "block"
-         this.displayChange = "block"
+   selectTheme(value: number) {
+      const theme = themeList[value] ?? themeList[6] ?? themeList[0];
+      this.themeId = theme === themeList[value] ? value : 6;
+      this.colorLeftHeader = theme.colorLeftHeader;
+      this.colorRightHeader = theme.colorRightHeader;
+      this.colorLeftInput = theme.colorLeftInput;
+      this.ThemStyle = theme.ThemStyle;
+      this.backgroundSelectedLink = theme.backgroundSelectedLink;
+   }
 
-         var reader = new FileReader();
+   addSkill() { this.skills.push(this.createSkill()); }
+   removeSkill(index: number) { this.remove(this.skills, index); }
+   addCertificate() { this.certificates.push(this.createCertificate()); }
+   removeCertificate(index: number) { this.remove(this.certificates, index); }
+   addAward() { this.awards.push(this.createAward()); }
+   removeAward(index: number) { this.remove(this.awards, index); }
+   addExperience() { this.experiences.push(this.createExperience()); }
+   removeExperience(index: number) { this.remove(this.experiences, index); }
+   addProject() { this.projects.push(this.createProject()); }
+   removeProject(index: number) { this.remove(this.projects, index); }
+   addEducation() { this.educations.push(this.createEducation()); }
+   removeEducation(index: number) { this.remove(this.educations, index); }
+   trackByIndex(index: number) { return index; }
 
-         reader.readAsDataURL(event.target.files[0]);
-
-         reader.onload = (event) => {
-            this.fileSrc = event.target?.result;
-         }
-
-         this.onChangeAvatar = true
+   private validateForm() {
+      const messages: string[] = [];
+      if (this.form.categoryId === '0') messages.push('Lĩnh vực không được để trống');
+      if (this.form.levelId === '0') messages.push('Cấp bậc không được để trống');
+      if (this.form.employmentTypeId === '0') messages.push('Loại việc làm không được để trống');
+      if (!/^\d{9,10}$/.test(this.form.phone)) messages.push('Số điện thoại phải có 9 hoặc 10 chữ số');
+      if (!this.hasValidAge(this.form.dob)) messages.push('Ngày sinh không hợp lệ');
+      if (!this.form.cvTitle.trim()) messages.push('Tên hồ sơ không được để trống');
+      if (this.skills.some(skill => !skill.skillDescription.trim())) messages.push('Kỹ năng không thể để trống');
+      if (this.experiences.some(experience => !experience.ComapanyName.trim() || !experience.position.trim() || !experience.description.trim() || !this.isValidMonthYear(experience.fromDate) || !this.isValidMonthYear(experience.toDate))) {
+         messages.push('Mỗi kinh nghiệm cần đủ công ty, vị trí, mô tả và thời gian mm/yyyy');
       }
-   }
-
-   chooseAvatar() {
-      this.avatarInput?.nativeElement.click();
-   }
-
-   selectedFont(event: any) {
-      this.fontCV = event.target.value
-   }
-
-   SelectedBackGround(value: any) {
-      this.id = value
-
-      this.colorLeftHeader = themeList[value].colorLeftHeader
-      this.colorRightHeader = themeList[value].colorRightHeader
-      this.colorLeftInput = themeList[value].colorLeftInput
-      this.ThemStyle = themeList[value].ThemStyle
-      this.backgroundSelectedLink = themeList[value].backgroundSelectedLink
-   }
-
-   // Thêm sửa xoá skill
-   skillAdd(event: any) {
-      $(".skill:last").clone().appendTo(".form-skills");
-   }
-   skillSub(event: any) {
-      if ($(".skill").length > 1) {
-         $(".skill:last").remove();
+      if (this.educations.some(education => !education.schoolName.trim() || !education.majorName.trim())) messages.push('Mỗi mục học vấn cần có tên trường và ngành học');
+      if (messages.length) {
+         showError(this.toastr, messages.map(message => `- ${message}`).join('<br/>'));
+         return false;
       }
+      return true;
    }
 
-   // Thêm sửa xoá chứng chỉ
-   certificatesAdd(event: any) {
-      $(".certificates:last").clone().appendTo(".form-Certificates");
-   }
-   certificatesSub(event: any) {
-      if ($(".certificates").length > 1) {
-         $(".certificates:last").remove();
-      }
-   }
-
-   // Thêm sửa xoá giải thưởng
-   prizesAdd(event: any) {
-      $(".prizes:last").clone().appendTo(".form-prizes");
-   }
-   prizesSub(event: any) {
-      if ($(".prizes").length > 1) {
-         $(".prizes:last").remove();
-      }
+   private hasValidAge(value: string) {
+      const birthDate = new Date(value);
+      if (Number.isNaN(birthDate.getTime())) return false;
+      const now = new Date();
+      let age = now.getFullYear() - birthDate.getFullYear();
+      if (new Date(now.getFullYear(), birthDate.getMonth(), birthDate.getDate()) > now) age--;
+      return age >= 16 && age <= 100;
    }
 
-   // Thêm sửa xoá kỹ năng mềm
-   otherSkillsAdd(event: any) {
-      $(".otherSkill:last").clone().appendTo(".form-other-skills");
-   }
-   otherSkillsSub(event: any) {
-      if ($(".otherSkill").length > 1) {
-         $(".otherSkill:last").remove();
-      }
-   }
-
-   // Thêm sửa xoá kinh nghiệm
-   formExperienceAdd(event: any) {
-      $(".experience:last").clone().appendTo(".form-experience");
-   }
-   formExperienceSub(event: any) {
-      if ($(".experience").length > 1) {
-         $(".experience:last").remove();
-      }
-   }
-
-   // Thêm sửa xoá kinh nghiệm
-   formProjectAdd(event: any) {
-      $(".project:last").clone().appendTo(".form-project");
-   }
-   formProjectSub(event: any) {
-      if ($(".project").length > 1) {
-         $(".project:last").remove();
-      }
-   }
-
-   // Thêm sửa xoá kinh nghiệm
-   formEducationAdd(event: any) {
-      $(".education:last").clone().appendTo(".form-education");
-   }
-   formEducationSub(event: any) {
-      if ($(".education").length > 1) {
-         $(".education:last").remove();
-      }
-   }
-
-   // check validate data
-   checkAllDataValid(input: any, name: any) {
-      if ($(input).val() === null || $(input).val() === "") {
-         showError(this.toastr, name + " không thể để trống!")
-         this.isAllDataValid = false
-         return false
-      }
-      return true
-   }
+   private isValidMonthYear(value: string) { return /^(0?[1-9]|1[0-2])\/\d{4}$/.test(value); }
+   private remove<T>(items: T[], index: number) { if (items.length > 1) items.splice(index, 1); }
+   private createSkill(): SkillDraft { return { title: '', skillDescription: '' }; }
+   private createCertificate(): CertificateDraft { return { certificateName: '', certificateProvider: '', issuedDate: '', expiredDate: '', credentialURL: '' }; }
+   private createAward(): AwardDraft { return { fromYear: '', awardName: '', description: '' }; }
+   private createExperience(): ExperienceDraft { return { ComapanyName: '', position: '', fromDate: '', toDate: '', description: '', employmentTypeName: '1' }; }
+   private createProject(): ProjectDraft { return { projectName: '', fromDate: '', toDate: '', description: '', isStillWorking: false }; }
+   private createEducation(): EducationDraft { return { schoolName: '', majorName: '', description: '', fromYear: '', toYear: '', stillLearning: false }; }
 }
