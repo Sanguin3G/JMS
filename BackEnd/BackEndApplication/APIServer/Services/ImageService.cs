@@ -47,18 +47,20 @@ namespace APIServer.Services
                 {
                     throw new Exception("Permission denied");
                 }
-                if (com.AvatarURL != null)
-                {
-                    deleteOldImg(com.AvatarURL);
-                }
+                var previousImagePath = com.AvatarURL;
                 string uniqueFileName = BuildSafeImageFileName(file, "Company_avt");
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 com.AvatarURL = imagePath;
                 if (companyRepo.Update(com) > 0)
+                {
+                    DeleteReplacedImage(previousImagePath);
                     return host + com.AvatarURL;
-                else
-                    return "Error";
+                }
+
+                com.AvatarURL = previousImagePath;
+                deleteOldImg(imagePath);
+                return "Error";
             }
             catch
             {
@@ -80,18 +82,20 @@ namespace APIServer.Services
                 {
                     throw new Exception("Permission denied");
                 }
-                if (com.BackGroundURL != null)
-                {
-                    deleteOldImg(com.BackGroundURL);
-                }
+                var previousImagePath = com.BackGroundURL;
                 string uniqueFileName = BuildSafeImageFileName(file, "Company_bgr");
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 com.BackGroundURL = imagePath;
                 if (companyRepo.Update(com) > 0)
+                {
+                    DeleteReplacedImage(previousImagePath);
                     return host + com.BackGroundURL;
-                else
-                    return "Error";
+                }
+
+                com.BackGroundURL = previousImagePath;
+                deleteOldImg(imagePath);
+                return "Error";
             }
             catch
             {
@@ -112,18 +116,20 @@ namespace APIServer.Services
                 {
                     throw new Exception("Permission denied");
                 }
-                if (can.AvatarURL != null)
-                {
-                    deleteOldImg(can.AvatarURL);
-                }
+                var previousImagePath = can.AvatarURL;
                 string uniqueFileName = BuildSafeImageFileName(file, "CV");
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 can.AvatarURL = imagePath;
                 if (candidateRepo.Update(can) > 0)
+                {
+                    DeleteReplacedImage(previousImagePath);
                     return host + can.AvatarURL;
-                else
-                    return "Error";
+                }
+
+                can.AvatarURL = previousImagePath;
+                deleteOldImg(imagePath);
+                return "Error";
             }
             catch
             {
@@ -142,18 +148,20 @@ namespace APIServer.Services
                     throw new Exception("Not found");
                 if (cv.CandidateId != candidateId)
                     throw new Exception("Permission denied");
-                if (cv.AvatarURL != null)
-                {
-                    deleteOldImg(cv.AvatarURL);
-                }
+                var previousImagePath = cv.AvatarURL;
                 string uniqueFileName = BuildSafeImageFileName(file, "CV");
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 cv.AvatarURL = imagePath;
                 if (cvRepo.Update(cv) > 0)
+                {
+                    DeleteReplacedImage(previousImagePath);
                     return host + cv.AvatarURL;
-                else
-                    return "Error";
+                }
+
+                cv.AvatarURL = previousImagePath;
+                deleteOldImg(imagePath);
+                return "Error";
             }
             catch
             {
@@ -170,18 +178,20 @@ namespace APIServer.Services
                 var rec = recuirterRepository.GetById(recuirterId);
                 if (rec == null)
                     throw new Exception("Not found");
-                if (rec.AvatarURL != null)
-                {
-                    deleteOldImg(rec.AvatarURL);
-                }
+                var previousImagePath = rec.AvatarURL;
                 string uniqueFileName = BuildSafeImageFileName(file, "Recuirter");
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 rec.AvatarURL = imagePath;
                 if (recuirterRepository.Update(rec) > 0)
+                {
+                    DeleteReplacedImage(previousImagePath);
                     return rec.AvatarURL;
-                else
-                    return host + "Error";
+                }
+
+                rec.AvatarURL = previousImagePath;
+                deleteOldImg(imagePath);
+                return host + "Error";
             }
             catch
             {
@@ -252,6 +262,14 @@ namespace APIServer.Services
             else
             {
                 Console.WriteLine("Path not exist: " + path);
+            }
+        }
+
+        private void DeleteReplacedImage(string? imagePath)
+        {
+            if (!string.IsNullOrWhiteSpace(imagePath))
+            {
+                deleteOldImg(imagePath);
             }
         }
 
