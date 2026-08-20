@@ -2,18 +2,12 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from 'src/environments/environment';
-import { getRequest, postFileRequest, postRequest } from 'src/app/service/api-requests';
+import { ApiResponse, getRequest, postFileRequest, postRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiCandidate, apiRecruiter } from 'src/app/service/constant';
 import { getProfile } from 'src/app/service/localstorage';
 import { showError, showInfo, showSuccess } from 'src/app/service/common';
 import { themeList } from './constant';
-
-interface SkillDraft { title: string; skillDescription: string; }
-interface CertificateDraft { certificateName: string; certificateProvider: string; issuedDate: string; expiredDate: string; credentialURL: string; }
-interface AwardDraft { fromYear: string; awardName: string; description: string; }
-interface ExperienceDraft { ComapanyName: string; position: string; fromDate: string; toDate: string; description: string; employmentTypeName: string; }
-interface ProjectDraft { projectName: string; fromDate: string; toDate: string; description: string; isStillWorking: boolean; }
-interface EducationDraft { schoolName: string; majorName: string; description: string; fromYear: string; toYear: string; stillLearning: boolean; }
+import { CatalogItem, CurriculumVitae, CurriculumVitaePayload, CvAward, CvCertificate, CvEducation, CvExperience, CvProject, CvSkill, UserProfile } from 'src/app/core/models/api.models';
 
 @Component({
   standalone: false,
@@ -22,9 +16,9 @@ interface EducationDraft { schoolName: string; majorName: string; description: s
    styleUrls: ['./update-cv.component.css']
 })
 export class UpdateCvComponent {
-   categories: any[] = [];
-   levels: any[] = [];
-   employmentTypes: any[] = [];
+   categories: CatalogItem[] = [];
+   levels: CatalogItem[] = [];
+   employmentTypes: CatalogItem[] = [];
    readonly apiURL = environment.Url;
    hideImage = 'block';
    displayImage = 'none';
@@ -37,17 +31,17 @@ export class UpdateCvComponent {
    ThemStyle = 'Theme6';
    backgroundSelectedLink = `${environment.Url}/assets/images/theme6.jpg`;
    themeId = 6;
-   profile: any;
+   profile: UserProfile | null;
    cvId = 0;
    isSaving = false;
 
    form = { displayEmail: '', phone: '', dob: '', gender: '1', address: '', displayName: '', careerGoal: '', cvTitle: '', categoryId: '0', levelId: '0', employmentTypeId: '0' };
-   skills: SkillDraft[] = [this.createSkill()];
-   certificates: CertificateDraft[] = [this.createCertificate()];
-   awards: AwardDraft[] = [this.createAward()];
-   experiences: ExperienceDraft[] = [this.createExperience()];
-   projects: ProjectDraft[] = [this.createProject()];
-   educations: EducationDraft[] = [this.createEducation()];
+   skills: CvSkill[] = [this.createSkill()];
+   certificates: CvCertificate[] = [this.createCertificate()];
+   awards: CvAward[] = [this.createAward()];
+   experiences: CvExperience[] = [this.createExperience()];
+   projects: CvProject[] = [this.createProject()];
+   educations: CvEducation[] = [this.createEducation()];
    private avatarFile?: File;
 
    @ViewChild('avatarInput') private avatarInput?: ElementRef<HTMLInputElement>;
@@ -63,15 +57,16 @@ export class UpdateCvComponent {
    async loadCv() {
       try {
          const [categories, levels, employmentTypes] = await Promise.all([
-            getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 }),
-            getRequest(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 }),
-            getRequest(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 }),
+            getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 }),
+            getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 }),
+            getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 }),
          ]);
          this.categories = categories?.data ?? [];
          this.levels = levels?.data ?? [];
          this.employmentTypes = employmentTypes?.data ?? [];
 
-         const response = await getRequest(`${apiCandidate.GET_CV_CANDIDATE_BY_ID}/${this.profile.id}/${this.cvId}`, AuthorizationMode.BEARER_TOKEN);
+         if (!this.profile?.id || !this.cvId) throw new Error('Candidate profile or CV is unavailable.');
+         const response = await getRequest<ApiResponse<CurriculumVitae>>(`${apiCandidate.GET_CV_CANDIDATE_BY_ID}/${this.profile.id}/${this.cvId}`, AuthorizationMode.BEARER_TOKEN);
          if (!response?.data) throw new Error('CV not found');
          this.applyCv(response.data);
       } catch (error) {
@@ -83,20 +78,21 @@ export class UpdateCvComponent {
    async submitCV() {
       if (this.isSaving || !this.validateForm()) return;
       this.isSaving = true;
-      const data = {
+      const data: CurriculumVitaePayload = {
          id: 0, candidateId: 1, careerGoal: this.form.careerGoal, employmentTypeName: this.form.employmentTypeId.toString(), phone: this.form.phone,
-         displayName: this.form.displayName, genderDisplay: this.form.gender, gender: this.form.gender, displayEmail: this.form.displayEmail,
-         address: this.form.address, dob: this.form.dob, createdDateDisplay: null, lastUpdateDateDisplay: null, jobExperiences: this.experiences,
+         displayName: this.form.displayName, genderDisplay: this.form.gender, displayEmail: this.form.displayEmail,
+         address: this.form.address, dob: this.form.dob, jobExperiences: this.experiences,
          skills: this.skills, educations: this.educations, projects: this.projects, certificates: this.certificates, awards: this.awards,
          avatarURL: '', categoryName: '', categoryId: this.form.categoryId, genderId: this.form.gender, isFindingJob: true,
          levelTitle: this.form.levelId.toString(), cvTitle: this.form.cvTitle, theme: this.themeId, font: this.fontCV,
       };
       try {
-         await postRequest(`${apiCandidate.UPDATE_CV_BY_CANDIDATE_ID}?candidateId=${this.profile.id}&cvId=${this.cvId}`, AuthorizationMode.BEARER_TOKEN, data);
+         if (!this.profile?.id || !this.cvId) throw new Error('Candidate profile or CV is unavailable.');
+         await postRequest<ApiResponse<number>>(`${apiCandidate.UPDATE_CV_BY_CANDIDATE_ID}?candidateId=${this.profile.id}&cvId=${this.cvId}`, AuthorizationMode.BEARER_TOKEN, data);
          if (this.avatarFile) {
             const formData = new FormData();
             formData.append('file', this.avatarFile, this.avatarFile.name);
-            await postFileRequest(`${apiCandidate.UPDATE_IMAGES_CV}/${this.profile.id}/${this.cvId}`, AuthorizationMode.BEARER_TOKEN, formData);
+            await postFileRequest<ApiResponse<unknown>>(`${apiCandidate.UPDATE_IMAGES_CV}/${this.profile.id}/${this.cvId}`, AuthorizationMode.BEARER_TOKEN, formData);
          }
          showSuccess(this.toastr, 'Chỉnh sửa hồ sơ thành công');
       } catch (error) {
@@ -130,7 +126,7 @@ export class UpdateCvComponent {
    addEducation() { this.educations.push(this.createEducation()); } removeEducation(index: number) { this.remove(this.educations, index); }
    trackByIndex(index: number) { return index; }
 
-   private applyCv(cv: any) {
+   private applyCv(cv: CurriculumVitae) {
       this.form = {
          displayEmail: cv.displayEmail ?? '', phone: cv.phone ?? '', dob: this.toInputDate(cv.dob), gender: String(cv.genderId ?? 1), address: cv.address ?? '',
          displayName: cv.displayName ?? '', careerGoal: cv.careerGoal ?? '', cvTitle: cv.cvTitle ?? '',
@@ -165,14 +161,14 @@ export class UpdateCvComponent {
       if (messages.length) { showInfo(this.toastr, messages.map(message => `- ${message}`).join('<br/>')); return false; }
       return true;
    }
-   private resolveId(items: any[], property: string, title: any, fallback: any) { return String(fallback ?? items.find(item => item[property] === title)?.id ?? '0'); }
-   private toInputDate(value: string) { if (!value) return ''; if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10); const parts = value.split('/'); return parts.length === 3 ? `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}` : ''; }
+   private resolveId(items: CatalogItem[], property: keyof CatalogItem, title: unknown, fallback: unknown) { return String(fallback ?? items.find(item => item[property] === title)?.id ?? '0'); }
+   private toInputDate(value?: string) { if (!value) return ''; if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10); const parts = value.split('/'); return parts.length === 3 ? `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}` : ''; }
    private withFallback<T>(items: T[] | undefined, fallback: T) { return items?.length ? items : [fallback]; }
    private remove<T>(items: T[], index: number) { if (items.length > 1) items.splice(index, 1); }
-   private createSkill(): SkillDraft { return { title: '', skillDescription: '' }; }
-   private createCertificate(): CertificateDraft { return { certificateName: '', certificateProvider: '', issuedDate: '', expiredDate: '', credentialURL: '' }; }
-   private createAward(): AwardDraft { return { fromYear: '', awardName: '', description: '' }; }
-   private createExperience(): ExperienceDraft { return { ComapanyName: '', position: '', fromDate: '', toDate: '', description: '', employmentTypeName: '1' }; }
-   private createProject(): ProjectDraft { return { projectName: '', fromDate: '', toDate: '', description: '', isStillWorking: false }; }
-   private createEducation(): EducationDraft { return { schoolName: '', majorName: '', description: '', fromYear: '', toYear: '', stillLearning: false }; }
+   private createSkill(): CvSkill { return { title: '', skillDescription: '' }; }
+   private createCertificate(): CvCertificate { return { certificateName: '', certificateProvider: '', issuedDate: '', expiredDate: '', credentialURL: '' }; }
+   private createAward(): CvAward { return { fromYear: '', awardName: '', description: '' }; }
+   private createExperience(): CvExperience { return { ComapanyName: '', position: '', fromDate: '', toDate: '', description: '', employmentTypeName: '1' }; }
+   private createProject(): CvProject { return { projectName: '', fromDate: '', toDate: '', description: '', isStillWorking: false }; }
+   private createEducation(): CvEducation { return { schoolName: '', majorName: '', description: '', fromYear: '', toYear: '', stillLearning: false }; }
 }

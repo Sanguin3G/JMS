@@ -2,18 +2,12 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { environment } from 'src/environments/environment';
-import { getRequest, postFileRequest, postRequest } from 'src/app/service/api-requests';
+import { ApiResponse, getRequest, postFileRequest, postRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiCandidate, apiRecruiter } from 'src/app/service/constant';
 import { getProfile } from 'src/app/service/localstorage';
 import { showError, showSuccess } from 'src/app/service/common';
 import { themeList } from './constant';
-
-interface SkillDraft { title: string; skillDescription: string; }
-interface CertificateDraft { certificateName: string; certificateProvider: string; issuedDate: string; expiredDate: string; credentialURL: string; }
-interface AwardDraft { fromYear: string; awardName: string; description: string; }
-interface ExperienceDraft { ComapanyName: string; position: string; fromDate: string; toDate: string; description: string; employmentTypeName: string; }
-interface ProjectDraft { projectName: string; fromDate: string; toDate: string; description: string; isStillWorking: boolean; }
-interface EducationDraft { schoolName: string; majorName: string; description: string; fromYear: string; toYear: string; stillLearning: boolean; }
+import { CatalogItem, CurriculumVitaePayload, CvAward, CvCertificate, CvEducation, CvExperience, CvProject, CvSkill, UserProfile } from 'src/app/core/models/api.models';
 
 @Component({
   standalone: false,
@@ -22,9 +16,9 @@ interface EducationDraft { schoolName: string; majorName: string; description: s
    styleUrls: ['./create-cv.component.css'],
 })
 export class CandidateCreateCvComponent {
-   categories: any[] = [];
-   levels: any[] = [];
-   employmentTypes: any[] = [];
+   categories: CatalogItem[] = [];
+   levels: CatalogItem[] = [];
+   employmentTypes: CatalogItem[] = [];
    readonly apiURL = environment.Url;
    hideImage = 'block';
    displayImage = 'none';
@@ -37,19 +31,19 @@ export class CandidateCreateCvComponent {
    ThemStyle = 'Theme6';
    backgroundSelectedLink = `${environment.Url}/assets/images/theme6.jpg`;
    themeId = 6;
-   profile: any;
+   profile: UserProfile | null;
    isSaving = false;
 
    form = {
       displayEmail: '', phone: '', dob: '', gender: '1', address: '', displayName: '', careerGoal: '', cvTitle: '',
       categoryId: '0', levelId: '0', employmentTypeId: '0',
    };
-   skills: SkillDraft[] = [this.createSkill()];
-   certificates: CertificateDraft[] = [this.createCertificate()];
-   awards: AwardDraft[] = [this.createAward()];
-   experiences: ExperienceDraft[] = [this.createExperience()];
-   projects: ProjectDraft[] = [this.createProject()];
-   educations: EducationDraft[] = [this.createEducation()];
+   skills: CvSkill[] = [this.createSkill()];
+   certificates: CvCertificate[] = [this.createCertificate()];
+   awards: CvAward[] = [this.createAward()];
+   experiences: CvExperience[] = [this.createExperience()];
+   projects: CvProject[] = [this.createProject()];
+   educations: CvEducation[] = [this.createEducation()];
    private avatarFile?: File;
 
    @ViewChild('avatarInput') private avatarInput?: ElementRef<HTMLInputElement>;
@@ -65,19 +59,19 @@ export class CandidateCreateCvComponent {
    }
 
    getAllCategory() {
-      getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
+      getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => this.categories = res.data ?? [])
          .catch(error => console.warn(apiRecruiter.GET_ALL_CATEGORY, error));
    }
 
    getAllTitle() {
-      getRequest(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 })
+      getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => this.levels = res.data ?? [])
          .catch(error => console.warn(apiRecruiter.GET_ALL_LEVEL_TITLE, error));
    }
 
    getAllEmploymentType() {
-      getRequest(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 })
+      getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => this.employmentTypes = res.data ?? [])
          .catch(error => console.warn(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, error));
    }
@@ -85,23 +79,24 @@ export class CandidateCreateCvComponent {
    async submitCV() {
       if (this.isSaving || !this.validateForm()) return;
       this.isSaving = true;
-      const data = {
+      const data: CurriculumVitaePayload = {
          id: 0, candidateId: 1, careerGoal: this.form.careerGoal, employmentTypeName: this.form.employmentTypeId.toString(),
-         phone: this.form.phone, displayName: this.form.displayName, genderDisplay: this.form.gender, gender: this.form.gender,
-         displayEmail: this.form.displayEmail, address: this.form.address, dob: this.form.dob, createdDateDisplay: null,
-         lastUpdateDateDisplay: null, jobExperiences: this.experiences, skills: this.skills, educations: this.educations,
+         phone: this.form.phone, displayName: this.form.displayName, genderDisplay: this.form.gender,
+         displayEmail: this.form.displayEmail, address: this.form.address, dob: this.form.dob, jobExperiences: this.experiences, skills: this.skills, educations: this.educations,
          projects: this.projects, certificates: this.certificates, awards: this.awards, avatarURL: null, categoryName: '',
          categoryId: this.form.categoryId, genderId: this.form.gender, isFindingJob: true, levelTitle: this.form.levelId.toString(),
          cvTitle: this.form.cvTitle, theme: this.themeId, font: this.fontCV,
       };
 
       try {
-         const response = await postRequest(`${apiCandidate.CREATE_CV_BY_CANDIDATE_ID}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, data);
+         if (!this.profile?.id) throw new Error('Candidate profile is unavailable.');
+         const response = await postRequest<ApiResponse<number>>(`${apiCandidate.CREATE_CV_BY_CANDIDATE_ID}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, data);
          if (response?.statusCode !== 201) throw new Error('The CV could not be created.');
+         if (!response.data) throw new Error('The CV id was not returned.');
          if (this.avatarFile) {
             const formData = new FormData();
             formData.append('file', this.avatarFile, this.avatarFile.name);
-            await postFileRequest(`${apiCandidate.UPDATE_IMAGES_CV}/${this.profile.id}/${response.data}`, AuthorizationMode.BEARER_TOKEN, formData);
+            await postFileRequest<ApiResponse<unknown>>(`${apiCandidate.UPDATE_IMAGES_CV}/${this.profile.id}/${response.data}`, AuthorizationMode.BEARER_TOKEN, formData);
          }
          showSuccess(this.toastr, 'Tạo hồ sơ thành công');
       } catch (error) {
@@ -182,10 +177,10 @@ export class CandidateCreateCvComponent {
 
    private isValidMonthYear(value: string) { return /^(0?[1-9]|1[0-2])\/\d{4}$/.test(value); }
    private remove<T>(items: T[], index: number) { if (items.length > 1) items.splice(index, 1); }
-   private createSkill(): SkillDraft { return { title: '', skillDescription: '' }; }
-   private createCertificate(): CertificateDraft { return { certificateName: '', certificateProvider: '', issuedDate: '', expiredDate: '', credentialURL: '' }; }
-   private createAward(): AwardDraft { return { fromYear: '', awardName: '', description: '' }; }
-   private createExperience(): ExperienceDraft { return { ComapanyName: '', position: '', fromDate: '', toDate: '', description: '', employmentTypeName: '1' }; }
-   private createProject(): ProjectDraft { return { projectName: '', fromDate: '', toDate: '', description: '', isStillWorking: false }; }
-   private createEducation(): EducationDraft { return { schoolName: '', majorName: '', description: '', fromYear: '', toYear: '', stillLearning: false }; }
+   private createSkill(): CvSkill { return { title: '', skillDescription: '' }; }
+   private createCertificate(): CvCertificate { return { certificateName: '', certificateProvider: '', issuedDate: '', expiredDate: '', credentialURL: '' }; }
+   private createAward(): CvAward { return { fromYear: '', awardName: '', description: '' }; }
+   private createExperience(): CvExperience { return { ComapanyName: '', position: '', fromDate: '', toDate: '', description: '', employmentTypeName: '1' }; }
+   private createProject(): CvProject { return { projectName: '', fromDate: '', toDate: '', description: '', isStillWorking: false }; }
+   private createEducation(): CvEducation { return { schoolName: '', majorName: '', description: '', fromYear: '', toYear: '', stillLearning: false }; }
 }
