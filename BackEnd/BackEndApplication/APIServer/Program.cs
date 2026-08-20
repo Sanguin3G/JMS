@@ -3,6 +3,7 @@ using APIServer.Features.AiConfiguration;
 using APIServer.Features.AiConfiguration.Contracts;
 using APIServer.Features.Matching;
 using APIServer.Features.Matching.Contracts;
+using APIServer.Infrastructure;
 using APIServer.IRepositories;
 using APIServer.IServices;
 using APIServer.Models;
@@ -108,6 +109,7 @@ namespace APIServer
                 await using var scope = app.Services.CreateAsyncScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<JMSDBContext>();
                 await dbContext.Database.MigrateAsync();
+                await DevelopmentDataSeeder.SeedAsync(dbContext, app.Logger);
 
                 app.UseSwagger();
                 app.UseSwaggerUI();
