@@ -14,10 +14,14 @@ namespace APIServer.Helpers
         }
         public void SendMail(string email, string message)
         {
-            var smtpServer = _configuration["EmailSettings:SmtpServer"];
-            var port = int.Parse(_configuration["EmailSettings:Port"]);
-            var username = _configuration["EmailSettings:Username"];
-            var password = _configuration["EmailSettings:Password"];
+            var smtpServer = _configuration["EmailSettings:SmtpServer"]
+                ?? throw new InvalidOperationException("EmailSettings:SmtpServer is not configured.");
+            if (!int.TryParse(_configuration["EmailSettings:Port"], out var port) || port <= 0)
+                throw new InvalidOperationException("EmailSettings:Port must be a positive integer.");
+            var username = _configuration["EmailSettings:Username"]
+                ?? throw new InvalidOperationException("EmailSettings:Username is not configured.");
+            var password = _configuration["EmailSettings:Password"]
+                ?? throw new InvalidOperationException("EmailSettings:Password is not configured.");
 
             try
             {

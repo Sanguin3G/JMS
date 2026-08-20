@@ -27,6 +27,20 @@ namespace APIServer
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var jwtKey = builder.Configuration["Jwt:Key"];
+            if (string.IsNullOrWhiteSpace(jwtKey))
+            {
+                if (!builder.Environment.IsDevelopment())
+                {
+                    throw new InvalidOperationException(
+                        "Jwt:Key must be configured through the environment for non-development deployments.");
+                }
+
+                // Development tokens are intentionally invalidated whenever the process restarts.
+                jwtKey = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
+                builder.Configuration["Jwt:Key"] = jwtKey;
+            }
+
             var allowFE = "_AllowFrontEndClient";
             var dataProtectionPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys");
             Directory.CreateDirectory(dataProtectionPath);
@@ -65,7 +79,7 @@ namespace APIServer
                         ValidateAudience = true,
                         ValidAudience = builder.Configuration["Jwt:Audience"],
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
                         ValidateLifetime = true,
                         ClockSkew = TimeSpan.Zero,
                     };
