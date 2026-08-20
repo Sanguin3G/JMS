@@ -16,6 +16,7 @@ import { UpdateCvComponent } from './components/update-cv/update-cv.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { authGuard } from './auth.guard';
+import { CalibrationComponent } from './components/calibration/calibration.component';
 
 const routes: Routes = [
    { path: "sign-in", title: "Ứng viên - Đăng nhập", component: CandidateSignInComponent },
@@ -31,6 +32,7 @@ const routes: Routes = [
    { path: "view-cv/:id", title: "Ứng viên - Chi tiết Hồ sơ", component: ViewCvComponent, canActivate: [authGuard] },
    { path: "profile", title: "Ứng viên - Chi tiết thông tin cá nhân", component: ProfileComponent, canActivate: [authGuard] },
    { path: "change-password", title: "Ứng viên - Thay đổi mật khẩu", component: ChangePasswordComponent, canActivate: [authGuard] },
+   { path: "calibration", title: "JMS - Career Calibration Terminal", component: CalibrationComponent },
    { path: "", component: CandidateHomeComponent }
 ];
 

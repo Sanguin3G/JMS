@@ -1,0 +1,11 @@
+.git
+.idea
+.vscode
+**/node_modules
+**/bin
+**/obj
+**/dist
+**/*.db
+**/*.db-shm
+**/*.db-wal
+FrontEnd/yarn.lock

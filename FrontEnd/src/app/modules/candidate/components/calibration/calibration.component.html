@@ -1,0 +1,45 @@
+<div class="terminal-page">
+   <candidate-header></candidate-header>
+   <main class="terminal-shell" aria-labelledby="terminal-title">
+      <header class="terminal-header">
+         <div>
+            <span class="terminal-kicker">JMS // CAREER CALIBRATION TERMINAL</span>
+            <h1 id="terminal-title">A serious questionnaire about your alleged future</h1>
+            <p class="terminal-warning">PARODY MODE: ON. This is entertainment, not a psychological assessment. It never affects matching, ranking, recruiter visibility, or hiring recommendations.</p>
+         </div>
+         <div class="terminal-readout" aria-label="Calibration progress">
+            <span>ROUTE {{ route.length + 1 | number:'2.0-0' }}</span>
+            <span>TRACE {{ route.join(' · ') || 'UNINITIALIZED' }}</span>
+         </div>
+      </header>
+
+      <section *ngIf="!ending" class="terminal-panel" aria-live="polite">
+         <div class="panel-label">{{ current.chapter }}</div>
+         <h2>{{ current.prompt }}</h2>
+         <div class="option-grid">
+            <button *ngFor="let option of current.options; index as index" type="button" class="terminal-option" (click)="choose(option)">
+               <span class="option-index">0{{ index + 1 }}</span>
+               <span>{{ option.label }}</span>
+            </button>
+         </div>
+         <p class="terminal-note">Choose the answer that makes the least theatrical claim. Or do not. The terminal has seen worse.</p>
+      </section>
+
+      <section *ngIf="ending" class="terminal-panel terminal-ending" aria-live="polite">
+         <div class="panel-label">SIGNAL ACQUIRED / {{ ending.code }}</div>
+         <h2>{{ ending.title }}</h2>
+         <p class="ending-description">{{ ending.description }}</p>
+         <div class="ending-advice"><strong>FIELD NOTE:</strong> {{ ending.advice }}</div>
+         <div class="ending-meta"><span>DETERMINISTIC TRACE: {{ score }} points</span><span>COLLECTIBLE: {{ ending.code }}</span></div>
+         <div class="ending-actions">
+            <button type="button" class="terminal-button" (click)="reset()">Replay route</button>
+            <button type="button" class="terminal-button terminal-button-primary" (click)="saveResult()" [disabled]="saved">{{ saved ? 'Saved locally' : 'Save this ending' }}</button>
+         </div>
+      </section>
+
+      <footer class="terminal-footer">
+         <span>NO PERSONNEL DECISIONS ARE GENERATED HERE.</span>
+         <span>LOCAL HISTORY ONLY · {{ route.length ? 'TRACE RECORDED' : 'AWAITING INPUT' }}</span>
+      </footer>
+   </main>
+</div>

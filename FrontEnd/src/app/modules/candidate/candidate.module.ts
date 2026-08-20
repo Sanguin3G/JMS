@@ -31,6 +31,7 @@ import { ViewNullCandidateComponent } from './components/view-null/view-null.com
 import { ViewLoadingCandidateComponent } from './components/view-loading/view-loading.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
 import { SharedModule } from 'src/app/shared/shared.module';
+import { CalibrationComponent } from './components/calibration/calibration.component';
 
 @NgModule({
    declarations: [
@@ -54,7 +55,8 @@ import { SharedModule } from 'src/app/shared/shared.module';
       NotFoundComponent,
       ViewNullCandidateComponent,
       ViewLoadingCandidateComponent,
-      ChangePasswordComponent
+      ChangePasswordComponent,
+      CalibrationComponent
    ],
    imports: [
       CommonModule,

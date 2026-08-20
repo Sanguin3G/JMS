@@ -1,0 +1,28 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__JobConstr: Data Source=/app/App_Data/jms.db
+      FE_Port: http://localhost:4200
+      Jwt__Key: ${JMS_JWT_KEY:-local-development-key-change-me}
+    volumes:
+      - jms-data:/app/App_Data
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    depends_on:
+      - api
+    ports:
+      - "4200:80"
+
+volumes:
+  jms-data:
