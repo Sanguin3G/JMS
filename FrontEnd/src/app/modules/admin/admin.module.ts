@@ -27,6 +27,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { CompanyViewComponent } from './components/company-view/company-view.component';
 import { JdDetailComponent } from './components/jd-detail/jd-detail.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { SharedModule } from 'src/app/shared/shared.module';
 @NgModule({
    declarations: [
       AdminSettingComponent,
@@ -58,6 +59,7 @@ import { ProfileComponent } from './components/profile/profile.component';
       FormsModule,
       MatPaginatorModule,
       MatDialogModule,
+      SharedModule,
    ]
 })
 export class AdminModule { }

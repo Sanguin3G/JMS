@@ -37,6 +37,7 @@ import { ForgotPasswordComponent } from './components/forgot-password/forgot-pas
 import { ViewNullComponent } from './components/view-null/view-null.component';
 import { ViewLoadingComponent } from './components/view-loading/view-loading.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
    declarations: [
@@ -81,6 +82,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
       MatPaginatorModule,
       MatMenuModule,
       MatTooltipModule,
+      SharedModule,
    ],
    providers: [
       DatePipe,

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { environment } from './../environments/environment';
 import { clearItem } from './service/localstorage';
+import { ThemeService } from './core/theme/theme.service';
 
 @Component({
   standalone: false,
@@ -10,7 +11,7 @@ import { clearItem } from './service/localstorage';
 })
 export class AppComponent {
    public urlBase = "";
-   constructor() {
+   constructor(_theme: ThemeService) {
       this.urlBase = environment.apiUrl;
    }
 

@@ -30,6 +30,7 @@ import { NotFoundComponent } from 'src/app/components/not-found/not-found.compon
 import { ViewNullCandidateComponent } from './components/view-null/view-null.component'; 
 import { ViewLoadingCandidateComponent } from './components/view-loading/view-loading.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
    declarations: [
@@ -66,6 +67,7 @@ import { ChangePasswordComponent } from './components/change-password/change-pas
       NgxPaginationModule,
       MatTabsModule,
       MatDialogModule
+      ,SharedModule
    ],
 })
 export class CandidateModule { }

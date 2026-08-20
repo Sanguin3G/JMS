@@ -1,0 +1,12 @@
+<div class="theme-toggle" role="group" aria-label="Theme preference">
+   <span class="theme-toggle__label" aria-hidden="true">Theme</span>
+   <button
+      *ngFor="let mode of modes"
+      type="button"
+      class="theme-toggle__option"
+      [class.is-active]="theme.mode === mode.value"
+      [attr.aria-pressed]="theme.mode === mode.value"
+      (click)="selectMode(mode.value)">
+      {{ mode.label }}
+   </button>
+</div>

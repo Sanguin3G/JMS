@@ -1,0 +1,40 @@
+:host {
+   display: inline-flex;
+}
+
+.theme-toggle {
+   display: inline-flex;
+   align-items: center;
+   gap: 0.15rem;
+   padding: 0.2rem;
+   border: 1px solid var(--border-medium);
+   border-radius: 999px;
+   background: var(--surface-secondary);
+   color: var(--text-secondary);
+   font-size: 0.75rem;
+   line-height: 1;
+}
+
+.theme-toggle__label {
+   padding: 0 0.45rem;
+   font-weight: 700;
+   letter-spacing: 0.04em;
+   text-transform: uppercase;
+}
+
+.theme-toggle__option {
+   border: 0;
+   border-radius: 999px;
+   padding: 0.42rem 0.58rem;
+   background: transparent;
+   color: inherit;
+   cursor: pointer;
+   font: inherit;
+}
+
+.theme-toggle__option:hover,
+.theme-toggle__option:focus-visible,
+.theme-toggle__option.is-active {
+   background: var(--accent-soft);
+   color: var(--text-primary);
+}

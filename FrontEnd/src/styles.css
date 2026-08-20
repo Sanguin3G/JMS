@@ -23,6 +23,9 @@
     --border-light: var(--gray-100);
     --border-medium: var(--gray-200);
     --border-heavy: var(--gray-300);
+    --accent: #5b4bdb;
+    --accent-soft: #e9e7ff;
+    --focus-ring: #5b4bdb;
 
     --textColor1: #fffe;
 
@@ -32,6 +35,27 @@
     /* --boxShadow: rgba(0, 0, 0, 0.04) 0px 3px 5px; */
     --boxShadow:  rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
     --boxShadow1: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+}
+
+:root[data-theme='dark'] {
+    color-scheme: dark;
+    --gray-0: #15151b;
+    --gray-50: #1c1c25;
+    --gray-100: #292934;
+    --gray-200: #393947;
+    --gray-300: #515162;
+    --gray-400: #77778a;
+    --gray-500: #a3a3b3;
+    --gray-600: #c0c0cc;
+    --gray-700: #d3d3de;
+    --gray-800: #e7e7ef;
+    --gray-900: #f2f2f7;
+    --gray-950: #fafafe;
+    --accent: #a9a0ff;
+    --accent-soft: #302c5c;
+    --focus-ring: #c2bdff;
+    --boxShadow: 0 4px 16px rgb(0 0 0 / 35%);
+    --boxShadow1: 0 12px 32px rgb(0 0 0 / 35%);
 }
 
 * {
@@ -50,18 +74,18 @@
 
 /* handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: var(--gray-600);
 }
 
 /* handle */
 ::-webkit-scrollbar-thumb {
-    background: #888;
+    background: var(--gray-400);
     border-radius: 5px;
 }
 
 /* track */
 ::-webkit-scrollbar-track {
-    background: #eee;
+    background: var(--surface-tertiary);
 }
 
 /* corner */
@@ -80,16 +104,27 @@
     opacity: 0.8;
 }
 
-.btn:focus,.btn:active {
-    outline: none !important;
+.btn:focus,
+.btn:active {
     box-shadow: none;
- }
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+}
 
 
 body{
     font-family: Söhne, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    color: #050509;
+    background: var(--surface-primary);
+    color: var(--text-primary);
     font-size: 1.05em;
+    transition: background-color 160ms ease, color 160ms ease;
 }
 
 
