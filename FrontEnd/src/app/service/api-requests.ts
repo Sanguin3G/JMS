@@ -1,107 +1,129 @@
 import { environment } from 'src/environments/environment';
 import { AuthorizationMode } from './constant';
 
-const apiURL = environment.apiUrl;
+const apiUrl = environment.apiUrl;
 
-interface MyHeaders {
-   Accept: string;
-   'Content-Type': string;
-   Authorization?: string;
+/** The envelope returned by the existing API controllers. */
+export interface ApiResponse<T = any> {
+   data?: T;
+   message?: string;
+   statusCode: number;
+   objectLength: number;
+   totalPage: number;
+   [key: string]: any;
 }
 
-export const convertPayloadToQueryString = (payload: any) => {
-   return Object.keys(payload).map(key => {
-      return encodeURIComponent(key) + '=' + encodeURIComponent(payload[key]);
-   }).join('&');
-};
+export type ApiQueryParams = Record<string, string | number | boolean | null | undefined>;
 
-async function getHeader(authorizationMode: AuthorizationMode, customHeaders?: Record<string, unknown>) {
-   const header = customHeaders || {};
+/** A non-2xx response that callers can handle without parsing fetch internals. */
+export class ApiRequestError extends Error {
+   constructor(
+      public readonly status: number,
+      public readonly url: string,
+      public readonly response?: ApiResponse,
+   ) {
+      super(response?.message || `Request to ${url} failed with HTTP ${status}.`);
+      this.name = 'ApiRequestError';
+   }
+}
+
+export const convertPayloadToQueryString = (payload: ApiQueryParams = {}): string =>
+   Object.entries(payload)
+      .filter(([, value]) => value !== null && value !== undefined)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+      .join('&');
+
+function buildUrl(path: string, params: ApiQueryParams = {}): string {
+   const query = convertPayloadToQueryString(params);
+   if (!query) return `${apiUrl}${path}`;
+   return `${apiUrl}${path}${path.includes('?') ? '&' : '?'}${query}`;
+}
+
+function buildHeaders(authorizationMode: AuthorizationMode, isJsonBody: boolean): Headers {
+   const headers = new Headers({ Accept: 'application/json' });
+   if (isJsonBody) headers.set('Content-Type', 'application/json');
 
    if (authorizationMode === AuthorizationMode.BEARER_TOKEN) {
       try {
-         var accessToken = localStorage.getItem("token");
-         header['Authorization'] = `Bearer ${accessToken}`;
+         const accessToken = localStorage.getItem('token');
+         if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
       } catch {
-      }
-   }
-   return {
-      ...header,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-   };
-}
-
-export async function getRequest(url: string, authorizationMode: AuthorizationMode, params = {}) {
-   let data: object = { ...params };
-   const query = convertPayloadToQueryString(data);
-
-   const fullUrl = query ? `${apiURL}${url}?${query}` : `${apiURL}${url}`;
-
-   const headers = await getHeader(authorizationMode)
-
-   try {
-      const response = await fetch(fullUrl, {
-         method: "GET",
-         cache: "no-cache",
-         headers: headers,
-      })
-      const res = await response.json();
-      return res
-   } catch (ex) {
-      console.log(ex);
-   }
-
-}
-
-export async function postRequest(url: string, authorizationMode: AuthorizationMode, data: any) {
-
-   const headers = await getHeader(authorizationMode)
-
-
-   const response = await fetch(`${apiURL}${url}`, {
-      method: "POST",
-      cache: "no-cache",
-      headers: headers,
-      body: JSON.stringify(data),
-   })
-
-   const res = await response.json();
-   return res
-
-
-}
-
-export async function postFileRequest(url: string, authorizationMode: AuthorizationMode, data: FormData) {
-   const headers: Record<string, string> = {
-      'Accept': 'application/json',
-   };
-
-   if (authorizationMode === AuthorizationMode.BEARER_TOKEN) {
-      const accessToken = localStorage.getItem("token");
-      if (accessToken) {
-         headers['Authorization'] = `Bearer ${accessToken}`;
+         // SSR/private browsing can make localStorage unavailable; send anonymously.
       }
    }
 
-   const response = await fetch(`${apiURL}${url}`, {
-      method: "POST",
-      cache: "no-cache",
-      headers,
-      body: data,
-   })
-   const res = await response.json();
-   return res
+   return headers;
 }
 
-export async function putRequest(url: string, authorizationMode: AuthorizationMode, data: any) {
-   const headers = await getHeader(authorizationMode)
-   const response = await fetch(`${apiURL}${url}`, {
-      method: "PUT",
-      cache: "no-cache",
-      headers: headers,
-      body: JSON.stringify(data),
-   })
+async function parseResponse<T>(response: Response, url: string): Promise<T> {
+   const contentType = response.headers.get('content-type') || '';
+   const body = contentType.includes('application/json')
+      ? await response.json() as ApiResponse
+      : undefined;
 
-   return await response.json();
+   if (!response.ok) {
+      throw new ApiRequestError(response.status, url, body);
+   }
+
+   return body as T;
+}
+
+async function request<T>(
+   method: string,
+   path: string,
+   authorizationMode: AuthorizationMode,
+   options: {
+      body?: BodyInit;
+      params?: ApiQueryParams;
+      jsonBody?: boolean;
+   } = {},
+): Promise<T> {
+   const url = buildUrl(path, options.params);
+   const response = await fetch(url, {
+      method,
+      cache: 'no-cache',
+      headers: buildHeaders(authorizationMode, options.jsonBody === true),
+      body: options.body,
+   });
+
+   return parseResponse<T>(response, url);
+}
+
+export function getRequest<T = ApiResponse>(
+   url: string,
+   authorizationMode: AuthorizationMode,
+   params: ApiQueryParams = {},
+): Promise<T> {
+   return request<T>('GET', url, authorizationMode, { params });
+}
+
+export function postRequest<T = ApiResponse>(
+   url: string,
+   authorizationMode: AuthorizationMode,
+   data: unknown,
+): Promise<T> {
+   return request<T>('POST', url, authorizationMode, {
+      body: JSON.stringify(data),
+      jsonBody: true,
+   });
+}
+
+export function postFileRequest<T = ApiResponse>(
+   url: string,
+   authorizationMode: AuthorizationMode,
+   data: FormData,
+): Promise<T> {
+   // Do not set Content-Type for FormData: the browser adds the multipart boundary.
+   return request<T>('POST', url, authorizationMode, { body: data });
+}
+
+export function putRequest<T = ApiResponse>(
+   url: string,
+   authorizationMode: AuthorizationMode,
+   data: unknown,
+): Promise<T> {
+   return request<T>('PUT', url, authorizationMode, {
+      body: JSON.stringify(data),
+      jsonBody: true,
+   });
 }
