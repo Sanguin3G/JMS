@@ -60,9 +60,9 @@ namespace APIServer.Services
                 else
                     return "Error";
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -93,9 +93,9 @@ namespace APIServer.Services
                 else
                     return "Error";
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -125,9 +125,9 @@ namespace APIServer.Services
                 else
                     return "Error";
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -155,9 +155,9 @@ namespace APIServer.Services
                 else
                     return "Error";
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -183,9 +183,9 @@ namespace APIServer.Services
                 else
                     return host + "Error";
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -208,9 +208,9 @@ namespace APIServer.Services
                     file.CopyTo(stream);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -274,9 +274,9 @@ namespace APIServer.Services
                     file.CopyTo(stream);
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
 
             var imagePath = Path.Combine("\\slider\\", uniqueFileName);
@@ -300,9 +300,9 @@ namespace APIServer.Services
                 deleteOldImg(slider.URL);
                 return sliderRepo.Delete(slider.Id);
             }
-            catch (Exception ex)
+            catch
             {
-                throw ex;
+                throw;
             }
         }
 
