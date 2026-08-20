@@ -12,7 +12,7 @@ namespace APIServer.Features.Matching;
 public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, IAiProviderProfileService aiProviderProfileService, ILogger<GeminiMatchEvaluationProvider> logger)
     : IMatchEvaluationProvider
 {
-    private const string DefaultModel = "gemini-3.5-flash-lite";
+    private const string DefaultModel = GeminiModelCatalog.DefaultModelId;
     private const int MaximumSourceCharacters = 18_000;
 
     public string ProviderName => "gemini";
@@ -33,6 +33,14 @@ public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, 
             ?? configuration["Ai:Gemini:ReasoningLevel"]
             ?? GeminiModelCatalog.DefaultReasoningLevel;
 
+        if (!GeminiModelCatalog.TryResolve(GeminiModelCatalog.ProviderId, model, reasoningLevel, out var capability, out var resolvedReasoningLevel)
+            || !capability.SupportsMatching)
+        {
+            model = GeminiModelCatalog.DefaultModelId;
+            resolvedReasoningLevel = GeminiModelCatalog.DefaultReasoningLevel;
+        }
+        reasoningLevel = resolvedReasoningLevel;
+
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             return Unavailable(model, "Gemini is not configured for this environment.");
@@ -47,7 +55,6 @@ public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, 
                 config: new GenerateContentConfig
                 {
                     ResponseMimeType = "application/json",
-                    Temperature = 0.1,
                     MaxOutputTokens = 900,
                     ThinkingConfig = new ThinkingConfig
                     {

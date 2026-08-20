@@ -4,6 +4,9 @@ namespace APIServer.Features.AiConfiguration.Contracts;
 
 public sealed class UpsertAiProviderProfileRequest
 {
+    [Required, StringLength(50)]
+    public string Provider { get; init; } = GeminiModelCatalog.ProviderId;
+
     [Required, StringLength(100)]
     public string DisplayName { get; init; } = string.Empty;
 

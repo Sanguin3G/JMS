@@ -1,36 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { getRequest, postRequest, putRequest } from 'src/app/service/api-requests';
+import { ApiResponse, getRequest, postRequest, putRequest } from 'src/app/service/api-requests';
 import { apiAdmin, AuthorizationMode } from 'src/app/service/constant';
+import { AiModelCapability, AiProviderProfile, AiProviderProfileDraft } from 'src/app/core/models/ai.models';
 
-interface GeminiModelOption {
-  modelId: string;
-  label: string;
-  defaultReasoningLevel: string;
-  reasoningLevels: string[];
-}
-
-interface AiProviderProfile {
-  id: number;
-  provider: string;
-  displayName: string;
-  modelId: string;
-  reasoningLevel: string;
-  isEnabled: boolean;
-  isDefaultForMatching: boolean;
-  isEnabledForAssistant: boolean;
-  hasApiKey: boolean;
-  updatedAt: string;
-}
-
-interface ProfileDraft {
-  displayName: string;
-  modelId: string;
-  reasoningLevel: string;
-  apiKey: string;
-  isEnabled: boolean;
-  isDefaultForMatching: boolean;
-  isEnabledForAssistant: boolean;
-}
 
 @Component({
   standalone: false,
@@ -39,22 +11,22 @@ interface ProfileDraft {
   styleUrls: ['./setting.component.css']
 })
 export class AdminSettingComponent implements OnInit {
-  readonly defaultModelId = 'gemini-3.5-flash-lite';
-  modelOptions: GeminiModelOption[] = [];
+  readonly defaultModelId = 'gemini-3.1-flash-lite';
+  modelOptions: AiModelCapability[] = [];
   profiles: AiProviderProfile[] = [];
   editingProfileId: number | null = null;
   isLoading = true;
   isSaving = false;
   errorMessage = '';
   successMessage = '';
-  draft: ProfileDraft = this.createDraft();
+  draft: AiProviderProfileDraft = this.createDraft();
 
   async ngOnInit(): Promise<void> {
     await Promise.all([this.loadOptions(), this.loadProfiles()]);
     this.isLoading = false;
   }
 
-  get selectedModel(): GeminiModelOption | undefined {
+  get selectedModel(): AiModelCapability | undefined {
     return this.modelOptions.find(option => option.modelId === this.draft.modelId);
   }
 
@@ -68,6 +40,7 @@ export class AdminSettingComponent implements OnInit {
   beginEditing(profile: AiProviderProfile): void {
     this.editingProfileId = profile.id;
     this.draft = {
+      provider: profile.provider,
       displayName: profile.displayName,
       modelId: profile.modelId,
       reasoningLevel: profile.reasoningLevel,
@@ -97,8 +70,8 @@ export class AdminSettingComponent implements OnInit {
     this.isSaving = true;
     try {
       const response = this.editingProfileId
-        ? await putRequest(`${apiAdmin.AI_PROFILES}/${this.editingProfileId}`, AuthorizationMode.BEARER_TOKEN, this.draft)
-        : await postRequest(apiAdmin.AI_PROFILES, AuthorizationMode.BEARER_TOKEN, this.draft);
+        ? await putRequest<ApiResponse<AiProviderProfile>>(`${apiAdmin.AI_PROFILES}/${this.editingProfileId}`, AuthorizationMode.BEARER_TOKEN, this.draft)
+        : await postRequest<ApiResponse<AiProviderProfile>>(apiAdmin.AI_PROFILES, AuthorizationMode.BEARER_TOKEN, this.draft);
 
       if (response?.statusCode >= 200 && response?.statusCode < 300) {
         this.successMessage = 'Provider profile saved. Existing match records are unchanged.';
@@ -118,7 +91,7 @@ export class AdminSettingComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
     try {
-      const response = await postRequest(`${apiAdmin.AI_PROFILES}/${profile.id}/activate-matching`, AuthorizationMode.BEARER_TOKEN, {});
+      const response = await postRequest<ApiResponse<string>>(`${apiAdmin.AI_PROFILES}/${profile.id}/activate-matching`, AuthorizationMode.BEARER_TOKEN, {});
       if (response?.statusCode >= 200 && response?.statusCode < 300) {
         this.successMessage = `${profile.displayName} will be used for future matching runs.`;
         await this.loadProfiles();
@@ -131,7 +104,7 @@ export class AdminSettingComponent implements OnInit {
   }
 
   private async loadOptions(): Promise<void> {
-    const response = await getRequest(apiAdmin.GET_GEMINI_OPTIONS, AuthorizationMode.BEARER_TOKEN);
+    const response = await getRequest<AiModelCapability[]>(apiAdmin.AI_CAPABILITIES, AuthorizationMode.BEARER_TOKEN);
     this.modelOptions = Array.isArray(response) ? response : [];
     if (!this.modelOptions.some(option => option.modelId === this.draft.modelId)) {
       this.draft.modelId = this.modelOptions[0]?.modelId ?? this.defaultModelId;
@@ -140,12 +113,13 @@ export class AdminSettingComponent implements OnInit {
   }
 
   private async loadProfiles(): Promise<void> {
-    const response = await getRequest(apiAdmin.AI_PROFILES, AuthorizationMode.BEARER_TOKEN);
+    const response = await getRequest<ApiResponse<AiProviderProfile[]>>(apiAdmin.AI_PROFILES, AuthorizationMode.BEARER_TOKEN);
     this.profiles = response?.data ?? [];
   }
 
-  private createDraft(): ProfileDraft {
+  private createDraft(): AiProviderProfileDraft {
     return {
+      provider: 'gemini',
       displayName: 'Gemini development profile',
       modelId: this.defaultModelId,
       reasoningLevel: 'minimal',

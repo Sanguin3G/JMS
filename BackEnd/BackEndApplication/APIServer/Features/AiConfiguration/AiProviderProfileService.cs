@@ -71,7 +71,8 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
             .AsNoTracking()
             .SingleOrDefaultAsync(candidate => candidate.Provider == "gemini" && candidate.IsEnabled && candidate.IsDefaultForMatching, cancellationToken);
 
-        if (profile is null || string.IsNullOrWhiteSpace(profile.EncryptedApiKey))
+        if (profile is null || string.IsNullOrWhiteSpace(profile.EncryptedApiKey)
+            || !GeminiModelCatalog.TryResolve(profile.Provider, profile.ModelId, profile.ReasoningLevel, out _, out var reasoningLevel))
         {
             return null;
         }
@@ -79,14 +80,24 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
         return new ResolvedGeminiProfile(
             _keyProtector.Unprotect(profile.EncryptedApiKey),
             profile.ModelId,
-            profile.ReasoningLevel);
+            reasoningLevel);
     }
 
     private void Apply(AiProviderProfile profile, UpsertAiProviderProfileRequest request, bool requireApiKey)
     {
-        if (!GeminiModelCatalog.TryResolve(request.ModelId, request.ReasoningLevel, out _, out var reasoningLevel))
+        if (!GeminiModelCatalog.TryResolve(request.Provider, request.ModelId, request.ReasoningLevel, out var capability, out var reasoningLevel))
         {
-            throw new ArgumentException("The selected Gemini model and reasoning level are not an approved combination.");
+            throw new ArgumentException("The selected provider, model, and reasoning level are not an approved combination.");
+        }
+
+        if (!capability.SupportsMatching && request.IsDefaultForMatching)
+        {
+            throw new ArgumentException("The selected model cannot be used for matching.");
+        }
+
+        if (!capability.SupportsAssistant && request.IsEnabledForAssistant)
+        {
+            throw new ArgumentException("The selected model cannot be used for the assistant.");
         }
 
         if (requireApiKey && string.IsNullOrWhiteSpace(request.ApiKey))
@@ -94,7 +105,7 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
             throw new ArgumentException("An API key is required when creating an AI provider profile.");
         }
 
-        profile.Provider = "gemini";
+        profile.Provider = GeminiModelCatalog.ProviderId;
         profile.DisplayName = request.DisplayName.Trim();
         profile.ModelId = request.ModelId;
         profile.ReasoningLevel = reasoningLevel;

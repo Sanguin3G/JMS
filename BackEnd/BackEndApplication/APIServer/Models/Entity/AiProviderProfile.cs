@@ -15,7 +15,7 @@ public sealed class AiProviderProfile
     public string DisplayName { get; set; } = "Gemini development profile";
 
     [Required, StringLength(100)]
-    public string ModelId { get; set; } = "gemini-3.5-flash-lite";
+    public string ModelId { get; set; } = "gemini-3.1-flash-lite";
 
     [Required, StringLength(20)]
     public string ReasoningLevel { get; set; } = "minimal";
