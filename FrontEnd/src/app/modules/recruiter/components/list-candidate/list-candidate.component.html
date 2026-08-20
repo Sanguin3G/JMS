@@ -37,9 +37,18 @@
                   <div class="col-4 textOver">
                      SDT: {{candidate?.phone}}
                   </div>
-               </div>
-            </div>
-            <div class="col-md-2 block">
+                </div>
+               <section class="match-insight" *ngIf="candidate.matchingInsight as insight" aria-label="Match evidence">
+                  <div class="insight-heading">
+                     <span>{{ candidate.matchingEligibilityStatus || insight.eligibilityStatus || 'review' }}</span>
+                     <strong *ngIf="insight.deterministicScore != null">{{ insight.deterministicScore }}/100 rules</strong>
+                  </div>
+                  <p>{{ candidate.matchingExplanation || insight.summary }}</p>
+                  <div class="insight-gap" *ngIf="insight.gaps?.length"><b>Gaps:</b> {{ insight.gaps?.join(' · ') }}</div>
+                  <small>Rules {{ candidate.matchingRulesVersion || insight.rulesVersion }} · {{ candidate.matchingProvider || insight.provider }}</small>
+               </section>
+             </div>
+             <div class="col-md-2 block">
                <div class="btn-grp float-end">
                   <button class="pr-2" title="Loại khỏi danh sách" (click)="openConfirmDialog(candidate)"><i
                         class="bi bi-person-dash h4"></i></button>

@@ -34,6 +34,9 @@ export class ListCandidateComponent {
       if (data.content?.length == 0) {
          data.content = null
       }
+      if (data.content) {
+         data.content = data.content.map(candidate => this.normalizeMatchingRecord(candidate));
+      }
       this.getPageRange()
    }
 
@@ -128,6 +131,7 @@ export class ListCandidateComponent {
    }
 
    private normalizeMatchingRecord(record: MatchingRecord): MatchingRecord {
+      const matchingInsight = this.parseExplanation(record.jsonMatching);
       return {
          ...record,
          award: this.parseArray(record.award),
@@ -136,7 +140,8 @@ export class ListCandidateComponent {
          jobExperience: this.parseArray(record.jobExperience),
          project: this.parseArray(record.project),
          skill: this.parseArray(record.skill),
-         jsonMatching: this.parseExplanation(record.jsonMatching)
+         jsonMatching: matchingInsight,
+         matchingInsight
       };
    }
 

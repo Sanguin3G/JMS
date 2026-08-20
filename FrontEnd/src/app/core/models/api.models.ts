@@ -199,6 +199,7 @@ export interface MatchingRecord {
    jobDescriptionId?: number;
    percentMatching?: number;
    jsonMatching?: string | MatchingExplanation | null;
+   matchingInsight?: MatchingExplanation | null;
    matchingRulesVersion?: string;
    matchingProvider?: string;
    matchingModel?: string;

@@ -97,6 +97,54 @@ button {
    flex-direction: column;
 }
 
+.match-insight {
+   flex: 1 0 100%;
+   margin: 12px 0 0 165px;
+   padding: 12px 14px;
+   border-left: 3px solid var(--accent, #d97757);
+   border-radius: 8px;
+   background: var(--surface-muted, #f5f1eb);
+   color: var(--text, #24313a);
+   font-size: 0.9rem;
+}
+
+.insight-heading {
+   display: flex;
+   justify-content: space-between;
+   gap: 12px;
+   margin-bottom: 4px;
+}
+
+.insight-heading strong {
+   color: var(--accent-strong, #9d4e38);
+}
+
+.match-insight p {
+   margin: 0 0 6px;
+}
+
+.insight-grid {
+   display: grid;
+   grid-template-columns: repeat(2, minmax(0, 1fr));
+   gap: 8px;
+}
+
+.match-insight small {
+   display: block;
+   margin-top: 8px;
+   color: var(--text-muted, #66727b);
+}
+
+@media (max-width: 700px) {
+   .match-insight {
+      margin-left: 0;
+   }
+
+   .insight-grid {
+      grid-template-columns: 1fr;
+   }
+}
+
 .pagination li a[aria-label="Previous"],
 .pagination li a[aria-label="Next"] {
    /* Hide the text but keep the functionality */

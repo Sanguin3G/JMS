@@ -57,6 +57,7 @@ export class MyApplyJobComponent {
    }
 
    private normalizeApplication(application: ApplicationRecord): ApplicationRecord {
+      const matchingInsight = this.parseExplanation(application.jsonMatching);
       return {
          ...application,
          award: this.parseArray(application.award),
@@ -65,7 +66,8 @@ export class MyApplyJobComponent {
          jobExperience: this.parseArray(application.jobExperience),
          project: this.parseArray(application.project),
          skill: this.parseArray(application.skill),
-         jsonMatching: this.parseExplanation(application.jsonMatching)
+         jsonMatching: matchingInsight,
+         matchingInsight
       };
    }
 

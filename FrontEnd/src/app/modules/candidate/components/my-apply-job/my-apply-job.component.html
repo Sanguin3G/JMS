@@ -43,6 +43,18 @@
             </div>
 
             <i class="fa-regular fa-eye btnEdit" (click)="openViewCVDialog(jd)"></i>
+            <section class="match-insight" *ngIf="jd.matchingInsight as insight" aria-label="Match explanation">
+               <div class="insight-heading">
+                  <span>Match notes</span>
+                  <strong *ngIf="insight.deterministicScore != null">{{ insight.deterministicScore }}/100 rules score</strong>
+               </div>
+               <p>{{ jd.matchingExplanation || insight.summary }}</p>
+               <div class="insight-grid" *ngIf="insight.gaps?.length || insight.strengths?.length">
+                  <div *ngIf="insight.strengths?.length"><b>Evidence</b> {{ insight.strengths?.join(' · ') }}</div>
+                  <div *ngIf="insight.gaps?.length"><b>Improve</b> {{ insight.gaps?.join(' · ') }}</div>
+               </div>
+               <small *ngIf="jd.matchingFailureReason || insight.failureReason">{{ jd.matchingFailureReason || insight.failureReason }}</small>
+            </section>
             <div class="aplied" *ngIf="jd.isSelected">Đã ứng tuyển</div>
             <div class="rejectCv" *ngIf="jd.isReject">Đã bị loại</div>
             <div class="notApplied" *ngIf="!jd.isSelected && !jd.isReject">Đang đợi duyệt</div>
