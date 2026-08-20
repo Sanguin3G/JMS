@@ -1,4 +1,5 @@
 using APIServer.DTO.EntityDTO;
+using APIServer.DTO.ResponseBody;
 using APIServer.Features.AiConfiguration;
 using APIServer.Features.AiConfiguration.Contracts;
 using APIServer.Features.Matching;
@@ -12,6 +13,7 @@ using APIServer.Repositories;
 using APIServer.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -59,7 +61,32 @@ namespace APIServer
             });
             // Add services to the container.
 
-            builder.Services.AddControllers()
+            builder.Services.AddControllers(options =>
+                {
+                    options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+                })
+                .ConfigureApiBehaviorOptions(options =>
+                {
+                    options.InvalidModelStateResponseFactory = context =>
+                    {
+                        var errors = context.ModelState
+                            .Where(entry => entry.Value?.Errors.Count > 0)
+                            .ToDictionary(
+                                entry => entry.Key,
+                                entry => entry.Value!.Errors
+                                    .Select(error => string.IsNullOrWhiteSpace(error.ErrorMessage)
+                                        ? "The value is invalid."
+                                        : error.ErrorMessage)
+                                    .ToArray());
+
+                        return new BadRequestObjectResult(new BaseResponseBody<Dictionary<string, string[]>>
+                        {
+                            statusCode = System.Net.HttpStatusCode.BadRequest,
+                            message = "Validation failed.",
+                            data = errors,
+                        });
+                    };
+                })
                 .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
             //JWT

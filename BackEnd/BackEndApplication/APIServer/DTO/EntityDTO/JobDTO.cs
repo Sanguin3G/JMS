@@ -8,7 +8,8 @@ namespace APIServer.DTO.EntityDTO
     {
         public int JobId { get; set; }
         public int? RecuirterId { get; set; }
-        public string Title { get; set; }
+        [Required, StringLength(200)]
+        public string Title { get; set; } = string.Empty;
         public string? EmploymentTypeName { get; set; }
         public string? GenderRequirement { get; set; }
         public string? AgeRequirement { get; set; }
