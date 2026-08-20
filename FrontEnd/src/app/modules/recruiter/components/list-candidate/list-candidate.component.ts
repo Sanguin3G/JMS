@@ -8,6 +8,8 @@ import { getRequest, postRequest } from 'src/app/service/api-requests';
 import { showError, showSuccess } from 'src/app/service/common';
 import { AVATAR_DEFAULT_URL, AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
 import { environment } from 'src/environments/environment';
+import { ApiResponse } from 'src/app/service/api-requests';
+import { MatchingExplanation, MatchingRecord, RecruiterCandidateDialogData } from 'src/app/core/models/api.models';
 @Component({
   standalone: false,
    selector: 'app-list-candidate',
@@ -18,7 +20,7 @@ export class ListCandidateComponent {
    avatar: any = AVATAR_DEFAULT_URL
    pageIndex: any = 0
    pageSize: any = 10
-   listDisplay: any
+   listDisplay: MatchingRecord[] = []
    isShowLeftMatched: boolean = false
    isHideModal: boolean = false
    URL: any = environment.Url
@@ -28,19 +30,19 @@ export class ListCandidateComponent {
       public dialogCvRef: MatDialogRef<ViewCvComponent>,
       public dialog: MatDialog,
       private toastr: ToastrService,
-      @Inject(MAT_DIALOG_DATA) public data: any) {
+      @Inject(MAT_DIALOG_DATA) public data: RecruiterCandidateDialogData) {
       if (data.content?.length == 0) {
          data.content = null
       }
-      if (data.content != null) this.getPageRange()
+      this.getPageRange()
    }
 
-   onClickSelect(item: any) {
+   onClickSelect(item: MatchingRecord) {
       //call api update cv selected status
       postRequest(apiRecruiter.UPDATE_CV_SELECTED_STATUS + "?recruiterId=" + this.data.recruiterId + "&jobDescriptionId=" + item.jobDescriptionId + "&CVMatchingId=" + item.id, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
             if (res.statusCode == 200) {
-               item.isSelected = item.isSelected == 0 ? 1 : 0
+               item.isSelected = !Boolean(item.isSelected)
             }
             console.log(res);
          })
@@ -52,7 +54,7 @@ export class ListCandidateComponent {
    async openListCandidateLeft(): Promise<void> {
       if (this.isShowLeftMatched == true) return;
 
-      await getRequest(apiRecruiter.GET_CV_MATCHED_LEFT, AuthorizationMode.BEARER_TOKEN, { recruiterId: this.data.recruiterId, jobDescriptionId: this.data.jdId })
+      await getRequest<ApiResponse<MatchingRecord[]>>(apiRecruiter.GET_CV_MATCHED_LEFT, AuthorizationMode.BEARER_TOKEN, { recruiterId: this.data.recruiterId, jobDescriptionId: this.data.jdId })
          .then(res => {
             if (res.statusCode === 200 && res.data != null) {
                this.data.content = res.data
@@ -65,23 +67,14 @@ export class ListCandidateComponent {
          })
    }
 
-   openViewCVModal(jd: any) {
+   openViewCVModal(jd: MatchingRecord) {
       this.isHideModal = true
-
-      while (typeof (jd.skill) != 'object') {
-         jd.award = JSON.parse(jd.award)
-         jd.certificate = JSON.parse(jd.certificate)
-         jd.education = JSON.parse(jd.education)
-         jd.jobExperience = JSON.parse(jd.jobExperience)
-         jd.jsonMatching = JSON.parse(jd.jsonMatching)
-         jd.project = JSON.parse(jd.project)
-         jd.skill = JSON.parse(jd.skill)
-      }
+      const normalized = this.normalizeMatchingRecord(jd);
 
       const dialogRef = this.dialog.open(ViewCvComponent, {
          width: '50%',
          height: '100%',
-         data: { jd: jd, recruiterId: this.data.recruiterId }
+         data: { jd: normalized, recruiterId: this.data.recruiterId }
       });
 
       dialogRef.afterClosed().subscribe(() => {
@@ -97,11 +90,12 @@ export class ListCandidateComponent {
 
    getPageRange() {
       const start = this.pageIndex * this.pageSize;
-      const end = Math.min((this.pageIndex + 1) * this.pageSize, this.data.content.length);
-      this.listDisplay = this.data.content.slice(start, end)
+      const content = this.data.content ?? [];
+      const end = Math.min((this.pageIndex + 1) * this.pageSize, content.length);
+      this.listDisplay = content.slice(start, end)
    }
 
-   onClickRejectCv(cv: any) {
+   onClickRejectCv(cv: MatchingRecord) {
       //API handle delete JD
       postRequest(`${apiRecruiter.REJECT_CV}?recruiterId=${this.data.recruiterId}&jobDescriptionId=${this.data.jdId}&CVMatchingId=${cv.id}`, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
@@ -120,7 +114,7 @@ export class ListCandidateComponent {
          })
    }
 
-   openConfirmDialog(jd: any): void {
+   openConfirmDialog(jd: MatchingRecord): void {
       const dialogRef = this.dialog.open(ConfirmDialogComponent, {
          width: '350px',
          data: { title: 'Xác nhận', content: 'Bạn có xác nhận xóa CV khỏi danh sách không?' }
@@ -131,5 +125,40 @@ export class ListCandidateComponent {
             this.onClickRejectCv(jd);
          }
       });
+   }
+
+   private normalizeMatchingRecord(record: MatchingRecord): MatchingRecord {
+      return {
+         ...record,
+         award: this.parseArray(record.award),
+         certificate: this.parseArray(record.certificate),
+         education: this.parseArray(record.education),
+         jobExperience: this.parseArray(record.jobExperience),
+         project: this.parseArray(record.project),
+         skill: this.parseArray(record.skill),
+         jsonMatching: this.parseExplanation(record.jsonMatching)
+      };
+   }
+
+   private parseArray(value: unknown): unknown[] {
+      if (Array.isArray(value)) return value;
+      if (typeof value !== 'string' || value.trim().length === 0) return [];
+      try {
+         const parsed: unknown = JSON.parse(value);
+         return Array.isArray(parsed) ? parsed : [];
+      } catch {
+         return [];
+      }
+   }
+
+   private parseExplanation(value: unknown): MatchingExplanation | null {
+      if (value && typeof value === 'object') return value as MatchingExplanation;
+      if (typeof value !== 'string' || value.trim().length === 0) return null;
+      try {
+         const parsed: unknown = JSON.parse(value);
+         return parsed && typeof parsed === 'object' ? parsed as MatchingExplanation : null;
+      } catch {
+         return null;
+      }
    }
 }

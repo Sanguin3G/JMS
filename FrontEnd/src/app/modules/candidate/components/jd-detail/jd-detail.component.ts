@@ -1,10 +1,11 @@
 import { Component, ViewEncapsulation } from '@angular/core';
-import { getRequest, postRequest } from 'src/app/service/api-requests';
+import { ApiResponse, getRequest, postRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiCandidate } from 'src/app/service/constant';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { getProfile, signOut } from 'src/app/service/localstorage';
 import { showError, showInfo, showSuccess } from 'src/app/service/common';
+import { CurriculumVitae, JobDetail, UserProfile } from 'src/app/core/models/api.models';
 @Component({
   standalone: false,
    selector: 'app-jd-detail',
@@ -15,8 +16,8 @@ import { showError, showInfo, showSuccess } from 'src/app/service/common';
 
 export class JdDetailComponent {
 
-   jd: any;
-   listCvs: any;
+   jd: JobDetail | null = null;
+   listCvs: CurriculumVitae[] = [];
    jobDetail = "";
    educationRequirement = "";
    experienceRequirement = "";
@@ -28,8 +29,8 @@ export class JdDetailComponent {
    descriptionCompany = "";
    listJds: any;
    isExpiredDate = false
-   JDId: any;
-   profile: any
+   JDId: number | null = null;
+   profile: UserProfile | null
    selectedCV = "0"
    isLogin = false
    pending = false
@@ -46,41 +47,38 @@ export class JdDetailComponent {
    constructor(private route: ActivatedRoute, private toastr: ToastrService, private router: Router) {
       this.profile = getProfile();
       this.isLogin = this.profile !== null
-      let id: any;
+      let id: string | null = null;
       this.route.params.subscribe(params => {
          id = params['id'];
       });
 
-      getRequest(apiCandidate.GET_JD_BY_ID, AuthorizationMode.BEARER_TOKEN, { jdId: id })
+      getRequest<ApiResponse<JobDetail>>(apiCandidate.GET_JD_BY_ID, AuthorizationMode.BEARER_TOKEN, { jdId: id })
          .then(res => {
-            this.jd = res?.data;
-            console.log(this.jd);
+            this.jd = res.data ?? null;
 
-            this.JDId = this.jd.jobId
-            this.jobDetail = this.jd?.jobDetail
-            this.educationRequirement = this.jd?.educationRequirement
-            this.experienceRequirement = this.jd?.experienceRequirement
-            this.skillRequirement = this.jd?.skillRequirement
-            this.certificateRequirement = this.jd?.certificateRequirement
-            this.projectRequirement = this.jd?.projectRequirement
-            this.candidateBenefit = this.jd?.candidateBenefit
-            this.otherInformation = this.jd?.otherInformation
-            this.descriptionCompany = this.jd?.companyDTO?.description
+            this.JDId = this.jd?.jobId ?? null
+            this.jobDetail = this.jd?.jobDetail ?? ''
+            this.educationRequirement = this.jd?.educationRequirement ?? ''
+            this.experienceRequirement = this.jd?.experienceRequirement ?? ''
+            this.skillRequirement = this.jd?.skillRequirement ?? ''
+            this.certificateRequirement = this.jd?.certificateRequirement ?? ''
+            this.projectRequirement = this.jd?.projectRequirement ?? ''
+            this.candidateBenefit = this.jd?.candidateBenefit ?? ''
+            this.otherInformation = this.jd?.otherInformation ?? ''
+            this.descriptionCompany = this.jd?.companyDTO?.description ?? ''
 
             const currentDate = new Date()
-            const expiredDate = this.convertStringDateInput(this.jd?.expiredDate)
-            if (expiredDate < currentDate) {
-               this.isExpiredDate = true
-            }
+            const expiredDate = this.jd?.expiredDate ? this.convertStringDateInput(this.jd.expiredDate) : null;
+            this.isExpiredDate = expiredDate ? expiredDate < currentDate : false;
          })
          .catch(error => {
          })
 
-         if(this.isLogin){
-            getRequest(`${apiCandidate.GET_ALL_CV_BY_ID}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, {})
+         if(this.profile){
+            const candidateId = this.profile.id;
+            getRequest<ApiResponse<CurriculumVitae[]>>(`${apiCandidate.GET_ALL_CV_BY_ID}/${candidateId}`, AuthorizationMode.BEARER_TOKEN, {})
             .then(res => {
-               this.listCvs = res?.data;
-               console.log(this.listCvs);
+               this.listCvs = res.data ?? [];
             })
             .catch(data => {
             })
@@ -105,7 +103,7 @@ export class JdDetailComponent {
 
 
    submitCv(event: any) {
-      if (this.validateSubmitCv()) {
+      if (this.validateSubmitCv() && this.profile && this.JDId) {
          this.pending = true
          postRequest(`${apiCandidate.CANDIDATE_APPLYJOB}?candidateId=${this.profile.id}&CVid=${this.selectedCV}&jobDescriptionId=${this.JDId}`, AuthorizationMode.BEARER_TOKEN, {})
             .then(res => {

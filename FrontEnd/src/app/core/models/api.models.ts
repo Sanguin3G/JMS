@@ -136,6 +136,61 @@ export interface JobSummary {
    employmentTypeName?: string;
    expiredDate?: string;
    isExpired?: boolean;
+   positionTitle?: string;
+   createdAt?: string;
+   numberRequirement?: number | null;
+   companyDTO?: CompanySummary;
+   categoryId?: number | null;
+   levelId?: number | null;
+   employmentTypeId?: number | null;
+}
+
+export interface CompanySummary {
+   companyId?: number;
+   companyName?: string;
+   recuirterFounder?: string;
+   avatarURL?: string;
+   description?: string;
+   yearOfEstablishment?: string | number;
+   size?: string;
+   webURL?: string;
+}
+
+export interface JobDetail extends JobSummary {
+   recuirterId?: number | null;
+   genderRequirement?: string;
+   ageRequirement?: string;
+   educationRequirement?: string;
+   jobDetail?: string;
+   experienceRequirement?: string;
+   projectRequirement?: string;
+   skillRequirement?: string;
+   certificateRequirement?: string;
+   otherInformation?: string;
+   candidateBenefit?: string;
+   contactEmail?: string;
+}
+
+export interface MatchingExplanation {
+   provider?: string;
+   model?: string;
+   status?: string;
+   score?: number | null;
+   skillScore?: number | null;
+   experienceScore?: number | null;
+   educationScore?: number | null;
+   summary?: string;
+   strengths?: string[];
+   gaps?: string[];
+   failureReason?: string | null;
+   deterministicScore?: number | null;
+   deterministicSkillScore?: number | null;
+   deterministicExperienceScore?: number | null;
+   deterministicEducationScore?: number | null;
+   deterministicProjectAndCertificateScore?: number | null;
+   eligibilityStatus?: string;
+   eligibilityReason?: string | null;
+   rulesVersion?: string;
 }
 
 export interface MatchingRecord {
@@ -143,8 +198,40 @@ export interface MatchingRecord {
    candidateId?: number;
    jobDescriptionId?: number;
    percentMatching?: number;
-   jsonMatching?: string;
+   jsonMatching?: string | MatchingExplanation | null;
+   matchingRulesVersion?: string;
+   matchingProvider?: string;
+   matchingModel?: string;
+   matchingStatus?: string;
+   matchingEligibilityStatus?: string;
+   matchingEligibilityReason?: string | null;
+   matchingExplanation?: string | null;
+   matchingFailureReason?: string | null;
+   matchingEvaluatedAtUtc?: string | null;
    isApplied?: boolean;
    isSelected?: boolean;
-   isReject?: boolean;
+   isReject?: boolean | null;
+   displayName?: string;
+   displayEmail?: string;
+   phone?: string;
+   dob?: string;
+   genderDisplay?: string;
+   avatarURL?: string;
+   skill?: unknown[] | string | null;
+   education?: unknown[] | string | null;
+   jobExperience?: unknown[] | string | null;
+   project?: unknown[] | string | null;
+   certificate?: unknown[] | string | null;
+   award?: unknown[] | string | null;
+   jobDescription?: JobDetail;
+   curriculumVitae?: CurriculumVitae;
+}
+
+export type ApplicationRecord = MatchingRecord;
+
+export interface RecruiterCandidateDialogData {
+   content: MatchingRecord[] | null;
+   listType: number;
+   recruiterId: number;
+   jdId: number;
 }

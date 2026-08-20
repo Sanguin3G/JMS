@@ -2,8 +2,12 @@
    <h4>Danh sách công việc</h4>
 
    <div class="row d-flex listJob">
-      <div *ngIf="!listJds" style="height: 500px;">
+      <div *ngIf="isLoading" style="height: 500px;">
          <app-view-loading></app-view-loading>
+      </div>
+
+      <div *ngIf="!isLoading && listJds.length === 0" style="height: 500px;">
+         <app-view-null></app-view-null>
       </div>
 
       <div class="itemJob" *ngFor="let jd of listJds | paginate: 
@@ -26,7 +30,7 @@
       </div>
    </div>
 
-   <div *ngIf="listJds">
+   <div *ngIf="!isLoading && listJds.length > 0">
       <nav aria-label="Page navigation example">
          <ul class="pagination justify-content-center">
             <pagination-controls class="pagi" previousLabel="" nextLabel=""

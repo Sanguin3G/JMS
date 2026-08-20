@@ -14,30 +14,30 @@
             <a href="/candidate/company-detail/{{jd?.jobDescription?.companyDTO?.companyId}}"
                style="text-decoration: none;">
                <div class="col-2">
-                  <img src="{{jd.jobDescription.companyDTO.avatarURL}}" alt="">
+               <img src="{{jd.jobDescription?.companyDTO?.avatarURL}}" alt="">
                </div>
             </a>
 
             <div class="col-9">
-               <div class="textHeader col-11" (click)="onClickViewJD(jd)">{{jd.jobDescription.title}}</div>
+               <div class="textHeader col-11" (click)="onClickViewJD(jd)">{{jd.jobDescription?.title}}</div>
                <div class="row time">
-                  <div class="col-4 textOver">Thời gian đăng bài: {{ jd.jobDescription.createdAt }}</div>
-                  <div class="col-4 textOver">Thời gian hạn bài đăng: {{ jd.jobDescription.expiredDate }}</div>
-                  <div class="col-4 textOver">Số lượng tuyển dụng: {{jd.jobDescription.numberRequirement ?
-                     jd.jobDescription.numberRequirement :
+                  <div class="col-4 textOver">Thời gian đăng bài: {{ jd.jobDescription?.createdAt }}</div>
+                  <div class="col-4 textOver">Thời gian hạn bài đăng: {{ jd.jobDescription?.expiredDate }}</div>
+                  <div class="col-4 textOver">Số lượng tuyển dụng: {{jd.jobDescription?.numberRequirement ?
+                     jd.jobDescription?.numberRequirement :
                      0}}</div>
                </div>
 
                <div class="row more">
                   <div class="col-4 textOver">
-                     Lĩnh vực: {{jd.jobDescription.categoryName}}
+                     Lĩnh vực: {{jd.jobDescription?.categoryName}}
                   </div>
 
                   <div class="col-4 textOver">
-                     Vị trí tuyển: {{jd.jobDescription.positionTitle}}
+                     Vị trí tuyển: {{jd.jobDescription?.positionTitle}}
                   </div>
                   <div class="col-4 textOver">
-                     Mức lương: {{jd.jobDescription.salary}}
+                     Mức lương: {{jd.jobDescription?.salary}}
                   </div>
                </div>
             </div>

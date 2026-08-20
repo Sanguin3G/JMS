@@ -43,9 +43,9 @@
                <div class="btn-grp float-end">
                   <button class="pr-2" title="Loại khỏi danh sách" (click)="openConfirmDialog(candidate)"><i
                         class="bi bi-person-dash h4"></i></button>
-                  <button *ngIf="candidate?.isSelected == 0" (click)="onClickSelect(candidate)" title="Yêu thích"><i
+                  <button *ngIf="!candidate?.isSelected" (click)="onClickSelect(candidate)" title="Yêu thích"><i
                         class="bi bi-star h4"></i></button>
-                  <button *ngIf="candidate?.isSelected == 1" (click)="onClickSelect(candidate)" title="Bỏ yêu thích"><i
+                  <button *ngIf="candidate?.isSelected" (click)="onClickSelect(candidate)" title="Bỏ yêu thích"><i
                         class="bi bi-star-fill h4"></i></button>
                </div>
             </div>
@@ -59,7 +59,7 @@
       <!-- <a *ngIf="data.listType != 2 && data.content != null" class="ml-auto"
          (click)="openListCandidateLeft()">Nhiều ứng viên hơn</a> -->
       </div>
-   <mat-paginator class="col-6" *ngIf="data.content != null" [length]="data.content?.length" [pageSize]="pageSize"
+   <mat-paginator class="col-6" *ngIf="data.content != null" [length]="data.content.length" [pageSize]="pageSize"
       [showFirstLastButtons]="true" [hidePageSize]="true" [pageIndex]="pageIndex"
       (page)="handlePage($event)"></mat-paginator>
    <button mat-button mat-dialog-close class="col-1 ml-auto">Close</button>

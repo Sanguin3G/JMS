@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { ListCandidateComponent } from '../list-candidate/list-candidate.component';
-import { getRequest, postRequest } from 'src/app/service/api-requests';
+import { ApiResponse, getRequest, postRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
 import { ActivatedRoute } from '@angular/router';
 import { OptionMatchModalComponent } from '../option-match-modal/option-match-modal.component';
@@ -10,6 +10,7 @@ import { environment } from 'src/environments/environment';
 import { ViewportScroller } from '@angular/common';
 import { getProfile } from 'src/app/service/localstorage';
 import { showError, showInfo, showSuccess, showSuccessWithTime } from 'src/app/service/common';
+import { JobDetail, MatchingRecord, RecruiterCandidateDialogData, UserProfile } from 'src/app/core/models/api.models';
 
 @Component({
   standalone: false,
@@ -18,9 +19,9 @@ import { showError, showInfo, showSuccess, showSuccessWithTime } from 'src/app/s
    styleUrls: ['./jd-detail.component.css']
 })
 export class JdDetailComponent {
-   jdDetail: any
-   id: any
-   listCandidate: any
+   jdDetail: JobDetail | null = null
+   id: string | null = null
+   listCandidate: MatchingRecord[] = []
    jobDescription: any
    jobBenefit: any
    jobRequirement: any
@@ -33,7 +34,7 @@ export class JdDetailComponent {
    candidateBenefitJd: any
    isMatching: boolean = false;
    Url = environment.Url;
-   profile: any
+   profile: UserProfile | null
 
    constructor(public dialog: MatDialog, private route: ActivatedRoute, private toastr: ToastrService, private viewportScroller: ViewportScroller) {
       this.route.params.subscribe(params => {
@@ -44,10 +45,9 @@ export class JdDetailComponent {
       this.viewportScroller.scrollToPosition([0, 0]);
 
       //get jd detail
-      getRequest(apiRecruiter.GET_JD_BY_RECRUITER + "/" + this.profile?.id + "/" + this.id, AuthorizationMode.BEARER_TOKEN, { jdId: this.id })
+      getRequest<ApiResponse<JobDetail>>(apiRecruiter.GET_JD_BY_RECRUITER + "/" + this.profile?.id + "/" + this.id, AuthorizationMode.BEARER_TOKEN, { jdId: this.id })
          .then(res => {
-            this.jdDetail = res.data
-            console.log(res);
+            this.jdDetail = res.data ?? null
             this.handleData();
          })
          .catch(data => {
@@ -67,11 +67,12 @@ export class JdDetailComponent {
             this.isMatching = true;
             showSuccess(this.toastr, "Xác nhận thành công <br/> Hệ thống đang tìm ứng viên phù hợp");
             // call matching api
-            postRequest(apiRecruiter.MATCHING_JOB + "?recruiterId=" + this.jdDetail.recuirterId + "&jobDescriptionId=" + this.jdDetail.jobId, AuthorizationMode.BEARER_TOKEN, {})
+            if (!this.jdDetail) return;
+            postRequest<ApiResponse<MatchingRecord[]>>(apiRecruiter.MATCHING_JOB + "?recruiterId=" + this.jdDetail.recuirterId + "&jobDescriptionId=" + this.jdDetail.jobId, AuthorizationMode.BEARER_TOKEN, {})
                .then(res => {
                   if (res.statusCode == 200) {
                      this.isMatching = false;
-                     showSuccessWithTime(this.toastr, "Đề xuất thành công <br/>Đã tìm thấy " + res.data.length + " ứng viên. Vui lòng xem chi tiết tại danh sách đề xuất", 3000);
+                     showSuccessWithTime(this.toastr, "Đề xuất thành công <br/>Đã tìm thấy " + (res.data?.length ?? 0) + " ứng viên. Vui lòng xem chi tiết tại danh sách đề xuất", 3000);
                   } else if(res.statusCode == 500){
                      this.isMatching = false;
                      showError(this.toastr, "Đề xuất thất bại <br/> GPT AI hiện tại đang có vấn đề. Vui lòng thử lại sau");
@@ -89,17 +90,24 @@ export class JdDetailComponent {
       });
    }
 
-   async openCandidateDialog(type: any): Promise<void> {
+   async openCandidateDialog(type: number): Promise<void> {
       // type 0: matched list 
       // type 1: matched list left
       // type 2: selected list
       const typeCandidate = type == 0 ? apiRecruiter.GET_CV_MATCHED : type == 1 ? apiRecruiter.GET_CV_MATCHED_LEFT : apiRecruiter.GET_CV_SELECTED
-      await getRequest(typeCandidate, AuthorizationMode.BEARER_TOKEN, { recruiterId: this.jdDetail.recuirterId, jobDescriptionId: this.jdDetail.jobId, pageIndex: 1 })
+      if (!this.jdDetail?.recuirterId) return;
+      await getRequest<ApiResponse<MatchingRecord[]>>(typeCandidate, AuthorizationMode.BEARER_TOKEN, { recruiterId: this.jdDetail.recuirterId, jobDescriptionId: this.jdDetail.jobId, pageIndex: 1 })
          .then(async res => {
-            this.listCandidate = res.data           
+            this.listCandidate = res.data ?? []
+            const dialogData: RecruiterCandidateDialogData = {
+               listType: type,
+               recruiterId: this.jdDetail?.recuirterId ?? 0,
+               jdId: this.jdDetail?.jobId ?? 0,
+               content: this.listCandidate
+            };
             this.dialog.open(ListCandidateComponent, {
                width: '60%',
-               data: { listType: type, recruiterId: this.jdDetail.recuirterId, jdId: this.jdDetail.jobId, content: this.listCandidate }
+               data: dialogData
             });
          })
          .catch(data => {
@@ -108,6 +116,7 @@ export class JdDetailComponent {
    }
 
    handleData() {
+      if (!this.jdDetail) return;
       this.descriptionJd = this.handleText(this.jdDetail.jobDetail);
       this.candidateBenefitJd = this.handleText(this.jdDetail.candidateBenefit);
       this.skillRequirementJd = this.handleText(this.jdDetail.skillRequirement);
@@ -116,8 +125,8 @@ export class JdDetailComponent {
       // this.jobRequirementJd = this.handleText(skillRq) + '\n' + this.handleText(expRq) + '\n' + this.handleText(eduRq)
    }
 
-   handleText(text: string) {
-      const lines: string[] = text.trim().split('\n');
+   handleText(text: string | undefined) {
+      const lines: string[] = (text ?? '').trim().split('\n');
       const linesWithHyphen: string[] = lines.map((line: string) => (line.startsWith('-') ? line : `${line}`));
       const newText: string = linesWithHyphen.join('\n');
       return newText
