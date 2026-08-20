@@ -1,5 +1,5 @@
 import { environment } from 'src/environments/environment';
-import { AuthorizationMode } from './constant';
+import { ADMIN_TOKEN, AuthorizationMode, CANDIDATE_TOKEN, RECRUITER_TOKEN } from './constant';
 import { BehaviorSubject } from 'rxjs';
 
 const apiUrl = environment.apiUrl;
@@ -48,17 +48,26 @@ function buildUrl(path: string, params: ApiQueryParams = {}): string {
    return `${apiUrl}${path}${path.includes('?') ? '&' : '?'}${query}`;
 }
 
+export function getStoredAccessToken(): string | null {
+   try {
+      // Current sign-ins write the generic token. The role-specific keys keep
+      // older development sessions working until the user signs in again.
+      return localStorage.getItem('token')
+         || localStorage.getItem(CANDIDATE_TOKEN)
+         || localStorage.getItem(RECRUITER_TOKEN)
+         || localStorage.getItem(ADMIN_TOKEN);
+   } catch {
+      return null;
+   }
+}
+
 function buildHeaders(authorizationMode: AuthorizationMode, isJsonBody: boolean): Headers {
    const headers = new Headers({ Accept: 'application/json' });
    if (isJsonBody) headers.set('Content-Type', 'application/json');
 
    if (authorizationMode === AuthorizationMode.BEARER_TOKEN) {
-      try {
-         const accessToken = localStorage.getItem('token');
-         if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
-      } catch {
-         // SSR/private browsing can make localStorage unavailable; send anonymously.
-      }
+      const accessToken = getStoredAccessToken();
+      if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
    }
 
    return headers;
