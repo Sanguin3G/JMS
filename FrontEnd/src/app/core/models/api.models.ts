@@ -235,3 +235,20 @@ export interface RecruiterCandidateDialogData {
    recruiterId: number;
    jdId: number;
 }
+
+export interface FaqEntry {
+   id: number;
+   question: string;
+   answer: string;
+   category: string;
+   isPublished?: boolean;
+   sortOrder?: number;
+   updatedAt?: string;
+}
+
+export interface FaqChatResponse {
+   answer: string;
+   source: string;
+   aiAvailable: boolean;
+   matchedFaqId?: number | null;
+}

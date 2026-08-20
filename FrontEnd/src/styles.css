@@ -26,6 +26,14 @@
     --accent: #5b4bdb;
     --accent-soft: #e9e7ff;
     --focus-ring: #5b4bdb;
+    --surface-color: var(--surface-primary);
+    --surface-muted-color: var(--surface-secondary);
+    --input-background: var(--surface-primary);
+    --text-color: var(--text-primary);
+    --muted-text-color: var(--text-secondary);
+    --border-color: var(--border-medium);
+    --accent-color: var(--accent);
+    --accent-contrast: #fff;
 
     --textColor1: #fffe;
 
@@ -54,6 +62,7 @@
     --accent: #a9a0ff;
     --accent-soft: #302c5c;
     --focus-ring: #c2bdff;
+    --accent-contrast: #15151b;
     --boxShadow: 0 4px 16px rgb(0 0 0 / 35%);
     --boxShadow1: 0 12px 32px rgb(0 0 0 / 35%);
 }

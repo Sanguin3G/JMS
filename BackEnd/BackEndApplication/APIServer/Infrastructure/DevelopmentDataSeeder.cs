@@ -22,6 +22,42 @@ public static class DevelopmentDataSeeder
 
     public static async Task SeedAsync(JMSDBContext dbContext, ILogger logger, CancellationToken cancellationToken = default)
     {
+        if (!await dbContext.FaqEntries.AnyAsync(cancellationToken))
+        {
+            dbContext.FaqEntries.AddRange(
+                new FaqEntry
+                {
+                    Question = "What is JMS matching?",
+                    Answer = "JMS compares a CV with a job using deterministic category eligibility and requirement-token scoring. Optional Gemini output adds an explanation; it does not make a hiring decision.",
+                    Keywords = "matching score eligibility explanation",
+                    Category = "Matching",
+                    SortOrder = 1,
+                    CreatedAt = new DateTime(2026, 8, 20, 9, 0, 0, DateTimeKind.Utc),
+                    UpdatedAt = new DateTime(2026, 8, 20, 9, 0, 0, DateTimeKind.Utc)
+                },
+                new FaqEntry
+                {
+                    Question = "How do I improve a CV match?",
+                    Answer = "Keep the CV current, describe concrete work in each section, and use truthful skills and experience that relate to the job requirements. The match explanation shows evidence and gaps when available.",
+                    Keywords = "CV resume improve gaps skills experience",
+                    Category = "Candidates",
+                    SortOrder = 2,
+                    CreatedAt = new DateTime(2026, 8, 20, 9, 0, 0, DateTimeKind.Utc),
+                    UpdatedAt = new DateTime(2026, 8, 20, 9, 0, 0, DateTimeKind.Utc)
+                },
+                new FaqEntry
+                {
+                    Question = "What happens when Gemini is unavailable?",
+                    Answer = "The deterministic match score and eligibility result still work. JMS labels the explanation as unavailable or failed and does not expose provider secrets to the browser.",
+                    Keywords = "Gemini AI unavailable fallback key",
+                    Category = "AI safety",
+                    SortOrder = 3,
+                    CreatedAt = new DateTime(2026, 8, 20, 9, 0, 0, DateTimeKind.Utc),
+                    UpdatedAt = new DateTime(2026, 8, 20, 9, 0, 0, DateTimeKind.Utc)
+                });
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
         if (await dbContext.Admins.AnyAsync(cancellationToken)
             || await dbContext.Candidates.AnyAsync(cancellationToken)
             || await dbContext.Recuirters.AnyAsync(cancellationToken)

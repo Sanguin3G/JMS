@@ -2,6 +2,8 @@ using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
 using APIServer.Features.AiConfiguration;
 using APIServer.Features.AiConfiguration.Contracts;
+using APIServer.Features.Faq;
+using APIServer.Features.Faq.Contracts;
 using APIServer.Features.Matching;
 using APIServer.Features.Matching.Contracts;
 using APIServer.Infrastructure;
@@ -223,6 +225,7 @@ namespace APIServer
             builder.Services.AddTransient<IMatchEvaluationProvider, GeminiMatchEvaluationProvider>();
             builder.Services.AddTransient<IMatchEvaluationService, MatchEvaluationService>();
             builder.Services.AddScoped<IAiProviderProfileService, AiProviderProfileService>();
+            builder.Services.AddScoped<IFaqService, FaqService>();
         }
     }
 }

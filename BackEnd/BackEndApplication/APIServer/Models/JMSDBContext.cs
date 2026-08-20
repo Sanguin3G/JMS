@@ -29,6 +29,7 @@ namespace APIServer.Models
         public virtual DbSet<Gender> Genders { get; set; }
         public virtual DbSet<Slider> Sliders { get; set; }
         public virtual DbSet<AiProviderProfile> AiProviderProfiles { get; set; }
+        public virtual DbSet<FaqEntry> FaqEntries { get; set; }
 
         public JMSDBContext()
         {

@@ -1,0 +1,31 @@
+<section class="faq-shell" aria-labelledby="faq-title">
+   <div class="faq-heading">
+      <div>
+         <span class="eyebrow">JMS FIELD NOTES</span>
+         <h2 id="faq-title">Questions before you enter the match</h2>
+      </div>
+      <p>Curated answers always work. Optional AI help is clearly labelled when it is available.</p>
+   </div>
+
+   <div class="faq-tools">
+      <label class="visually-hidden" for="faq-search">Search help</label>
+      <input id="faq-search" type="search" [(ngModel)]="query" (keyup.enter)="search()" placeholder="Search CVs, matching, or AI settings">
+      <button type="button" class="faq-button" (click)="search()" [disabled]="isLoading">Search</button>
+   </div>
+
+   <div class="faq-chat">
+      <label class="visually-hidden" for="faq-question">Ask JMS help</label>
+      <input id="faq-question" type="text" [(ngModel)]="question" (keyup.enter)="ask()" placeholder="Ask a short question">
+      <button type="button" class="faq-button faq-button-accent" (click)="ask()" [disabled]="isAsking || !question.trim()">{{ isAsking ? 'Thinking…' : 'Ask help' }}</button>
+   </div>
+   <p *ngIf="answer" class="faq-answer"><strong>{{ answerSource }}:</strong> {{ answer }}</p>
+
+   <div class="faq-list" *ngIf="!isLoading; else faqLoading">
+      <details *ngFor="let entry of entries">
+         <summary>{{ entry.question }}</summary>
+         <p>{{ entry.answer }}</p>
+      </details>
+      <p *ngIf="entries.length === 0" class="faq-empty">No curated answer matched that search. Try a broader phrase.</p>
+   </div>
+   <ng-template #faqLoading><p class="faq-empty">Loading the help notes…</p></ng-template>
+</section>
