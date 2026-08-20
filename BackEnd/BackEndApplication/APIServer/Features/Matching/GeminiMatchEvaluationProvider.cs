@@ -1,5 +1,7 @@
 using System.Text;
 using System.Text.Json;
+using APIServer.Features.AiConfiguration;
+using APIServer.Features.AiConfiguration.Contracts;
 using APIServer.Features.Matching.Contracts;
 using APIServer.Models.Entity;
 using Google.GenAI;
@@ -7,7 +9,7 @@ using Google.GenAI.Types;
 
 namespace APIServer.Features.Matching;
 
-public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, ILogger<GeminiMatchEvaluationProvider> logger)
+public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, IAiProviderProfileService aiProviderProfileService, ILogger<GeminiMatchEvaluationProvider> logger)
     : IMatchEvaluationProvider
 {
     private const string DefaultModel = "gemini-3.5-flash-lite";
@@ -20,9 +22,16 @@ public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, 
         CurriculumVitae curriculumVitae,
         CancellationToken cancellationToken = default)
     {
-        var apiKey = configuration["Ai:Gemini:ApiKey"]
+        var activeProfile = await aiProviderProfileService.GetActiveGeminiMatchingProfileAsync(cancellationToken);
+        var apiKey = activeProfile?.ApiKey
+            ?? configuration["Ai:Gemini:ApiKey"]
             ?? System.Environment.GetEnvironmentVariable("GEMINI_API_KEY");
-        var model = configuration["Ai:Gemini:Model"] ?? DefaultModel;
+        var model = activeProfile?.ModelId
+            ?? configuration["Ai:Gemini:Model"]
+            ?? DefaultModel;
+        var reasoningLevel = activeProfile?.ReasoningLevel
+            ?? configuration["Ai:Gemini:ReasoningLevel"]
+            ?? GeminiModelCatalog.DefaultReasoningLevel;
 
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -39,7 +48,11 @@ public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, 
                 {
                     ResponseMimeType = "application/json",
                     Temperature = 0.1,
-                    MaxOutputTokens = 900
+                    MaxOutputTokens = 900,
+                    ThinkingConfig = new ThinkingConfig
+                    {
+                        ThinkingLevel = ToThinkingLevel(reasoningLevel)
+                    }
                 },
                 cancellationToken: cancellationToken);
 
@@ -145,6 +158,15 @@ public sealed class GeminiMatchEvaluationProvider(IConfiguration configuration, 
     }
 
     private static int? Clamp(int? score) => score is null ? null : Math.Clamp(score.Value, 0, 100);
+
+    private static ThinkingLevel ToThinkingLevel(string reasoningLevel) => reasoningLevel switch
+    {
+        "minimal" => ThinkingLevel.Minimal,
+        "low" => ThinkingLevel.Low,
+        "medium" => ThinkingLevel.Medium,
+        "high" => ThinkingLevel.High,
+        _ => ThinkingLevel.Minimal
+    };
 
     private static string Limit(string? value, int maximumLength)
     {

@@ -107,4 +107,6 @@ export enum apiAdmin{
     CHANGE_ACTIVE_RECRUITER = '/api/Admin/update-active-status?recruiterId=',
     GET_STATISTIC = '/api/Admin/get-statistic',
     CHANGE_PASSWORD = '/api/Admin/change-password',
+    GET_GEMINI_OPTIONS = '/api/admin/ai-profiles/gemini-options',
+    AI_PROFILES = '/api/admin/ai-profiles',
 }

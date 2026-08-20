@@ -270,6 +270,7 @@ ServiceFabricBackup/
 BackEnd/BackEndApplication/APIServer/App_Data/*.db
 BackEnd/BackEndApplication/APIServer/App_Data/*.db-shm
 BackEnd/BackEndApplication/APIServer/App_Data/*.db-wal
+BackEnd/BackEndApplication/APIServer/App_Data/keys/
 
 # Business Intelligence projects
 *.rdl.data

@@ -1,4 +1,6 @@
 using APIServer.DTO.EntityDTO;
+using APIServer.Features.AiConfiguration;
+using APIServer.Features.AiConfiguration.Contracts;
 using APIServer.Features.Matching;
 using APIServer.Features.Matching.Contracts;
 using APIServer.IRepositories;
@@ -8,6 +10,7 @@ using APIServer.Models.Entity;
 using APIServer.Repositories;
 using APIServer.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -24,6 +27,9 @@ namespace APIServer
             var builder = WebApplication.CreateBuilder(args);
 
             var allowFE = "_AllowFrontEndClient";
+            var dataProtectionPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys");
+            Directory.CreateDirectory(dataProtectionPath);
+            builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(dataProtectionPath));
 
             //add Cors
             builder.Services.AddCors(options =>
@@ -149,6 +155,7 @@ namespace APIServer
             builder.Services.AddTransient<IAdminService, AdminService>();
             builder.Services.AddTransient<IMatchEvaluationProvider, GeminiMatchEvaluationProvider>();
             builder.Services.AddTransient<IMatchEvaluationService, MatchEvaluationService>();
+            builder.Services.AddScoped<IAiProviderProfileService, AiProviderProfileService>();
         }
     }
 }

@@ -81,3 +81,15 @@ export async function postFileRequest(url: string, authorizationMode: Authorizat
    const res = await response.json();
    return res
 }
+
+export async function putRequest(url: string, authorizationMode: AuthorizationMode, data: any) {
+   const headers = await getHeader(authorizationMode)
+   const response = await fetch(`${apiURL}${url}`, {
+      method: "PUT",
+      cache: "no-cache",
+      headers: headers,
+      body: JSON.stringify(data),
+   })
+
+   return await response.json();
+}
