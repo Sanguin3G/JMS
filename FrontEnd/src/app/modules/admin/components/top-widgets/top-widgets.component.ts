@@ -19,7 +19,7 @@ export class TopWidgetsComponent {
   }
 
   getStatistic(){
-    getRequest(apiAdmin.GET_STATISTIC, AuthorizationMode.PUBLIC)
+    getRequest(apiAdmin.GET_STATISTIC, AuthorizationMode.BEARER_TOKEN)
          .then(res => {
             if(res.statusCode === 200){
               this.company = res.data.totalCompany

@@ -12,6 +12,7 @@ namespace APIServer.Controllers.AdminModule
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = GlobalStrings.ROLE_ADMIN)]
     public class AdminController : Controller
     {
         private readonly IAdminService _adminService;
@@ -443,7 +444,6 @@ namespace APIServer.Controllers.AdminModule
             };
         }
 
-        [AllowAnonymous]
         [HttpPost("change-password")]
         public BaseResponseBody<int> ChangePassword(int adminId, string oldPassword, string newPassword, string confirmPassword)
         {

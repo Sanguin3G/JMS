@@ -21,7 +21,7 @@ export class CompanyViewComponent {
     public dialog: MatDialog, @Inject(MAT_DIALOG_DATA) public data: any,
     private router: Router) {
 
-    getRequest(apiAdmin.GET_COMPANY_BY_ID + "/" + data, AuthorizationMode.PUBLIC)
+    getRequest(apiAdmin.GET_COMPANY_BY_ID + "/" + data, AuthorizationMode.BEARER_TOKEN)
       .then(res => {
         this.company = res?.data
         this.htmlContent = this.company?.description;

@@ -61,7 +61,7 @@ export class CandidateComponent {
   }
 
   getListCandidate() {
-    getRequest(apiAdmin.GET_ALL_CANDIDATE, AuthorizationMode.PUBLIC)
+    getRequest(apiAdmin.GET_ALL_CANDIDATE, AuthorizationMode.BEARER_TOKEN)
       .then(res => {
         this.candidates = res?.data
         this.getPageRange()
@@ -164,7 +164,7 @@ export class CandidateComponent {
   async getPrimaryCv(id: any) {
     let listCV: string | any[] = []
 
-    await getRequest(apiAdmin.GET_ALL_CV_BY_ID + id, AuthorizationMode.PUBLIC)
+    await getRequest(apiAdmin.GET_ALL_CV_BY_ID + id, AuthorizationMode.BEARER_TOKEN)
       .then(res => {
         listCV = res?.data
       })
@@ -199,7 +199,7 @@ export class CandidateComponent {
   }
 
   changeActive(id: any, isActive: any){
-    postRequest(apiAdmin.CHANGE_ACTIVE_CANDIDATE + id, AuthorizationMode.PUBLIC, {})
+    postRequest(apiAdmin.CHANGE_ACTIVE_CANDIDATE + id, AuthorizationMode.BEARER_TOKEN, {})
       .then(res => {
         if(res.statusCode === 200){
           console.log('success')

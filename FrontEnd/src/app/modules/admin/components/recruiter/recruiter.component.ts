@@ -25,7 +25,7 @@ export class RecruiterComponent {
   }
 
   getListRecruiter() {
-    getRequest(apiAdmin.GET_ALL_RECRUITER, AuthorizationMode.PUBLIC)
+    getRequest(apiAdmin.GET_ALL_RECRUITER, AuthorizationMode.BEARER_TOKEN)
       .then(res => {
         this.recruiters = res?.data
         console.log(this.recruiters);
@@ -68,7 +68,7 @@ export class RecruiterComponent {
   }
 
   changeActive(id: any, isActive: any) {
-    postRequest(apiAdmin.CHANGE_ACTIVE_RECRUITER + id, AuthorizationMode.PUBLIC, {})
+    postRequest(apiAdmin.CHANGE_ACTIVE_RECRUITER + id, AuthorizationMode.BEARER_TOKEN, {})
       .then(res => {
         if (res.statusCode === 200) {
           console.log('success')
@@ -86,7 +86,7 @@ export class RecruiterComponent {
   }
 
   getListCompany() {
-    getRequest(apiAdmin.GET_ALL_COMPANY, AuthorizationMode.PUBLIC)
+    getRequest(apiAdmin.GET_ALL_COMPANY, AuthorizationMode.BEARER_TOKEN)
       .then(res => {
         this.companies = res?.data
         console.log(this.companies)

@@ -26,7 +26,7 @@ export class CompanyComponent {
   }
 
   getListCompany() {
-    getRequest(apiAdmin.GET_ALL_COMPANY, AuthorizationMode.PUBLIC)
+    getRequest(apiAdmin.GET_ALL_COMPANY, AuthorizationMode.BEARER_TOKEN)
       .then(res => {
         this.companies = res?.data
         console.log(this.companies)

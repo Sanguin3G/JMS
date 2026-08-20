@@ -41,7 +41,7 @@ export class JdDetailComponent {
     });
 
     //get jd detail
-    getRequest(apiAdmin.GET_JD_BY_ID + "/" + this.id, AuthorizationMode.PUBLIC)
+    getRequest(apiAdmin.GET_JD_BY_ID + "/" + this.id, AuthorizationMode.BEARER_TOKEN)
       .then(res => {
         this.jdDetail = res.data
         console.log(res);
