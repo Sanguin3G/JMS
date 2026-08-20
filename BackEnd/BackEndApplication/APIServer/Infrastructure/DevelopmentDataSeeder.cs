@@ -278,7 +278,9 @@ public static class DevelopmentDataSeeder
                 CategoryName = productCategory.CategoryName, ApplyDate = now.AddDays(-2), CreatedDate = now.AddDays(-2), LastUpdateDate = now.AddDays(-2),
                 PercentMatching = 84, IsMatched = true, IsApplied = true, IsSelected = false, IsReject = false, Theme = anCv.Theme, Font = anCv.Font,
                 AvatarURL = PortraitOne, Skill = "Angular; TypeScript", JobExperience = "Frontend Developer", Education = "Software Engineering",
-                Project = "JMS Fork", JSONMatching = "{\"summary\":\"Development seed: strong frontend and product fit.\",\"source\":\"seed\"}"
+                Project = "JMS Fork", JSONMatching = "{\"summary\":\"Development seed: strong frontend and product fit.\",\"source\":\"seed\"}",
+                MatchingRulesVersion = "deterministic-v1", MatchingProvider = "development-seed", MatchingModel = "fixture",
+                MatchingStatus = "complete", MatchingEligibilityStatus = "eligible", MatchingExplanation = "Development seed: strong frontend and product fit.", MatchingEvaluatedAtUtc = now.AddDays(-2)
             },
             new CVMatching
             {
@@ -288,7 +290,9 @@ public static class DevelopmentDataSeeder
                 CategoryName = creativeCategory.CategoryName, ApplyDate = now.AddDays(-1), CreatedDate = now.AddDays(-1), LastUpdateDate = now.AddDays(-1),
                 PercentMatching = 88, IsMatched = true, IsApplied = false, IsSelected = true, IsReject = false, Theme = ducCv.Theme, Font = ducCv.Font,
                 AvatarURL = PortraitThree, Skill = "Product design; Prototyping", JobExperience = "Junior Product Designer", Education = "Interaction Design",
-                Project = "Night Shift Notes", JSONMatching = "{\"summary\":\"Development seed: strong portfolio and craft fit.\",\"source\":\"seed\"}"
+                Project = "Night Shift Notes", JSONMatching = "{\"summary\":\"Development seed: strong portfolio and craft fit.\",\"source\":\"seed\"}",
+                MatchingRulesVersion = "deterministic-v1", MatchingProvider = "development-seed", MatchingModel = "fixture",
+                MatchingStatus = "complete", MatchingEligibilityStatus = "eligible", MatchingExplanation = "Development seed: strong portfolio and craft fit.", MatchingEvaluatedAtUtc = now.AddDays(-1)
             });
 
         await dbContext.SaveChangesAsync(cancellationToken);

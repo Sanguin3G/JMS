@@ -1,3 +1,5 @@
+using APIServer.Features.Matching;
+
 namespace APIServer.Features.Matching.Contracts;
 
 public sealed record MatchEvaluation(
@@ -11,4 +13,12 @@ public sealed record MatchEvaluation(
     string Summary,
     IReadOnlyList<string> Strengths,
     IReadOnlyList<string> Gaps,
-    string? FailureReason = null);
+    string? FailureReason = null,
+    int? DeterministicScore = null,
+    int? DeterministicSkillScore = null,
+    int? DeterministicExperienceScore = null,
+    int? DeterministicEducationScore = null,
+    int? DeterministicProjectAndCertificateScore = null,
+    string EligibilityStatus = "unknown",
+    string? EligibilityReason = null,
+    string RulesVersion = DeterministicMatchScorer.RulesVersion);

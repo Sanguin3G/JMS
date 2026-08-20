@@ -1,6 +1,7 @@
 ﻿using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
+using APIServer.Features.Matching;
 using APIServer.Features.Matching.Contracts;
 using APIServer.IRepositories;
 using APIServer.IServices;
@@ -162,8 +163,7 @@ namespace APIServer.Services
                                 CVApplied.AvatarURL = "/images_clone/" + fileName;
                             }
                             var matchEvaluation = await _matchEvaluationService.EvaluateAsync(jobDescription, cv1);
-                            CVApplied.JSONMatching = JsonConvert.SerializeObject(matchEvaluation);
-                            CVApplied.PercentMatching = matchEvaluation.Score / 100f;
+                            MatchEvaluationPersistence.Apply(CVApplied, matchEvaluation);
 
                             return _CVMatchingRepository.Create(CVApplied);
                         }

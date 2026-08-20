@@ -2,6 +2,7 @@
 using APIServer.DTO;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
+using APIServer.Features.Matching;
 using APIServer.Features.Matching.Contracts;
 using APIServer.IRepositories;
 using APIServer.IServices;
@@ -321,8 +322,7 @@ namespace APIServer.Services
                         }
 
                         var matchEvaluation = await _matchEvaluationService.EvaluateAsync(jd, cv);
-                        CVApplied.JSONMatching = JsonConvert.SerializeObject(matchEvaluation);
-                        CVApplied.PercentMatching = matchEvaluation.Score / 100f;
+                        MatchEvaluationPersistence.Apply(CVApplied, matchEvaluation);
                         CVApplied.CurriculumVitaeId = curriculumVitae.Id;
                         CVApplied.IsMatched = true;
                         CVApplied.IsApplied = false;

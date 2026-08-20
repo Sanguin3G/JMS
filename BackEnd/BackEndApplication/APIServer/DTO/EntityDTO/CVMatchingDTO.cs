@@ -23,6 +23,15 @@
         public DateTime ApplyDate { get; set; }
         public string? JSONMatching { get; set; }
         public float? PercentMatching { get; set; }
+        public string? MatchingRulesVersion { get; set; }
+        public string? MatchingProvider { get; set; }
+        public string? MatchingModel { get; set; }
+        public string? MatchingStatus { get; set; }
+        public string? MatchingEligibilityStatus { get; set; }
+        public string? MatchingEligibilityReason { get; set; }
+        public string? MatchingExplanation { get; set; }
+        public string? MatchingFailureReason { get; set; }
+        public DateTime? MatchingEvaluatedAtUtc { get; set; }
         public string? EmploymentTypeName { get; set; }
         public virtual LevelDTO? Level { get; set; }
         public string? CategoryName { get; set; }

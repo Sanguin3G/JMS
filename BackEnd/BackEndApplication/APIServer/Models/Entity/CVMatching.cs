@@ -32,6 +32,20 @@ namespace APIServer.Models.Entity
         public DateTime ApplyDate { get; set; }
         public string? JSONMatching { get; set; }
         public float? PercentMatching { get; set; }
+        [StringLength(50)]
+        public string? MatchingRulesVersion { get; set; }
+        [StringLength(50)]
+        public string? MatchingProvider { get; set; }
+        [StringLength(100)]
+        public string? MatchingModel { get; set; }
+        [StringLength(30)]
+        public string? MatchingStatus { get; set; }
+        [StringLength(30)]
+        public string? MatchingEligibilityStatus { get; set; }
+        public string? MatchingEligibilityReason { get; set; }
+        public string? MatchingExplanation { get; set; }
+        public string? MatchingFailureReason { get; set; }
+        public DateTime? MatchingEvaluatedAtUtc { get; set; }
         public int? LevelId { get; set; }
         public int? EmploymentTypeId { get; set; }
         public virtual EmploymentType? EmploymentType { get; set; }
