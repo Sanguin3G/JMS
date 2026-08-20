@@ -4,9 +4,8 @@ import { ToastrService } from 'ngx-toastr';
 import { getRequest, postFileRequest, postRequest } from 'src/app/service/api-requests';
 import { showError, showInfo, showSuccess } from 'src/app/service/common';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
-import { getProfile, getToken, saveItem, signOut } from 'src/app/service/localstorage';
+import { getProfile, getToken, saveItem } from 'src/app/service/localstorage';
 
-declare var $: any;
 @Component({
    selector: 'app-profile',
    templateUrl: './profile.component.html',
@@ -272,11 +271,11 @@ export class ProfileComponent {
          })
    }
 
-   getFile(event: any) {
-      if ($('#avatarCv')[0].files[0]) {
+   getFile(event: Event) {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
 
          let formData: FormData = new FormData();
-         let file: File = $('#avatarCv')[0].files[0];
          formData.append('file', file, file.name);
 
          postFileRequest(`${apiRecruiter.UPDATE_IMAGE_RECRUITER}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, formData)

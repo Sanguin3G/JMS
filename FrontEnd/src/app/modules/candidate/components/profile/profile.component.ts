@@ -4,9 +4,8 @@ import { ToastrService } from 'ngx-toastr';
 import { postFileRequest, postRequest } from 'src/app/service/api-requests';
 import { showError, showInfo, showSuccess } from 'src/app/service/common';
 import { AuthorizationMode, apiCandidate } from 'src/app/service/constant';
-import { getProfile, getToken, saveItem, saveToken, signOut } from 'src/app/service/localstorage';
+import { getToken, saveItem } from 'src/app/service/localstorage';
 
-declare var $: any;
 @Component({
    selector: 'app-candidate-profile',
    templateUrl: './profile.component.html',
@@ -21,6 +20,7 @@ export class ProfileComponent {
    Dob: any
    Male: boolean = true
    Female: any
+   genderId = '1';
 
 
    invalidFullName: boolean = false;
@@ -67,6 +67,7 @@ export class ProfileComponent {
                this.FullName = this.profile.fullName
                this.Dob = this.profile.dob.split('T')[0]
                this.Phone = this.profile.phoneNumber
+               this.genderId = this.profile.isMale ? '1' : '2';
 
                saveItem("profile", res.data);
             }
@@ -79,11 +80,11 @@ export class ProfileComponent {
       this.getProfile()
    }
 
-   getFile(event: any) {
-      if ($('#avatarCv')[0].files[0]) {
+   getFile(event: Event) {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
 
          let formData: FormData = new FormData();
-         let file: File = $('#avatarCv')[0].files[0];
          formData.append('file', file, file.name);
 
          postFileRequest(`${apiCandidate.UPDATE_AVATAR_CANDIDATE}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, formData)
@@ -102,10 +103,15 @@ export class ProfileComponent {
 
    SubmitForm() {
       if (this.validAllFiled()) {
-         console.log($('input[name="gender"]:checked').val());
+         const parameters = new URLSearchParams({
+            candidateId: this.profile.id.toString(),
+            fullName: this.FullName,
+            phone: this.Phone,
+            DOB: this.Dob,
+            genderId: this.genderId
+         });
 
-         postRequest(`${apiCandidate.UPDATE_PROFILE_CANDIDATE}?candidateId=${this.profile.id}
-         &fullName=${this.FullName}&phone=${this.Phone}&DOB=${this.Dob}&genderId=${$('input[name="gender"]:checked').val()}`, AuthorizationMode.BEARER_TOKEN, {})
+         postRequest(`${apiCandidate.UPDATE_PROFILE_CANDIDATE}?${parameters.toString()}`, AuthorizationMode.BEARER_TOKEN, {})
             .then(res => {
                if (res.statusCode == 200) {
                   showSuccess(this.toastr, "Chỉnh sửa thông tin cá nhân thành công")

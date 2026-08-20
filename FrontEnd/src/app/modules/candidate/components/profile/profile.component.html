@@ -63,14 +63,14 @@
 
             <div class="d-flex">
                <div class="form-check ml-2">
-                  <input class="form-check-input shadow-none" [checked]="profile?.isMale === true" type="radio"
+                  <input class="form-check-input shadow-none" [(ngModel)]="genderId" type="radio"
                      name="gender" value="1" id="nam">
                   <label class="form-check-label" for="nam">
                      Nam
                   </label>
                </div>
                <div class="form-check  ml-2">
-                  <input class="form-check-input shadow-none" [checked]="profile?.isMale  === false" type="radio"
+                  <input class="form-check-input shadow-none" [(ngModel)]="genderId" type="radio"
                      name="gender" value="2" id="nu">
                   <label class="form-check-label" for="nu">
                      Nữ
