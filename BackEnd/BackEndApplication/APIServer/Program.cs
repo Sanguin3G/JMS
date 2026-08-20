@@ -114,6 +114,15 @@ namespace APIServer
                         ValidateLifetime = true,
                         ClockSkew = TimeSpan.Zero,
                     };
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                            logger.LogWarning(context.Exception, "JWT authentication failed for {Path}.", context.HttpContext.Request.Path);
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

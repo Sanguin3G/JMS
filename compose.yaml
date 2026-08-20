@@ -6,9 +6,11 @@ services:
       target: api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__JobConstr: Data Source=/app/App_Data/jms.db
       FE_Port: http://localhost:4200
-      Jwt__Key: ${JMS_JWT_KEY:-local-development-key-change-me}
+      JMS_PUBLIC_URL: http://localhost:8080
+      Jwt__Key: ${JMS_JWT_KEY:-local-development-jwt-key-change-me-2026}
     volumes:
       - jms-data:/app/App_Data
     ports:

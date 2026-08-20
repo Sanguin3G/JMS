@@ -14,6 +14,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Globalization;
 using X.PagedList;
 
 namespace APIServer.Services
@@ -151,17 +152,7 @@ namespace APIServer.Services
                             CVApplied.IsReject = false;
 
                             //clone avt img to another folder
-                            if(!Validation.checkStringIsEmpty(cv1.AvatarURL))
-                            {
-                                string fileToCopy = Directory.GetCurrentDirectory()
-                                    + "/wwwroot" + cv1.AvatarURL;
-                                var fileName = cv1.AvatarURL.Replace("\\images\\", "");
-                                string destinationDirectory = Directory.GetCurrentDirectory()
-                                    + "/wwwroot/images_clone/";
-
-                                File.Copy(fileToCopy, destinationDirectory + fileName);
-                                CVApplied.AvatarURL = "/images_clone/" + fileName;
-                            }
+                            PreserveAvatarSnapshot(cv1.AvatarURL, CVApplied);
                             var matchEvaluation = await _matchEvaluationService.EvaluateAsync(jobDescription, cv1);
                             MatchEvaluationPersistence.Apply(CVApplied, matchEvaluation);
 
@@ -256,7 +247,7 @@ namespace APIServer.Services
             var claims = new[] {
                         new Claim(JwtRegisteredClaimNames.Sub, _configuration["Jwt:Subject"]),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                        new Claim(JwtRegisteredClaimNames.Iat, DateTime.Now.ToString()),
+                        new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)),
                         new Claim("UserId", candidate.Id.ToString()),
                         new Claim("DisplayName", candidate.FullName),
                         new Claim("UserName", candidate.UserName),
@@ -324,6 +315,36 @@ namespace APIServer.Services
         public bool VerifyPassword(string password, string hashedPassword)
         {
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
+        }
+
+        private static void PreserveAvatarSnapshot(string? avatarUrl, CVMatching matching)
+        {
+            if (string.IsNullOrWhiteSpace(avatarUrl))
+            {
+                return;
+            }
+
+            // Development seed data uses curated remote URLs. Only copy a local
+            // upload when it actually resolves inside wwwroot; never treat a URL
+            // query string as a filesystem path.
+            matching.AvatarURL = avatarUrl;
+            if (Uri.TryCreate(avatarUrl, UriKind.Absolute, out _))
+            {
+                return;
+            }
+
+            var relativePath = avatarUrl.Replace('\\', '/').TrimStart('/');
+            var sourcePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath);
+            if (!File.Exists(sourcePath))
+            {
+                return;
+            }
+
+            var fileName = Path.GetFileName(relativePath);
+            var destinationDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images_clone");
+            Directory.CreateDirectory(destinationDirectory);
+            File.Copy(sourcePath, Path.Combine(destinationDirectory, fileName), overwrite: true);
+            matching.AvatarURL = "/images_clone/" + fileName;
         }
     }
 }

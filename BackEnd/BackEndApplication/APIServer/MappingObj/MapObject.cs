@@ -9,11 +9,10 @@ namespace APIServer.MappingObj
     {
         public MapObject()
         {
-            var configuration = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("Properties\\launchSettings.json")
-    .Build();
-            var host = configuration["profiles:APIServer:applicationUrl"];
+            // Profiles are created during container startup, where launchSettings.json
+            // is intentionally absent. Keep the public asset host environment-driven
+            // instead of coupling mapping to a Windows-only development file.
+            var host = ResolvePublicHost();
 
             CreateMap<UserCreatingDTO, Recuirter>()
                 .ForMember(x => x.DOB, src => src.MapFrom(src => Validation.convertDateTime(src.dobStr)));
@@ -21,10 +20,10 @@ namespace APIServer.MappingObj
                 .ForMember(x => x.DOB_Display, src => src.MapFrom(src => src.DOB.ToString(GlobalStrings.FORMAT_DATE)))
                 .ForMember(x => x.CreatedDateDisplay, src => src.MapFrom(src => src.CreatedDate.ToString(GlobalStrings.FORMAT_DATE)))
                 .ForMember(x => x.LastUpdateDisplay, src => src.MapFrom(src => src.LastUpdate.ToString(GlobalStrings.FORMAT_DATE)))
-                .ForMember(x => x.RoleTitle, src => src.MapFrom(src => src.Role.Name))
-                .ForMember(x => x.GenderTitle, src => src.MapFrom(src => src.Gender.Title))
+                .ForMember(x => x.RoleTitle, src => src.MapFrom(source => source.Role == null ? (int?)null : source.Role.Id))
+                .ForMember(x => x.GenderTitle, src => src.MapFrom(src => src.Gender == null ? null : src.Gender.Title))
                 .ForMember(x => x.AvatarURL, src => src.MapFrom(src => ResolveAssetUrl(host, src.AvatarURL)))
-                .ForMember(x => x.CompanyId, src => src.MapFrom(src => src.Company.CompanyId))
+                .ForMember(x => x.CompanyId, src => src.MapFrom(source => source.Company == null ? (int?)null : source.Company.CompanyId))
                 ;
             CreateMap<JobDTO, JobDescription>()
                 .ForMember(x => x.EmploymentTypeId, src => src.MapFrom(src => Validation.ConvertInt(src.EmploymentTypeName)))
@@ -159,7 +158,29 @@ namespace APIServer.MappingObj
                 return defaultAvatarUrl;
             }
 
-            return Uri.TryCreate(assetUrl, UriKind.Absolute, out _) ? assetUrl : $"{host}{assetUrl}";
+            return Uri.TryCreate(assetUrl, UriKind.Absolute, out _)
+                ? assetUrl
+                : $"{host.TrimEnd('/')}/{assetUrl.TrimStart('/', '\\')}";
+        }
+
+        private static string ResolvePublicHost()
+        {
+            var configuredHost = Environment.GetEnvironmentVariable("JMS_PUBLIC_URL");
+            if (!string.IsNullOrWhiteSpace(configuredHost))
+            {
+                return configuredHost.TrimEnd('/');
+            }
+
+            var urls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .FirstOrDefault();
+
+            if (!string.IsNullOrWhiteSpace(urls))
+            {
+                return urls.Replace("://+", "://localhost", StringComparison.Ordinal).TrimEnd('/');
+            }
+
+            return "http://localhost:8080";
         }
     }
 }
