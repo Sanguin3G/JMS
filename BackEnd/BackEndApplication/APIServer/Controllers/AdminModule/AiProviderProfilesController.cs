@@ -81,6 +81,19 @@ public sealed class AiProviderProfilesController(IAiProviderProfileService profi
         }
     }
 
+    [HttpPost("{id:int}/test")]
+    public async Task<ActionResult<BaseResponseBody<AiConnectionTestResult>>> TestConnection(int id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return Success(await profileService.TestConnectionAsync(id, cancellationToken));
+        }
+        catch (KeyNotFoundException exception)
+        {
+            return NotFound(Failure<AiConnectionTestResult>(exception.Message, HttpStatusCode.NotFound));
+        }
+    }
+
     private static BaseResponseBody<T> Success<T>(T data) => new()
     {
         data = data,

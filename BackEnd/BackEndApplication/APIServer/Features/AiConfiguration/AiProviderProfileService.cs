@@ -1,6 +1,8 @@
 using APIServer.Features.AiConfiguration.Contracts;
 using APIServer.Models;
 using APIServer.Models.Entity;
+using Google.GenAI;
+using Google.GenAI.Types;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,6 +65,64 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
         profile.IsDefaultForMatching = true;
         profile.UpdatedAt = DateTime.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<AiConnectionTestResult> TestConnectionAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var profile = await dbContext.AiProviderProfiles
+            .AsNoTracking()
+            .SingleOrDefaultAsync(candidate => candidate.Id == id, cancellationToken)
+            ?? throw new KeyNotFoundException("AI provider profile was not found.");
+
+        var testedAtUtc = DateTime.UtcNow;
+        if (!profile.IsEnabled)
+        {
+            return new(false, "Profile is disabled.", profile.Provider, profile.ModelId, testedAtUtc);
+        }
+
+        if (string.IsNullOrWhiteSpace(profile.EncryptedApiKey))
+        {
+            return new(false, "No API key is stored for this profile.", profile.Provider, profile.ModelId, testedAtUtc);
+        }
+
+        if (!GeminiModelCatalog.TryResolve(profile.Provider, profile.ModelId, profile.ReasoningLevel, out var capability, out _))
+        {
+            return new(false, "The saved model configuration is no longer supported.", profile.Provider, profile.ModelId, testedAtUtc);
+        }
+
+        try
+        {
+            var apiKey = _keyProtector.Unprotect(profile.EncryptedApiKey);
+            using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            timeoutCancellation.CancelAfter(TimeSpan.FromSeconds(10));
+            using var client = new Client(apiKey: apiKey);
+            var response = await client.Models.GenerateContentAsync(
+                model: profile.ModelId,
+                contents: "Reply with the single word OK.",
+                config: new GenerateContentConfig
+                {
+                    MaxOutputTokens = 8,
+                    ThinkingConfig = new ThinkingConfig { ThinkingLevel = ThinkingLevel.Minimal }
+                },
+                cancellationToken: timeoutCancellation.Token);
+
+            var text = response.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
+            return string.IsNullOrWhiteSpace(text)
+                ? new(false, "The provider returned no response.", capability.Provider, profile.ModelId, testedAtUtc)
+                : new(true, "Connection succeeded.", capability.Provider, profile.ModelId, testedAtUtc);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (OperationCanceledException)
+        {
+            return new(false, "The connection test timed out after 10 seconds.", profile.Provider, profile.ModelId, testedAtUtc);
+        }
+        catch
+        {
+            return new(false, "The provider rejected the connection test or is unavailable.", profile.Provider, profile.ModelId, testedAtUtc);
+        }
     }
 
     public async Task<ResolvedGeminiProfile?> GetActiveGeminiMatchingProfileAsync(CancellationToken cancellationToken = default)

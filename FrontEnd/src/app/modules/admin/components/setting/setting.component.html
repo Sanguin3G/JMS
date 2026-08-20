@@ -63,6 +63,7 @@
         </div>
         <div class="ai-settings__profile-actions">
           <span *ngIf="profile.isDefaultForMatching" class="ai-settings__active">Active for matching</span>
+          <button type="button" (click)="testConnection(profile)" [disabled]="testingProfileId === profile.id || !profile.hasApiKey">{{ testingProfileId === profile.id ? 'Testing…' : 'Test connection' }}</button>
           <button type="button" (click)="activateForMatching(profile)" [disabled]="!profile.isEnabled || profile.isDefaultForMatching">Use for matching</button>
           <button type="button" class="ai-settings__text-button" (click)="beginEditing(profile)">Edit</button>
         </div>

@@ -1,7 +1,16 @@
 import { environment } from 'src/environments/environment';
 import { AuthorizationMode } from './constant';
+import { BehaviorSubject } from 'rxjs';
 
 const apiUrl = environment.apiUrl;
+
+/** Shared request activity for shells and feature views that need a global busy indicator. */
+const activeRequestCount = new BehaviorSubject<number>(0);
+export const apiLoading$ = activeRequestCount.asObservable();
+
+export function isApiLoading(): boolean {
+   return activeRequestCount.value > 0;
+}
 
 /** The envelope returned by the existing API controllers. */
 export interface ApiResponse<T = any> {
@@ -79,14 +88,19 @@ async function request<T>(
    } = {},
 ): Promise<T> {
    const url = buildUrl(path, options.params);
-   const response = await fetch(url, {
-      method,
-      cache: 'no-cache',
-      headers: buildHeaders(authorizationMode, options.jsonBody === true),
-      body: options.body,
-   });
+   activeRequestCount.next(activeRequestCount.value + 1);
+   try {
+      const response = await fetch(url, {
+         method,
+         cache: 'no-cache',
+         headers: buildHeaders(authorizationMode, options.jsonBody === true),
+         body: options.body,
+      });
 
-   return parseResponse<T>(response, url);
+      return await parseResponse<T>(response, url);
+   } finally {
+      activeRequestCount.next(Math.max(0, activeRequestCount.value - 1));
+   }
 }
 
 export function getRequest<T = ApiResponse>(

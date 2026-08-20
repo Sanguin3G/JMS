@@ -31,3 +31,11 @@ export interface AiProviderProfileDraft {
    isDefaultForMatching: boolean;
    isEnabledForAssistant: boolean;
 }
+
+export interface AiConnectionTestResult {
+   success: boolean;
+   status: string;
+   provider: string;
+   modelId: string;
+   testedAtUtc: string;
+}

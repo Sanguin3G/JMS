@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiResponse, getRequest, postRequest, putRequest } from 'src/app/service/api-requests';
 import { apiAdmin, AuthorizationMode } from 'src/app/service/constant';
-import { AiModelCapability, AiProviderProfile, AiProviderProfileDraft } from 'src/app/core/models/ai.models';
+import { AiConnectionTestResult, AiModelCapability, AiProviderProfile, AiProviderProfileDraft } from 'src/app/core/models/ai.models';
 
 
 @Component({
@@ -19,6 +19,7 @@ export class AdminSettingComponent implements OnInit {
   isSaving = false;
   errorMessage = '';
   successMessage = '';
+  testingProfileId: number | null = null;
   draft: AiProviderProfileDraft = this.createDraft();
 
   async ngOnInit(): Promise<void> {
@@ -100,6 +101,25 @@ export class AdminSettingComponent implements OnInit {
       }
     } catch {
       this.errorMessage = 'The provider profile could not be activated.';
+    }
+  }
+
+  async testConnection(profile: AiProviderProfile): Promise<void> {
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.testingProfileId = profile.id;
+    try {
+      const response = await postRequest<ApiResponse<AiConnectionTestResult>>(`${apiAdmin.AI_PROFILES}/${profile.id}/test`, AuthorizationMode.BEARER_TOKEN, {});
+      const result = response?.data;
+      if (result?.success) {
+        this.successMessage = `${profile.displayName}: ${result.status}`;
+      } else {
+        this.errorMessage = `${profile.displayName}: ${result?.status ?? response?.message ?? 'Connection test failed.'}`;
+      }
+    } catch {
+      this.errorMessage = 'The connection test could not be completed.';
+    } finally {
+      this.testingProfileId = null;
     }
   }
 
