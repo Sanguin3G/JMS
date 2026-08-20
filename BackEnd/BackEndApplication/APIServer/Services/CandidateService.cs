@@ -1,6 +1,7 @@
 ﻿using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
+using APIServer.Features.Matching.Contracts;
 using APIServer.IRepositories;
 using APIServer.IServices;
 using APIServer.Models.Entity;
@@ -24,8 +25,9 @@ namespace APIServer.Services
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ICandidateRepository _candidateRepository;
+        private readonly IMatchEvaluationService _matchEvaluationService;
 
-        public CandidateService(ICurriculumVitaeRepository context, ICVMatchingRepository CVMatchingRepository, IMapper mapper, IConfiguration configuration, ICandidateRepository candidateRepository, IJobRepository JobContext)
+        public CandidateService(ICurriculumVitaeRepository context, ICVMatchingRepository CVMatchingRepository, IMapper mapper, IConfiguration configuration, ICandidateRepository candidateRepository, IJobRepository JobContext, IMatchEvaluationService matchEvaluationService)
         {
             _context = context;
             _CVMatchingRepository = CVMatchingRepository;
@@ -33,6 +35,7 @@ namespace APIServer.Services
             _configuration = configuration;
             _candidateRepository = candidateRepository;
             _JobContext = JobContext;
+            _matchEvaluationService = matchEvaluationService;
         }
         public int Create(Candidate data)
         {
@@ -158,9 +161,9 @@ namespace APIServer.Services
                                 File.Copy(fileToCopy, destinationDirectory + fileName);
                                 CVApplied.AvatarURL = "/images_clone/" + fileName;
                             }
-                            string JSONrs = await GPT_PROMPT.GetResult(GPT_PROMPT.PromptForRecruiter(jobDescription, cv1));
-                            CVApplied.JSONMatching = JSONrs;
-                            CVApplied.PercentMatching = Validation.checkPercentMatchingFromJSON(JSONrs);
+                            var matchEvaluation = await _matchEvaluationService.EvaluateAsync(jobDescription, cv1);
+                            CVApplied.JSONMatching = JsonConvert.SerializeObject(matchEvaluation);
+                            CVApplied.PercentMatching = matchEvaluation.Score / 100f;
 
                             return _CVMatchingRepository.Create(CVApplied);
                         }

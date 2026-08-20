@@ -1,4 +1,6 @@
 using APIServer.DTO.EntityDTO;
+using APIServer.Features.Matching;
+using APIServer.Features.Matching.Contracts;
 using APIServer.IRepositories;
 using APIServer.IServices;
 using APIServer.Models;
@@ -145,6 +147,8 @@ namespace APIServer
             builder.Services.AddTransient<IRegisterService, RegisterService>();
             builder.Services.AddTransient<IAdminRepository, AdminRepository>();
             builder.Services.AddTransient<IAdminService, AdminService>();
+            builder.Services.AddTransient<IMatchEvaluationProvider, GeminiMatchEvaluationProvider>();
+            builder.Services.AddTransient<IMatchEvaluationService, MatchEvaluationService>();
         }
     }
 }

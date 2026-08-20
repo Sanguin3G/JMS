@@ -36,24 +36,6 @@ namespace APIServer.Common
             catch { return true; }
         }
 
-        public static string readKey()
-        {
-            string filePath = AppDomain.CurrentDomain.BaseDirectory + "\\Common\\gptKey.txt";
-            try
-            {
-                string[] lines = File.ReadAllLines(filePath);
-                return lines[0];
-            }
-            catch (IOException e)
-            {
-                return null;
-            }
-            catch(IndexOutOfRangeException e)
-            {
-                return null;
-            }
-        }
-
         public static int CalculateAge(DateTime ngaySinh)
         {
             DateTime ngayHienTai = DateTime.Now;
@@ -81,63 +63,6 @@ namespace APIServer.Common
             {
                 return null;
             }
-        }
-
-        public static float checkPercentMatchingFromJSON(string? json)
-        {
-            if (checkStringIsEmpty(json))
-            {
-                throw new Exception("Input not valid");
-            }
-            try
-            {
-                float pcEdu = 25, pcS = 35, pcExp = 40;
-                float countS = 0, countExp = 0, countEdu = 0;
-                var jObj = JObject.Parse(json);
-                var lstS = GetValuesByKey(jObj, "skill");
-                var lstExp = GetValuesByKey(jObj, "Exp");
-                var lstEdu = GetValuesByKey(jObj, "edu");
-                //Console.WriteLine(lstEdu.Count);
-                //Console.WriteLine(lstExp.Count);
-                //Console.WriteLine(lstS.Count);
-                foreach (var o in lstS)
-                {
-                    if (o.ToLower() == "true")
-                        countS++;
-                }
-                foreach (var o in lstExp)
-                {
-                    if (o.ToLower() == "true")
-                        countExp++;
-                }
-                foreach (var o in lstEdu)
-                {
-                    if (o.ToLower() == "true")
-                        countEdu++;
-                }
-
-                float result = countS / lstS.Count * pcS +
-                    countEdu / lstEdu.Count * pcEdu +
-                    countExp / lstExp.Count * pcExp;
-                return result / 100;
-            }
-            catch (Exception e)
-            {
-                throw e;
-            }
-        }
-
-        private static List<string> GetValuesByKey(JObject jsonObject, string key)
-        {
-            List<string> values = new List<string>();
-            foreach (JProperty property in jsonObject.Properties())
-            {
-                if (property.Name.ToLower().Contains(key.ToLower()))
-                {
-                    values.Add(property.Value.ToString());
-                }
-            }
-            return values;
         }
 
         public static string ConvertHTMLToData(string html)

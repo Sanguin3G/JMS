@@ -2,6 +2,7 @@
 using APIServer.DTO;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
+using APIServer.Features.Matching.Contracts;
 using APIServer.IRepositories;
 using APIServer.IServices;
 using APIServer.Models;
@@ -28,8 +29,9 @@ namespace APIServer.Services
         private readonly ICurriculumVitaeRepository _cVRepository;
         private readonly IMapper _mapper;
         private readonly IJobRepository _jobContext;
+        private readonly IMatchEvaluationService _matchEvaluationService;
 
-        public RecuirterService(IRecuirterRepository userRepository, IConfiguration configuration, ICVMatchingRepository cVMatchingRepository, ICurriculumVitaeRepository cVRepository, IMapper mapper, IJobRepository jobContext)
+        public RecuirterService(IRecuirterRepository userRepository, IConfiguration configuration, ICVMatchingRepository cVMatchingRepository, ICurriculumVitaeRepository cVRepository, IMapper mapper, IJobRepository jobContext, IMatchEvaluationService matchEvaluationService)
         {
             _recRepository = userRepository;
             _configuration = configuration;
@@ -37,6 +39,7 @@ namespace APIServer.Services
             _cVRepository = cVRepository;
             _mapper = mapper;
             _jobContext = jobContext;
+            _matchEvaluationService = matchEvaluationService;
         }
 
         public int Create(Recuirter data)
@@ -317,9 +320,9 @@ namespace APIServer.Services
                             CVApplied.AvatarURL = "/images_clone/" + fileName;
                         }
 
-                        string JSONrs = await GPT_PROMPT.GetResult(GPT_PROMPT.PromptForRecruiter(jd, cv));
-                        CVApplied.JSONMatching = JSONrs;
-                        CVApplied.PercentMatching = Validation.checkPercentMatchingFromJSON(JSONrs);
+                        var matchEvaluation = await _matchEvaluationService.EvaluateAsync(jd, cv);
+                        CVApplied.JSONMatching = JsonConvert.SerializeObject(matchEvaluation);
+                        CVApplied.PercentMatching = matchEvaluation.Score / 100f;
                         CVApplied.CurriculumVitaeId = curriculumVitae.Id;
                         CVApplied.IsMatched = true;
                         CVApplied.IsApplied = false;

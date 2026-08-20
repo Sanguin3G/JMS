@@ -6,9 +6,6 @@ using APIServer.IServices;
 using APIServer.Models;
 using APIServer.Models.Entity;
 using AutoMapper;
-using OpenAI_API;
-using OpenAI_API.Chat;
-using OpenAI_API.Models;
 using X.PagedList;
 
 namespace APIServer.Services
@@ -230,10 +227,6 @@ namespace APIServer.Services
 
         //    foreach(CurriculumVitae curriculumVitae in vitaeList)
         //    {
-        //        string rs = await GetResult(GPT_PROMPT.PromptForRecruiter(jobDescription, curriculumVitae));
-
-        //        rs = Validation.processStringGpt(rs);
-
         //        JObject jsonObject = JObject.Parse(rs);
 
 
