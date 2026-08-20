@@ -8,6 +8,7 @@ import { getProfile } from 'src/app/service/localstorage';
 declare var $: any;
 
 @Component({
+  standalone: false,
    selector: 'candidate-change-password',
    templateUrl: './change-password.component.html',
    styleUrls: ['./change-password.component.css']

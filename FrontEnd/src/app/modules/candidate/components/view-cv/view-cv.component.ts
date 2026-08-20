@@ -9,6 +9,7 @@ import { ToastrService } from 'ngx-toastr';
 import { ConfirmDialogComponent } from 'src/app/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
+  standalone: false,
    selector: 'app-view-cv',
    templateUrl: './view-cv.component.html',
    styleUrls: ['./view-cv.component.css']

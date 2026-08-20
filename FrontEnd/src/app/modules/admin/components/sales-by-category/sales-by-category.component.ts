@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Chart } from 'angular-highcharts';
 
 @Component({
+  standalone: false,
   selector: 'app-sales-by-category',
   templateUrl: './sales-by-category.component.html',
   styleUrls: ['./sales-by-category.component.css']

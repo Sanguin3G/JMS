@@ -7,6 +7,7 @@ import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
 import { getProfile, getToken, saveItem } from 'src/app/service/localstorage';
 
 @Component({
+  standalone: false,
    selector: 'app-profile',
    templateUrl: './profile.component.html',
    styleUrls: ['./profile.component.css']

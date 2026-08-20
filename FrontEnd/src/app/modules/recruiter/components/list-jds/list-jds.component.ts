@@ -10,6 +10,7 @@ import { showError, showSuccess } from 'src/app/service/common';
 
 
 @Component({
+  standalone: false,
    selector: 'app-list-jds',
    templateUrl: './list-jds.component.html',
    styleUrls: ['./list-jds.component.css'],

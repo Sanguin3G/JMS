@@ -7,6 +7,7 @@ import { AuthorizationMode, apiCandidate } from 'src/app/service/constant';
 import { getToken, saveItem } from 'src/app/service/localstorage';
 
 @Component({
+  standalone: false,
    selector: 'app-candidate-profile',
    templateUrl: './profile.component.html',
    styleUrls: ['./profile.component.css']

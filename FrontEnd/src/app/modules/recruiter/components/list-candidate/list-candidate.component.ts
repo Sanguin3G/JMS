@@ -9,6 +9,7 @@ import { showError, showSuccess } from 'src/app/service/common';
 import { AVATAR_DEFAULT_URL, AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
 import { environment } from 'src/environments/environment';
 @Component({
+  standalone: false,
    selector: 'app-list-candidate',
    templateUrl: './list-candidate.component.html',
    styleUrls: ['./list-candidate.component.css'],

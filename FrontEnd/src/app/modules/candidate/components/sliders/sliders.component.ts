@@ -4,6 +4,7 @@ import { getRequest, postRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
 
 @Component({
+  standalone: false,
    selector: 'candidate-sliders',
    templateUrl: './sliders.component.html',
    styleUrls: ['./sliders.component.css']

@@ -4,6 +4,7 @@ import { ADMIN_PROFILE, ADMIN_TOKEN } from 'src/app/service/constant';
 import { getItem, getItemJson, removeItem, saveItem, signOut } from 'src/app/service/localstorage';
 
 @Component({
+  standalone: false,
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']

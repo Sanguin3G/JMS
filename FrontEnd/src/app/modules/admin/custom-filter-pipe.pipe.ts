@@ -1,6 +1,7 @@
 import { Pipe, PipeTransform, Injectable } from "@angular/core";
 
 @Pipe({
+  standalone: false,
   name: "CustomFilterPipePipe",
   pure: false
 })

@@ -8,6 +8,7 @@ import { ViewCvComponent } from '../view-cv/view-cv.component';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
+  standalone: false,
    selector: 'app-my-apply-job',
    templateUrl: './my-apply-job.component.html',
    styleUrls: ['./my-apply-job.component.css']

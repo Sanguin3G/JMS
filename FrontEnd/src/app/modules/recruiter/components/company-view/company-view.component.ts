@@ -7,6 +7,7 @@ import { getProfile } from 'src/app/service/localstorage';
 import { environment } from 'src/environments/environment';
 
 @Component({
+  standalone: false,
    selector: 'app-company-view',
    templateUrl: './company-view.component.html',
    styleUrls: ['./company-view.component.css']

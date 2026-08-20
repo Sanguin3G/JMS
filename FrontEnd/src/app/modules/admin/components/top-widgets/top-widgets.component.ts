@@ -3,6 +3,7 @@ import { getRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiAdmin } from 'src/app/service/constant';
 
 @Component({
+  standalone: false,
   selector: 'app-top-widgets',
   templateUrl: './top-widgets.component.html',
   styleUrls: ['./top-widgets.component.css']

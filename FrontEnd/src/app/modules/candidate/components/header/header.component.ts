@@ -4,6 +4,7 @@ import { ADMIN_TOKEN, RECRUITER_TOKEN } from 'src/app/service/constant';
 import { getItem, getProfile, signOut } from 'src/app/service/localstorage';
 
 @Component({
+  standalone: false,
    selector: 'candidate-header',
    templateUrl: './header.component.html',
    styleUrls: ['./header.component.css']

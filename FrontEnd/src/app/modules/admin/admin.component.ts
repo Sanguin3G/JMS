@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ADMIN_TOKEN } from 'src/app/service/constant';
 import { getItem } from 'src/app/service/localstorage';
 @Component({
+  standalone: false,
   selector: 'app-admin',
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.css']

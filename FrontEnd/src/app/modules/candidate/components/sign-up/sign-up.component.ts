@@ -6,6 +6,7 @@ import { showError, showInfo, showSuccess } from 'src/app/service/common';
 import { AuthorizationMode, apiCandidate } from 'src/app/service/constant';
 
 @Component({
+  standalone: false,
    selector: 'app-register',
    templateUrl: './sign-up.component.html',
    styleUrls: ['./sign-up.component.css'],

@@ -5,6 +5,7 @@ import { AuthorizationMode, RECRUITER_TOKEN, apiRecruiter } from 'src/app/servic
 import { getProfile, getToken, isLogin, removeItem, saveItem, signOut } from 'src/app/service/localstorage';
 
 @Component({
+  standalone: false,
    selector: 'app-header-recruiter',
    templateUrl: './header.component.html',
    styleUrls: ['./header.component.css'],

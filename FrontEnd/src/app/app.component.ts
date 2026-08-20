@@ -3,6 +3,7 @@ import { environment } from './../environments/environment';
 import { clearItem } from './service/localstorage';
 
 @Component({
+  standalone: false,
    selector: 'app-root',
    templateUrl: './app.component.html',
    styleUrls: ['./app.component.css']

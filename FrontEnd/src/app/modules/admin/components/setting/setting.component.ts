@@ -33,6 +33,7 @@ interface ProfileDraft {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-setting',
   templateUrl: './setting.component.html',
   styleUrls: ['./setting.component.css']

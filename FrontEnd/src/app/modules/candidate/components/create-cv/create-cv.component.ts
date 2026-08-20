@@ -16,6 +16,7 @@ interface ProjectDraft { projectName: string; fromDate: string; toDate: string; 
 interface EducationDraft { schoolName: string; majorName: string; description: string; fromYear: string; toYear: string; stillLearning: boolean; }
 
 @Component({
+  standalone: false,
    selector: 'app-create-cv',
    templateUrl: './create-cv.component.html',
    styleUrls: ['./create-cv.component.css'],

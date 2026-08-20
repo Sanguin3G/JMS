@@ -4,6 +4,7 @@ import { getRequest, postRequest, postFileRequest } from 'src/app/service/api-re
 import { Router } from '@angular/router';
 
 @Component({
+  standalone: false,
    selector: 'app-list-jobs',
    templateUrl: './list-jobs.component.html',
    styleUrls: ['./list-jobs.component.css']

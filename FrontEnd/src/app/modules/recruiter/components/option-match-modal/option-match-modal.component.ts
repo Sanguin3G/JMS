@@ -3,6 +3,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
+  standalone: false,
    selector: 'app-option-match-modal',
    templateUrl: './option-match-modal.component.html',
    styleUrls: ['./option-match-modal.component.css'],

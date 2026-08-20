@@ -6,6 +6,7 @@ import { ADMIN_PROFILE, AuthorizationMode, apiAdmin, apiRecruiter } from 'src/ap
 import { getItem, getItemJson, getProfile, saveItem } from 'src/app/service/localstorage';
 
 @Component({
+  standalone: false,
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']

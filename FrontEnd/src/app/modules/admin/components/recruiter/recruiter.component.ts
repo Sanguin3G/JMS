@@ -5,6 +5,7 @@ import { getRequest, postRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiAdmin } from 'src/app/service/constant';
 
 @Component({
+  standalone: false,
   selector: 'app-recruiter',
   templateUrl: './recruiter.component.html',
   styleUrls: ['./recruiter.component.css']

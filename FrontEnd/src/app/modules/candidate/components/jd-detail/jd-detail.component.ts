@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { getProfile, signOut } from 'src/app/service/localstorage';
 import { showError, showInfo, showSuccess } from 'src/app/service/common';
 @Component({
+  standalone: false,
    selector: 'app-jd-detail',
    templateUrl: './jd-detail.component.html',
    styleUrls: ['./jd-detail.component.css'],

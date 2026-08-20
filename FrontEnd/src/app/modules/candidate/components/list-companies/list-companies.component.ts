@@ -5,6 +5,7 @@ import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
 import { Router } from '@angular/router';
 
 @Component({
+  standalone: false,
    selector: 'app-list-companies',
    templateUrl: './list-companies.component.html',
    styleUrls: ['./list-companies.component.css']

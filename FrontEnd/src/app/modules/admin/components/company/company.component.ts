@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { CompanyViewComponent } from '../company-view/company-view.component';
 
 @Component({
+  standalone: false,
   selector: 'app-company',
   templateUrl: './company.component.html',
   styleUrls: ['./company.component.css']

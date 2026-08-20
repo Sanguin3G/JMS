@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { ClassicEditor } from 'ckeditor5';
 import { FormControl, Validators } from '@angular/forms';
 import { getRequest, postRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, RECRUITER_TOKEN, apiRecruiter } from 'src/app/service/constant';
@@ -9,6 +9,7 @@ import { ToastrService } from 'ngx-toastr';
 import { showError, showSuccess } from 'src/app/service/common';
 
 @Component({
+  standalone: false,
    selector: 'app-company-register',
    templateUrl: './create-company.component.html',
    styleUrls: ['./create-company.component.css']

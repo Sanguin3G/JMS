@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import {MatListModule} from '@angular/material/list';
 @Component({
+  standalone: false,
   selector: 'app-last-few-transaction',
   templateUrl: './last-few-transaction.component.html',
   styleUrls: ['./last-few-transaction.component.css']

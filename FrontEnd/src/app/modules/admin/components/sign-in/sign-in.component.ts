@@ -7,6 +7,7 @@ import { ADMIN_PROFILE, ADMIN_TOKEN, AuthorizationMode, apiAdmin } from 'src/app
 import { getItem, saveItem, saveToken, setItem, signOut } from 'src/app/service/localstorage';
 
 @Component({
+  standalone: false,
   selector: 'app-sign-in',
   templateUrl: './sign-in.component.html',
   styleUrls: ['./sign-in.component.css']

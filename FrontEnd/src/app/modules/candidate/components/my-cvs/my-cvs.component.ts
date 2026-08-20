@@ -11,6 +11,7 @@ import { ToastrService } from 'ngx-toastr';
 import { showError, showSuccess } from 'src/app/service/common';
 
 @Component({
+  standalone: false,
    selector: 'app-my-cvs',
    templateUrl: './my-cvs.component.html',
    styleUrls: ['./my-cvs.component.css']

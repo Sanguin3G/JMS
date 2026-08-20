@@ -43,6 +43,7 @@ interface cv {
     { SchoolName: any, MajorName: any, Description: any, FromYear: any, ToYear: any, StillLearning: any }],
 }
 @Component({
+  standalone: false,
   selector: 'app-candidate',
   templateUrl: './candidate.component.html',
   styleUrls: ['./candidate.component.css']

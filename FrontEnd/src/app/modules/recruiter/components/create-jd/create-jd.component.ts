@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { ClassicEditor } from 'ckeditor5';
 import { ToastrService } from 'ngx-toastr';
 import { getRequest, postRequest } from 'src/app/service/api-requests';
 import { showError, showInfo, showSuccess } from 'src/app/service/common';
@@ -9,6 +9,7 @@ import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
 import { getProfile, signOut } from 'src/app/service/localstorage';
 
 @Component({
+  standalone: false,
    selector: 'app-create-jd',
    templateUrl: './create-jd.component.html',
    styleUrls: ['./create-jd.component.css']

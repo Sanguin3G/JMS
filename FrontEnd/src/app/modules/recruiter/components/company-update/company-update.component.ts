@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import { ClassicEditor } from 'ckeditor5';
 import { FormControl, Validators } from '@angular/forms';
 import { getRequest, postRequest, postFileRequest } from 'src/app/service/api-requests';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { showError, showSuccess } from 'src/app/service/common';
 
 @Component({
+  standalone: false,
    selector: 'app-company-update',
    templateUrl: './company-update.component.html',
    styleUrls: ['./company-update.component.css']
