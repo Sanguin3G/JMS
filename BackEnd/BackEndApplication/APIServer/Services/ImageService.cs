@@ -27,9 +27,7 @@ namespace APIServer.Services
             this.companyRepo = companyRepo;
             this.candidateRepo = candidateRepo;
             this.cvRepo = cvRepo;
-            host = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?
-                .Split(';', StringSplitOptions.RemoveEmptyEntries)
-                .FirstOrDefault() ?? string.Empty;
+            host = ResolvePublicHost();
             this.sliderRepo = sliderRepo;
         }
 
@@ -55,7 +53,7 @@ namespace APIServer.Services
                 if (companyRepo.Update(com) > 0)
                 {
                     DeleteReplacedImage(previousImagePath);
-                    return host + com.AvatarURL;
+                    return ToPublicUrl(com.AvatarURL);
                 }
 
                 com.AvatarURL = previousImagePath;
@@ -90,7 +88,7 @@ namespace APIServer.Services
                 if (companyRepo.Update(com) > 0)
                 {
                     DeleteReplacedImage(previousImagePath);
-                    return host + com.BackGroundURL;
+                    return ToPublicUrl(com.BackGroundURL);
                 }
 
                 com.BackGroundURL = previousImagePath;
@@ -124,7 +122,7 @@ namespace APIServer.Services
                 if (candidateRepo.Update(can) > 0)
                 {
                     DeleteReplacedImage(previousImagePath);
-                    return host + can.AvatarURL;
+                    return ToPublicUrl(can.AvatarURL);
                 }
 
                 can.AvatarURL = previousImagePath;
@@ -156,7 +154,7 @@ namespace APIServer.Services
                 if (cvRepo.Update(cv) > 0)
                 {
                     DeleteReplacedImage(previousImagePath);
-                    return host + cv.AvatarURL;
+                    return ToPublicUrl(cv.AvatarURL);
                 }
 
                 cv.AvatarURL = previousImagePath;
@@ -186,12 +184,12 @@ namespace APIServer.Services
                 if (recuirterRepository.Update(rec) > 0)
                 {
                     DeleteReplacedImage(previousImagePath);
-                    return rec.AvatarURL;
+                    return ToPublicUrl(rec.AvatarURL);
                 }
 
                 rec.AvatarURL = previousImagePath;
                 deleteOldImg(imagePath);
-                return host + "Error";
+                return "Error";
             }
             catch
             {
@@ -301,7 +299,7 @@ namespace APIServer.Services
             slider.URL = imagePath;
             var rs = sliderRepo.Create(slider);
             if (rs > 0)
-                return host + slider.URL;
+                return ToPublicUrl(slider.URL);
             else
                 return "Error";
         }
@@ -329,9 +327,32 @@ namespace APIServer.Services
             var rs = sliderRepo.GetAll();
             foreach (var item in rs)
             {
-                item.URL = host + item.URL;
+                item.URL = ToPublicUrl(item.URL);
             }
             return rs;
+        }
+
+        private static string ResolvePublicHost()
+        {
+            var configured = Environment.GetEnvironmentVariable("JMS_PUBLIC_URL");
+            if (!string.IsNullOrWhiteSpace(configured))
+                return configured.TrimEnd('/');
+
+            var boundUrl = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault();
+            return (boundUrl ?? "http://localhost:8080")
+                .Replace("://+", "://localhost", StringComparison.OrdinalIgnoreCase)
+                .TrimEnd('/');
+        }
+
+        private string ToPublicUrl(string? relativePath)
+        {
+            if (string.IsNullOrWhiteSpace(relativePath))
+                return string.Empty;
+
+            var path = relativePath.Trim().TrimStart('\\', '/').Replace('\\', '/');
+            return $"{host}/{path}";
         }
     }
 }

@@ -280,7 +280,6 @@ namespace APIServer.Services
             var candidate = _candidateRepository.GetById(candidateId)
                 ?? throw new KeyNotFoundException("Candidate not found.");
             var result = _mapper.Map<CandidateDTO>(candidate);
-            result.Password = null;
             return result;
         }
 
