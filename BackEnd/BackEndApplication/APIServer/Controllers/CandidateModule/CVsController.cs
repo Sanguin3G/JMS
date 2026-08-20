@@ -31,6 +31,7 @@ namespace APIServer.Controllers.CandidateModule
         [HttpGet]
         [Route("all-cv/{candidateId}")]
         [Authorize(Roles = GlobalStrings.ROLE_CANDIDATE)]
+        [UserIdMatchesClaim("candidateId")]
         public PagingResponseBody<List<CurriculumVitaeDTO>> getAllCVs(int candidateId)
         {
             try
@@ -60,6 +61,7 @@ namespace APIServer.Controllers.CandidateModule
         [HttpGet]
         [Route("getCV/{candidateId}/{cvId}")]
         [Authorize(Roles = GlobalStrings.ROLE_CANDIDATE)]
+        [UserIdMatchesClaim("candidateId")]
         public BaseResponseBody<CurriculumVitaeDTO> getOneCVByCanID(int candidateId, int cvId)
         {
             try
@@ -85,6 +87,7 @@ namespace APIServer.Controllers.CandidateModule
         [HttpPost]
         [Route("new-cv/{candidateId}")]
         [Authorize(Roles = GlobalStrings.ROLE_CANDIDATE)]
+        [UserIdMatchesClaim("candidateId")]
         public BaseResponseBody<int> createNewCV(int candidateId,
             [FromBody] CurriculumVitaeDTO cv)
         {
@@ -114,6 +117,7 @@ namespace APIServer.Controllers.CandidateModule
         [HttpPost]
         [Route("update-cv")]
         [Authorize(Roles = GlobalStrings.ROLE_CANDIDATE)]
+        [UserIdMatchesClaim("candidateId")]
         public BaseResponseBody<int> updateCv(int candidateId, int cvId, CurriculumVitaeDTO cvDTO)
         {
             try
@@ -139,6 +143,7 @@ namespace APIServer.Controllers.CandidateModule
         [HttpPost]
         [Route("change-is-finding-job-status")]
         [Authorize(Roles = GlobalStrings.ROLE_CANDIDATE)]
+        [UserIdMatchesClaim("candidateId")]
         public BaseResponseBody<string> ChangeIsFindingJobStatus(int candidateId, int cvId)
         {
             try
@@ -172,6 +177,7 @@ namespace APIServer.Controllers.CandidateModule
         [HttpPost]
         [Route("delete-cv")]
         [Authorize(Roles = GlobalStrings.ROLE_CANDIDATE)]
+        [UserIdMatchesClaim("candidateId")]
         public BaseResponseBody<string> DeleteCV(int candidateId, int cvId)
         {
             try

@@ -65,6 +65,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpGet]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("get-all-cv-matched-by-number-requirement")]
+        [UserIdMatchesClaim("recruiterId")]
         public BaseResponseBody<List<CVMatchingDTO>> GetCVMatchedByNumberRequirement(int recruiterId, int jobDescriptionId)
         {
             List<CVMatchingDTO> rs = _mapper.Map<List<CVMatchingDTO>>(_recuirterService.GetCVMatchedByNumberRequirement(recruiterId, jobDescriptionId));
@@ -79,6 +80,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpGet]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("get-all-cv-matched")]
+        [UserIdMatchesClaim("recruiterId")]
         public BaseResponseBody<List<CVMatchingDTO>> GetAllCVMatched(int recruiterId, int jobDescriptionId)
         {
             List<CVMatchingDTO> rs = _mapper.Map<List<CVMatchingDTO>>(_recuirterService.GetAllCVMatched(recruiterId, jobDescriptionId));
@@ -93,6 +95,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpGet]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("get-all-cv-selected")]
+        [UserIdMatchesClaim("recruiterId")]
         public PagingResponseBody<List<CVMatchingDTO>> GetCVSelected(int recruiterId, int jobDescriptionId, int? pageIndex)
         {
             List<CVMatchingDTO> rs = _mapper.Map<List<CVMatchingDTO>>(_recuirterService.GetCVSelected(recruiterId, jobDescriptionId));
@@ -102,6 +105,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("matching-job")]
+        [UserIdMatchesClaim("recruiterId")]
         public async Task<BaseResponseBody<List<CVMatchingDTO>>> MatchingJob(int recruiterId, int jobDescriptionId)
         {
             try
@@ -130,6 +134,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("update-cv-selected-status")]
+        [UserIdMatchesClaim("recruiterId")]
         public BaseResponseBody<string> UpdateCVSelectedStatusd(int recruiterId, int jobDescriptionId, int CVMatchingId)
         {
             int n = _recuirterService.UpdateCVSelectedStatus(recruiterId, jobDescriptionId, CVMatchingId);
@@ -152,6 +157,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("reject-cv")]
+        [UserIdMatchesClaim("recruiterId")]
         public BaseResponseBody<string> RejectCV(int recruiterId, int jobDescriptionId, int CVMatchingId)
         {
             int n = _recuirterService.UpdateCVRejectedStatus(recruiterId, jobDescriptionId, CVMatchingId);
@@ -174,6 +180,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpGet]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("get-cv-matching-detail")]
+        [UserIdMatchesClaim("recruiterId")]
         public BaseResponseBody<CVMatchingDTO> GetCVMatchingDetail(int recruiterId, int jobDescriptionId, int CVMatchingId)
         {
             try
@@ -206,6 +213,7 @@ namespace APIServer.Controllers.RecuirterModule
 
         [HttpPost("update-profile")]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
+        [UserIdMatchesClaim("recruiterId")]
         public BaseResponseBody<CVMatchingDTO> UpdateProfile(int recruiterId, string fullName, string phoneNumber, DateTime DOB, int genderId, string description)
         {
             try
@@ -251,6 +259,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpGet]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("get-all-expired-jd/{recruiterId}")]
+        [UserIdMatchesClaim("recruiterId")]
         public BaseResponseBody<List<JobDTO>> GetAllExpiredJD(int recruiterId)
         {
             List<JobDescription> jobDescriptions = _recuirterService.getAllExpiredJD(recruiterId);
@@ -265,6 +274,7 @@ namespace APIServer.Controllers.RecuirterModule
 
         [HttpPost("change-password")]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
+        [UserIdMatchesClaim("recruiterId")]
         public BaseResponseBody<int> ChangePassword(int recruiterId, string oldPassword, string newPassword, string confirmPassword)
         {
             try

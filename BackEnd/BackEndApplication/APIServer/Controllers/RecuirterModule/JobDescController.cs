@@ -42,6 +42,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("new-post/{recuirterId}")]
+        [UserIdMatchesClaim("recuirterId")]
         public async Task<BaseResponseBody<string>> createNewJD(int recuirterId, JobDTO jobDTO)
         {
             try
@@ -83,6 +84,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("delete-jd/{recuirterId}/{jobId}")]
+        [UserIdMatchesClaim("recuirterId")]
         public BaseResponseBody<int> deleteJDByRecuirter(int recuirterId, int jobId)
         {
             try
@@ -107,6 +109,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [Route("update-jd/{recuirterId}")]
+        [UserIdMatchesClaim("recuirterId")]
         public BaseResponseBody<int> updateByRecuirter(int recuirterId,
             [FromBody] JobDTO jobDTO)
         {

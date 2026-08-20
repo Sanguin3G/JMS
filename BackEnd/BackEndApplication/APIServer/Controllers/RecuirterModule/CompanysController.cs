@@ -104,6 +104,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Route("create-by-recuirter/{id}")]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
+        [UserIdMatchesClaim("id")]
         public BaseResponseBody<int> createByRecuirterId(int id, CompanyDTO? companyDTO)
         {
             try
@@ -136,6 +137,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Route("update-by-recuirter/{id}")]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
+        [UserIdMatchesClaim("id")]
         public BaseResponseBody<int> updateByRecuirterId(int id, CompanyDTO companyDTO)
         {
             try
@@ -168,6 +170,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Route("delete-by-recuirter/{recuirterId}/{companyId}")]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
+        [UserIdMatchesClaim("recuirterId")]
         public BaseResponseBody<int> deleteCompanyByRecuirter(int recuirterId, int companyId)
         {
             try
@@ -192,6 +195,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Route("add-employee/{recuirterId}/{companyId}")]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
+        [UserIdMatchesClaim("recuirterId")]
         public BaseResponseBody<int> addRecuirterInCompany(int recuirterId, int companyId, EmployeeDTO emp)
         {
             try
@@ -217,6 +221,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Route("update-employee/{recuirterId}/{companyId}")]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
+        [UserIdMatchesClaim("recuirterId")]
         public BaseResponseBody<int> updateRecuirterInCompany(int recuirterId, int companyId, EmployeeDTO emp)
         {
             try
@@ -242,6 +247,7 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost]
         [Route("delete-employee/{recuirterId}/{companyId}/{employeeId}")]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
+        [UserIdMatchesClaim("recuirterId")]
         public BaseResponseBody<int> deleteRecuirterInCompany(int recuirterId, int companyId, int employeeId)
         {
             try

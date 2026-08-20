@@ -445,6 +445,7 @@ namespace APIServer.Controllers.AdminModule
         }
 
         [HttpPost("change-password")]
+        [UserIdMatchesClaim("adminId")]
         public BaseResponseBody<int> ChangePassword(int adminId, string oldPassword, string newPassword, string confirmPassword)
         {
             try
