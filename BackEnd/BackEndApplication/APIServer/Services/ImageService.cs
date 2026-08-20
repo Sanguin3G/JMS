@@ -178,7 +178,7 @@ namespace APIServer.Services
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 rec.AvatarURL = imagePath;
-                if (recuirterRepository.Update(rec) > 1)
+                if (recuirterRepository.Update(rec) > 0)
                     return rec.AvatarURL;
                 else
                     return host + "Error";
