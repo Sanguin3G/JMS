@@ -11,6 +11,8 @@ import { getItem, getProfile, signOut } from 'src/app/service/localstorage';
 })
 export class HeaderComponent {
 
+   menuOpen = false;
+
    isLog: boolean = true;
    profile: any;
    headerTitle = [{ title: 'jobs', router: '/candidate', value: false },
@@ -40,6 +42,10 @@ export class HeaderComponent {
    signOut() {
       signOut();
       this.router.navigate(['/candidate/sign-in']);
+   }
+
+   toggleMenu(): void {
+      this.menuOpen = !this.menuOpen;
    }
 
    changeHeader() {

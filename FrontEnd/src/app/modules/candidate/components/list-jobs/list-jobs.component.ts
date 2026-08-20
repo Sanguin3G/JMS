@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { AuthorizationMode, apiCandidate } from 'src/app/service/constant';
 import { getRequest, postRequest, postFileRequest } from 'src/app/service/api-requests';
 import { Router } from '@angular/router';
@@ -19,7 +19,7 @@ export class ListJobsComponent {
    isLoading = true;
    errorMessage = '';
 
-   constructor(private router: Router) {
+   constructor(private router: Router, private changeDetector: ChangeDetectorRef) {
       this.loadJobs();
    }
 
@@ -33,10 +33,12 @@ export class ListJobsComponent {
                this.totalItems = res?.objectLength
             }
             this.isLoading = false;
+            this.changeDetector.detectChanges();
          })
          .catch(error => {
             this.errorMessage = error?.message || 'Unable to load jobs right now.';
             this.isLoading = false;
+            this.changeDetector.detectChanges();
             console.warn(apiCandidate.GET_ALL_JDS_PAGING + "/" + this.page, error);
          })
    }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { ApiResponse, getRequest, postRequest } from 'src/app/service/api-requests';
 import { apiPublic, AuthorizationMode } from 'src/app/service/constant';
 import { FaqChatResponse, FaqEntry } from 'src/app/core/models/api.models';
@@ -18,7 +18,7 @@ export class FaqComponent {
    isLoading = false;
    isAsking = false;
 
-   constructor() {
+   constructor(private changeDetector: ChangeDetectorRef) {
       this.search();
    }
 
@@ -31,7 +31,10 @@ export class FaqComponent {
          .catch(() => {
             this.entries = [];
          })
-         .finally(() => this.isLoading = false);
+         .finally(() => {
+            this.isLoading = false;
+            this.changeDetector.detectChanges();
+         });
    }
 
    ask(): void {
@@ -47,6 +50,9 @@ export class FaqComponent {
             this.answer = 'The help service is unavailable right now. Browse the curated questions below.';
             this.answerSource = 'Offline fallback';
          })
-         .finally(() => this.isAsking = false);
+         .finally(() => {
+            this.isAsking = false;
+            this.changeDetector.detectChanges();
+         });
    }
 }

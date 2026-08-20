@@ -2,11 +2,12 @@
    <div class="container-fluid">
       <a [class.tabSelect]="headerTitle[0].value" class="nav-link" [routerLink]="['/candidate/']">Việc làm</a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <app-theme-toggle class="candidate-theme-toggle"></app-theme-toggle>
+      <button class="navbar-toggler" type="button" (click)="toggleMenu()"
+         aria-controls="navbarSupportedContent" [attr.aria-expanded]="menuOpen" aria-label="Toggle navigation">
          <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <div class="collapse navbar-collapse" [class.show]="menuOpen" id="navbarSupportedContent">
          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
                <a class="nav-link" [routerLink]="['/candidate/calibration']">Calibration</a>
@@ -27,7 +28,6 @@
             </li>
          </ul>
          <form class="d-flex">
-            <app-theme-toggle></app-theme-toggle>
             <div *ngIf="profile">
                <div class="blockUser">
                   <img class="avatar" src="{{ profile?.avatarURL }}"

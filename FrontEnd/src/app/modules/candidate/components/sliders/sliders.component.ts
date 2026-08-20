@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { getRequest } from 'src/app/service/api-requests';
 import { apiCandidate, AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
@@ -45,7 +45,7 @@ export class SlidersComponent {
       });
    }
 
-   constructor() {
+   constructor(private changeDetector: ChangeDetectorRef) {
       this.loadSlides();
       this.loadCompanies();
    }
@@ -64,8 +64,12 @@ export class SlidersComponent {
                this.slides = slides;
                this.activeSlide = 0;
             }
+            this.changeDetector.detectChanges();
          })
-         .catch(error => console.warn('Unable to load featured slides.', error));
+         .catch(error => {
+            this.changeDetector.detectChanges();
+            console.warn('Unable to load featured slides.', error);
+         });
    }
 
    private loadCompanies() {
@@ -74,8 +78,12 @@ export class SlidersComponent {
             if (res?.statusCode == 200) {
                this.companies = res?.data
             }
+            this.changeDetector.detectChanges();
          })
-         .catch(error => console.warn('Unable to load companies.', error));
+         .catch(error => {
+            this.changeDetector.detectChanges();
+            console.warn('Unable to load companies.', error);
+         });
    }
 
 }
