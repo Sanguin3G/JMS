@@ -263,3 +263,21 @@ export interface FaqChatResponse {
    aiAvailable: boolean;
    matchedFaqId?: number | null;
 }
+
+export interface CatalogAdminEntry {
+   id: number;
+   name: string;
+   description?: string | null;
+   isActive: boolean;
+}
+
+export interface CatalogAdminSnapshot {
+   categories: CatalogAdminEntry[];
+   levels: CatalogAdminEntry[];
+   employmentTypes: CatalogAdminEntry[];
+}
+
+export interface CatalogAdminRequest {
+   name: string;
+   description?: string | null;
+}

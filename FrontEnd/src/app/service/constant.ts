@@ -118,4 +118,5 @@ export enum apiAdmin{
     GET_GEMINI_OPTIONS = '/api/admin/ai-profiles/gemini-options',
     AI_PROFILES = '/api/admin/ai-profiles',
     FAQ = '/api/admin/faq',
+    CATALOGS = '/api/admin/catalogs',
 }

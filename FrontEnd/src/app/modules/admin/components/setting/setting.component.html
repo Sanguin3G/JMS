@@ -108,4 +108,44 @@
       </section>
     </div>
   </section>
+
+  <section class="catalog-admin" aria-labelledby="catalog-admin-title">
+    <header class="faq-admin__header">
+      <div>
+        <p class="ai-settings__eyebrow">ADMIN / MATCHING VOCABULARY</p>
+        <h2 id="catalog-admin-title">Catalogs used by CVs and jobs</h2>
+        <p>Keep the shared categories, career levels, and employment labels data-backed. Archiving hides an entry from new forms without rewriting historical records.</p>
+      </div>
+    </header>
+
+    <div class="catalog-admin__grid">
+      <section class="ai-settings__panel catalog-admin__panel" *ngFor="let panel of catalogPanels" [attr.aria-labelledby]="'catalog-' + panel.kind">
+        <div class="ai-settings__panel-heading">
+          <div>
+            <h3 [id]="'catalog-' + panel.kind">{{ panel.title }}</h3>
+            <p class="catalog-admin__description">{{ panel.description }}</p>
+          </div>
+          <span>{{ panel.entries.length }} active</span>
+        </div>
+
+        <form class="catalog-admin__form" (ngSubmit)="saveCatalog(panel)">
+          <label>{{ panel.title }} name
+            <input [name]="'catalog-name-' + panel.kind" [(ngModel)]="panel.draft.name" maxlength="200" required>
+          </label>
+          <label *ngIf="panel.kind !== 'employment-types'">Description
+            <input [name]="'catalog-description-' + panel.kind" [(ngModel)]="panel.draft.description" maxlength="1000">
+          </label>
+          <button type="submit" class="ai-settings__save" [disabled]="catalogSaving === panel.kind">{{ catalogSaving === panel.kind ? 'Adding...' : 'Add entry' }}</button>
+        </form>
+
+        <ul class="catalog-admin__list">
+          <li *ngFor="let entry of panel.entries">
+            <div><strong>{{ entry.name }}</strong><small *ngIf="entry.description">{{ entry.description }}</small></div>
+            <button type="button" class="ai-settings__text-button" (click)="deleteCatalog(panel, entry)">Archive</button>
+          </li>
+        </ul>
+        <p *ngIf="panel.entries.length === 0" class="ai-settings__empty">No active entries.</p>
+      </section>
+    </div>
+  </section>
 </main>

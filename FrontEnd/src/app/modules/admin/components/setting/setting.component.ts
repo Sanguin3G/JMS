@@ -2,7 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { ApiResponse, deleteRequest, getRequest, postRequest, putRequest } from 'src/app/service/api-requests';
 import { apiAdmin, AuthorizationMode } from 'src/app/service/constant';
 import { AiConnectionTestResult, AiModelCapability, AiProviderProfile, AiProviderProfileDraft } from 'src/app/core/models/ai.models';
-import { FaqEntry, FaqEntryRequest } from 'src/app/core/models/api.models';
+import { CatalogAdminEntry, CatalogAdminRequest, CatalogAdminSnapshot, FaqEntry, FaqEntryRequest } from 'src/app/core/models/api.models';
+
+type CatalogKind = 'categories' | 'levels' | 'employment-types';
+
+interface CatalogPanel {
+  kind: CatalogKind;
+  title: string;
+  description: string;
+  entries: CatalogAdminEntry[];
+  draft: CatalogAdminRequest;
+}
 
 
 @Component({
@@ -26,9 +36,15 @@ export class AdminSettingComponent implements OnInit {
   faqEditingId: number | null = null;
   faqSaving = false;
   faqDraft: FaqEntryRequest = this.createFaqDraft();
+  catalogSaving: CatalogKind | null = null;
+  catalogPanels: CatalogPanel[] = [
+    this.createCatalogPanel('categories', 'Categories', 'Used by job discovery, company profiles, and matching eligibility.'),
+    this.createCatalogPanel('levels', 'Career levels', 'Shared position vocabulary for CVs and job requirements.'),
+    this.createCatalogPanel('employment-types', 'Employment types', 'The development catalogue for work arrangements and contract labels.'),
+  ];
 
   async ngOnInit(): Promise<void> {
-    await Promise.all([this.loadOptions(), this.loadProfiles(), this.loadFaqEntries()]);
+    await Promise.all([this.loadOptions(), this.loadProfiles(), this.loadFaqEntries(), this.loadCatalogs()]);
     this.isLoading = false;
   }
 
@@ -192,6 +208,49 @@ export class AdminSettingComponent implements OnInit {
     }
   }
 
+  async saveCatalog(panel: CatalogPanel): Promise<void> {
+    const name = panel.draft.name.trim();
+    if (!name) {
+      this.errorMessage = `${panel.title} name is required.`;
+      return;
+    }
+
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.catalogSaving = panel.kind;
+    const payload: CatalogAdminRequest = {
+      name,
+      description: panel.draft.description?.trim() || null,
+    };
+    try {
+      const response = await postRequest<ApiResponse<CatalogAdminEntry>>(`${apiAdmin.CATALOGS}/${panel.kind}`, AuthorizationMode.BEARER_TOKEN, payload);
+      if (response?.statusCode >= 200 && response.statusCode < 300) {
+        this.successMessage = `${panel.title} entry added. Existing records keep their saved IDs.`;
+        panel.draft = { name: '', description: '' };
+        await this.loadCatalogs();
+      } else {
+        this.errorMessage = response?.message ?? `The ${panel.title.toLowerCase()} entry could not be saved.`;
+      }
+    } catch {
+      this.errorMessage = `The ${panel.title.toLowerCase()} entry could not be saved.`;
+    } finally {
+      this.catalogSaving = null;
+    }
+  }
+
+  async deleteCatalog(panel: CatalogPanel, entry: CatalogAdminEntry): Promise<void> {
+    if (typeof window !== 'undefined' && !window.confirm(`Archive “${entry.name}”? Existing CVs and jobs will keep their reference.`)) return;
+    this.errorMessage = '';
+    this.successMessage = '';
+    try {
+      await deleteRequest<ApiResponse<string>>(`${apiAdmin.CATALOGS}/${panel.kind}/${entry.id}`, AuthorizationMode.BEARER_TOKEN);
+      this.successMessage = `${panel.title} entry archived.`;
+      await this.loadCatalogs();
+    } catch {
+      this.errorMessage = `The ${panel.title.toLowerCase()} entry could not be archived.`;
+    }
+  }
+
   private async loadOptions(): Promise<void> {
     const response = await getRequest<AiModelCapability[]>(apiAdmin.AI_CAPABILITIES, AuthorizationMode.BEARER_TOKEN);
     this.modelOptions = Array.isArray(response) ? response : [];
@@ -209,6 +268,15 @@ export class AdminSettingComponent implements OnInit {
   private async loadFaqEntries(): Promise<void> {
     const response = await getRequest<ApiResponse<FaqEntry[]>>(apiAdmin.FAQ, AuthorizationMode.BEARER_TOKEN);
     this.faqEntries = response?.data ?? [];
+  }
+
+  private async loadCatalogs(): Promise<void> {
+    const response = await getRequest<ApiResponse<CatalogAdminSnapshot>>(apiAdmin.CATALOGS, AuthorizationMode.BEARER_TOKEN);
+    const snapshot = response?.data;
+    if (!snapshot) return;
+    this.catalogPanels[0].entries = snapshot.categories ?? [];
+    this.catalogPanels[1].entries = snapshot.levels ?? [];
+    this.catalogPanels[2].entries = snapshot.employmentTypes ?? [];
   }
 
   private createDraft(): AiProviderProfileDraft {
@@ -233,6 +301,10 @@ export class AdminSettingComponent implements OnInit {
       isPublished: true,
       sortOrder: 0,
     };
+  }
+
+  private createCatalogPanel(kind: CatalogKind, title: string, description: string): CatalogPanel {
+    return { kind, title, description, entries: [], draft: { name: '', description: '' } };
   }
 
 }

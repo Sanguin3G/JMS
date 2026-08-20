@@ -106,6 +106,23 @@
 .faq-admin__actions { display: flex; gap: .4rem; flex-wrap: wrap; justify-content: end; }
 .faq-admin__actions button:last-child { border-color: #a35b5b; color: #7d2222; }
 
+.catalog-admin { display: grid; gap: 1rem; margin-block-start: 2rem; }
+.catalog-admin > .faq-admin__header h2 { margin: .35rem 0; font: 700 1.7rem Georgia, 'Times New Roman', serif; }
+.catalog-admin > .faq-admin__header p:not(.ai-settings__eyebrow) { max-inline-size: 52rem; margin: 0; color: var(--muted-text-color, #56605a); }
+.catalog-admin__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; align-items: start; }
+.catalog-admin__panel { min-inline-size: 0; }
+.catalog-admin__panel h3 { margin: 0; }
+.catalog-admin__description { max-inline-size: 22rem; margin: .35rem 0 0; color: #56605a; font-size: .85rem; font-weight: 400; }
+.catalog-admin__form { display: grid; gap: .7rem; padding-block-end: 1rem; border-block-end: 1px dashed #a4b8a6; }
+.catalog-admin__list { display: grid; gap: .25rem; padding: 0; margin: 0; list-style: none; }
+.catalog-admin__list li { display: flex; justify-content: space-between; gap: .5rem; align-items: start; padding: .7rem 0; border-block-end: 1px dashed #d2ded2; }
+.catalog-admin__list strong, .catalog-admin__list small { display: block; }
+.catalog-admin__list small { margin-block-start: .2rem; color: #56605a; font-weight: 400; }
+
+@media (max-width: 56rem) {
+  .catalog-admin__grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 38rem) {
   .ai-settings__panel-heading, .ai-settings__profile { align-items: start; flex-direction: column; }
   .ai-settings__profile-actions { justify-content: start; }
