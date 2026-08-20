@@ -23,9 +23,7 @@ namespace APIServer.MappingObj
                 .ForMember(x => x.LastUpdateDisplay, src => src.MapFrom(src => src.LastUpdate.ToString(GlobalStrings.FORMAT_DATE)))
                 .ForMember(x => x.RoleTitle, src => src.MapFrom(src => src.Role.Name))
                 .ForMember(x => x.GenderTitle, src => src.MapFrom(src => src.Gender.Title))
-                .ForMember(x => x.AvatarURL, src => src.MapFrom(src => Validation.checkStringIsEmpty(src.AvatarURL) ?
-                host + "\\defaults\\default_avt.jpg" :
-                host + src.AvatarURL))
+                .ForMember(x => x.AvatarURL, src => src.MapFrom(src => ResolveAssetUrl(host, src.AvatarURL)))
                 .ForMember(x => x.CompanyId, src => src.MapFrom(src => src.Company.CompanyId))
                 ;
             CreateMap<JobDTO, JobDescription>()
@@ -66,9 +64,7 @@ namespace APIServer.MappingObj
                 .ForMember(x => x.LevelTitle, src => src.MapFrom(src => src.Level.Title))
                 .ForMember(x => x.CategoryName, src => src.MapFrom(src => src.Category.CategoryName))
                 .ForMember(x => x.GenderDisplay, src => src.MapFrom(src => src.Gender.Title))
-                .ForMember(x => x.AvatarURL, src => src.MapFrom(src => Validation.checkStringIsEmpty(src.AvatarURL) ?
-                host + "\\defaults\\default_avt.jpg" :
-                host + src.AvatarURL))
+                .ForMember(x => x.AvatarURL, src => src.MapFrom(src => ResolveAssetUrl(host, src.AvatarURL)))
                 ;
             CreateMap<CVMatching, CVMatchingDTO>()
                 .ForMember(x => x.Candidate, src => src.MapFrom(src => src.Candidate))
@@ -81,18 +77,14 @@ namespace APIServer.MappingObj
                 .ForMember(x => x.CreatedDate, src => src.MapFrom(src => src.CreatedDate.ToString(GlobalStrings.FORMAT_DATE1)))
                 .ForMember(x => x.GenderDisplay, src => src.MapFrom(src => src.Gender.Title))
                 .ForMember(x => x.EmploymentTypeName, src => src.MapFrom(src => src.EmploymentType.Title))
-                .ForMember(x => x.AvatarURL, src => src.MapFrom(src => Validation.checkStringIsEmpty(src.AvatarURL) ?
-                host + "\\defaults\\default_avt.jpg" :
-                host + src.AvatarURL))
+                .ForMember(x => x.AvatarURL, src => src.MapFrom(src => ResolveAssetUrl(host, src.AvatarURL)))
                 ;
 
             CreateMap<Admin, AdminDTO>();
 
             CreateMap<Candidate, CandidateDTO>()
                 .ForMember(x => x.IsMale, src => src.MapFrom(src => src.GenderId == 1 ? true : false))
-                .ForMember(x => x.AvatarURL, src => src.MapFrom(src => Validation.checkStringIsEmpty(src.AvatarURL) ?
-                host + "\\defaults\\default_avt.jpg" :
-                host + src.AvatarURL))
+                .ForMember(x => x.AvatarURL, src => src.MapFrom(src => ResolveAssetUrl(host, src.AvatarURL)))
             ;
             CreateMap<CandidateDTO, Candidate>()
                 .ForMember(x => x.GenderId, src => src.MapFrom(src => src.IsMale ? 1 : 2))
@@ -116,12 +108,8 @@ namespace APIServer.MappingObj
                 .ForMember(x => x.CategoryName, src => src.MapFrom(y => y.Category.CategoryName))
                 .ForMember(x => x.DateCreatedDisplay, src => src.MapFrom(y => y.DateCreated.ToString(GlobalStrings.FORMAT_DATE)))
                 .ForMember(x => x.RecuirterFounder, src => src.MapFrom(y => y.Recuirter.FullName))
-                .ForMember(x => x.AvatarURL, src => src.MapFrom(src => Validation.checkStringIsEmpty(src.AvatarURL) ?
-                host + "\\defaults\\default_avt.jpg" :
-                host + src.AvatarURL))
-                .ForMember(x => x.BackGroundURL, src => src.MapFrom(src => Validation.checkStringIsEmpty(src.BackGroundURL) ?
-                host + "\\defaults\\default_avt.jpg" :
-                host + src.BackGroundURL))
+                .ForMember(x => x.AvatarURL, src => src.MapFrom(src => ResolveAssetUrl(host, src.AvatarURL)))
+                .ForMember(x => x.BackGroundURL, src => src.MapFrom(src => ResolveAssetUrl(host, src.BackGroundURL)))
                 .ForMember(x => x.JDs, src => src.MapFrom(y => y.JobDescriptions))
                 ;
             CreateMap<CompanyDTO, Company>()
@@ -160,6 +148,18 @@ namespace APIServer.MappingObj
             {
                 return Validation.convertDateTime(input);
             }
+        }
+
+        private static string ResolveAssetUrl(string host, string? assetUrl)
+        {
+            const string defaultAvatarUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80";
+
+            if (Validation.checkStringIsEmpty(assetUrl))
+            {
+                return defaultAvatarUrl;
+            }
+
+            return Uri.TryCreate(assetUrl, UriKind.Absolute, out _) ? assetUrl : $"{host}{assetUrl}";
         }
     }
 }
