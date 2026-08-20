@@ -27,7 +27,9 @@ namespace APIServer.Services
             this.companyRepo = companyRepo;
             this.candidateRepo = candidateRepo;
             this.cvRepo = cvRepo;
-            host = Environment.GetEnvironmentVariable("ASPNETCORE_URLS").Split(";")[0];
+            host = Environment.GetEnvironmentVariable("ASPNETCORE_URLS")?
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault() ?? string.Empty;
             this.sliderRepo = sliderRepo;
         }
 
@@ -49,8 +51,7 @@ namespace APIServer.Services
                 {
                     deleteOldImg(com.AvatarURL);
                 }
-                string FileName = file.FileName;
-                string uniqueFileName = Guid.NewGuid().ToString() + "_Company_avt_" + FileName;
+                string uniqueFileName = BuildSafeImageFileName(file, "Company_avt");
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 com.AvatarURL = imagePath;
@@ -83,8 +84,7 @@ namespace APIServer.Services
                 {
                     deleteOldImg(com.BackGroundURL);
                 }
-                string FileName = file.FileName;
-                string uniqueFileName = Guid.NewGuid().ToString() + "_Company_bgr_" + FileName;
+                string uniqueFileName = BuildSafeImageFileName(file, "Company_bgr");
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 com.BackGroundURL = imagePath;
@@ -116,8 +116,7 @@ namespace APIServer.Services
                 {
                     deleteOldImg(can.AvatarURL);
                 }
-                string FileName = file.FileName;
-                string uniqueFileName = Guid.NewGuid().ToString() + "_CV_" + FileName;
+                string uniqueFileName = BuildSafeImageFileName(file, "CV");
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 can.AvatarURL = imagePath;
@@ -147,8 +146,7 @@ namespace APIServer.Services
                 {
                     deleteOldImg(cv.AvatarURL);
                 }
-                string FileName = file.FileName;
-                string uniqueFileName = Guid.NewGuid().ToString() + "_CV_" + FileName;
+                string uniqueFileName = BuildSafeImageFileName(file, "CV");
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 cv.AvatarURL = imagePath;
@@ -176,8 +174,7 @@ namespace APIServer.Services
                 {
                     deleteOldImg(rec.AvatarURL);
                 }
-                string FileName = file.FileName;
-                string uniqueFileName = Guid.NewGuid().ToString() + "_Recuirter_" + FileName;
+                string uniqueFileName = BuildSafeImageFileName(file, "Recuirter");
                 uploadImg(file, uniqueFileName);
                 var imagePath = Path.Combine("\\images\\", uniqueFileName);
                 rec.AvatarURL = imagePath;
@@ -196,17 +193,16 @@ namespace APIServer.Services
         {
             try
             {
-                string fileExtension = Path.GetExtension(file.FileName).ToLower();
-                if (!IsImageFileExtension(fileExtension))
-                {
-                    throw new Exception("Only allow img file");
-                }
+                if (file == null)
+                    throw new Exception("Image file is required");
                 if (!IsImageFileSizeValid(file, 5))
                 {
                     throw new Exception("Only allow img size under 5mb");
                 }
                 var absoluthPath = Directory.GetCurrentDirectory();
-                var imagePath = absoluthPath + "\\wwwroot\\images\\" + fileName;
+                var imageDirectory = Path.Combine(absoluthPath, "wwwroot", "images");
+                Directory.CreateDirectory(imageDirectory);
+                var imagePath = Path.Combine(imageDirectory, fileName);
                 using (var stream = new FileStream(imagePath, FileMode.Create))
                 {
                     file.CopyTo(stream);
@@ -224,6 +220,18 @@ namespace APIServer.Services
             return allowedExtensions.Contains(fileExtension);
         }
 
+        private string BuildSafeImageFileName(IFormFile file, string prefix)
+        {
+            if (file == null)
+                throw new Exception("Image file is required");
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (!IsImageFileExtension(extension))
+                throw new Exception("Only allow img file");
+
+            return $"{Guid.NewGuid():N}_{prefix}{extension}";
+        }
+
         private bool IsImageFileSizeValid(IFormFile file, int maxSizeInMB)
         {
             if (file == null || file.Length == 0)
@@ -231,10 +239,8 @@ namespace APIServer.Services
                 return false;
             }
 
-            long fileSizeInBytes = file.Length;
-            long fileSizeInMB = fileSizeInBytes / 1024 / 1024;
-
-            return fileSizeInMB <= maxSizeInMB;
+            long maximumBytes = maxSizeInMB * 1024L * 1024L;
+            return file.Length <= maximumBytes;
         }
 
         private void deleteOldImg(string? url)
@@ -251,22 +257,18 @@ namespace APIServer.Services
 
         public string addImgSlider(IFormFile file, Slider slider)
         {
-            string FileName = file.FileName;
-            string uniqueFileName = Guid.NewGuid().ToString() + "_slider_" + FileName;
+            string uniqueFileName = BuildSafeImageFileName(file, "slider");
 
             try
             {
-                string fileExtension = Path.GetExtension(file.FileName).ToLower();
-                if (!IsImageFileExtension(fileExtension))
-                {
-                    throw new Exception("Only allow img file");
-                }
                 if (!IsImageFileSizeValid(file, 25))
                 {
                     throw new Exception("Only allow img size under 25mb");
                 }
                 var absoluthPath = Directory.GetCurrentDirectory();
-                var folderPath = absoluthPath + "\\wwwroot\\slider\\" + uniqueFileName;
+                var sliderDirectory = Path.Combine(absoluthPath, "wwwroot", "slider");
+                Directory.CreateDirectory(sliderDirectory);
+                var folderPath = Path.Combine(sliderDirectory, uniqueFileName);
                 using (var stream = new FileStream(folderPath, FileMode.Create))
                 {
                     file.CopyTo(stream);
