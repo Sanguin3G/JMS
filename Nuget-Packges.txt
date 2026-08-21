@@ -1,9 +1,0 @@
-Microsoft.EntityFrameworkCore.SqlServer
-Microsoft.EntityFrameworkCore.SqlServer.Design
-Microsoft.EntityFrameworkCore.Tools
-Microsoft.AspNetCore.Authentication.JwtBearer
-Microsoft.AspNetCore.Identity.EntityFrameworkCore
-Microsoft.AspNetCore.Identity.UI
-
-
-dotnet ef dbcontext scaffold "server =(local); database = NorthWind;uid=sa;pwd=123; Integrated Security=true;TrustServerCertificate=Yes" Microsoft.EntityFrameworkCore.SqlServer --output-dir Model
