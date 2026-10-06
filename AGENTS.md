@@ -63,6 +63,12 @@ states coherent. Use accessible labels, focus behavior, meaningful icon names,
 Angular navigation, and stable/local demo assets. Prefer API search/pagination
 for real datasets and URL state where navigation benefits.
 
+Navigation must have clear groups, recognizable icons, active destinations and
+distinct primary actions. Use accessible CDK menus for theme/account dropdowns;
+retain System/Light/Dark through ThemeService. Preserve JMS blue/purple character,
+visual depth and restrained feedback. Respect reduced-motion preferences. Credit
+downloaded images and keep fictional demo content clearly identified.
+
 Deterministic matching remains authoritative. AI gives bounded explanation and
 evidence, never automatic hiring/rejection. Target Gemini, OpenAI, and Anthropic
 through small provider adapters and backend capability metadata. Keep provider
@@ -100,13 +106,16 @@ dotnet test BackEnd/BackEndApplication/APIServer.Tests/APIServer.Tests.csproj
 cd FrontEnd
 npm ci
 npm run build -- --configuration prod
-npm test -- --watch=false --browsers=ChromeHeadless
+npm test
+npx playwright test
 ```
 
-Update these commands when their implementation changes. The current frontend
-runner is Karma/Jasmine; migrate to Vitest only if it is straightforward and
-beneficial, and do not retain two unit-test stacks. Prefer consequential behavior
-tests over trivial creation tests or arbitrary coverage goals.
+Update these commands when their implementation changes. The frontend uses the Angular Vitest runner. Do not retain a second unit-test
+stack. Playwright requires the production frontend build and Microsoft Edge.
+Prefer consequential behavior tests over trivial creation tests or arbitrary coverage goals.
+
+Finish each coherent implementation batch before testing it. Reuse earlier passing
+results; rerun checks only for changed behavior, failures or unresolved concerns.
 
 Add a small Playwright suite for signature seeded journeys using Microsoft Edge
 with `channel: 'msedge'`. Inspect representative desktop/mobile widths and light,

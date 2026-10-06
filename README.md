@@ -1,28 +1,32 @@
-# JMS
+# JMS · 2024 Remaster
 
-JMS is a development-only portfolio project for exploring the candidate → job → matching → recruiter review loop. It uses fictional seed data and deterministic matching as the source of truth. Gemini can add a bounded explanation, but it never makes a hiring decision.
+A Vietnamese-first recruitment application: candidates build themed CVs, discover and save jobs, apply, and inspect matching evidence; recruiters publish jobs and review candidates; admins manage real JMS data and AI configuration.
 
-## Stack
+This remaster preserves our graduation project's ideas and recognizable blue/purple lineage while finishing workflows, simplifying the frontend, and preparing the application for later hosting. It remains a modest job board.
 
-- ASP.NET Core / .NET 10 Web API
-- SQLite with EF Core migrations and an idempotent Development seeder
-- Angular 21 with npm, TypeScript, and the existing feature modules
-- Node 24 LTS for the client toolchain
-- Gemini AI Studio as the first provider adapter (optional)
+![JMS job discovery](docs/screenshots/candidate-discovery.png)
 
-## Run locally
+## Product
 
-Prerequisites: .NET SDK 10.0.301 (or a compatible 10.0 SDK), Node 24, and npm.
+- **Candidate:** server-side job search and filters, company profiles, saved jobs, nine original CV themes, CV editing and previews, application history and matching evidence.
+- **Recruiter:** real dashboard, searchable active/expired jobs, job and company editing, candidate review, shortlist and rejection actions.
+- **Admin:** real recruitment statistics, paged account/company management, protected AI profiles, matching catalogs and curated help.
+- **Every role:** coherent sign-in/register flows, grouped navigation with active destinations, account menus, a keyboard-accessible System/Light/Dark dropdown, notifications, accessible confirmations and responsive layouts.
 
-Start the API:
+The fictional demo includes two distinct studios, eight job listings across engineering, design, content and operations, two detailed CVs and real rule-based matching snapshots. Workplace photographs are served locally; the blue/purple identity, layered cards and original CV themes give JMS its own character. Motion respects reduced-motion preferences.
+
+**Deterministic matching is authoritative. AI explains evidence and gaps; it does not autonomously decide hiring outcomes.** Gemini, OpenAI and Anthropic use small server-side adapters. Matching still works without an AI key.
+
+## Quick start
+
+Install .NET SDK 10.0.301+, Node.js 24 and npm. Run from the repository root:
 
 ```powershell
-cd BackEnd/BackEndApplication
-dotnet restore
-dotnet run --project APIServer/APIServer.csproj
+$env:ASPNETCORE_ENVIRONMENT = 'Development'
+dotnet run --project BackEnd/BackEndApplication/APIServer --no-launch-profile --urls http://localhost:8080
 ```
 
-Start the Angular client in a second terminal:
+In another terminal:
 
 ```powershell
 cd FrontEnd
@@ -30,56 +34,55 @@ npm ci
 npm start
 ```
 
-The development client uses `http://localhost:8080` for the API and serves at `http://localhost:4200`. The API exposes Swagger at `http://localhost:8080/swagger` and readiness probes at `/health/live` and `/health/ready`.
+Open `http://localhost:4200`. Use Development for the demo: migrations initialize SQLite and fictional data is added only to an empty database. The default local launch profile already selects Development; when using `--no-launch-profile`, set `$env:ASPNETCORE_ENVIRONMENT='Development'` first.
 
-The API creates and migrates its SQLite database only in Development. User uploads and Data Protection keys stay in local `App_Data` folders and are not repository data.
+| Role | Username | Password (local fictional demo only) |
+| --- | --- | --- |
+| Candidate | `an.le` / `duc.pham` | `JmsDemo!2026` |
+| Recruiter | `minh.northstar` / `linh.paperkite` | `JmsDemo!2026` |
+| Admin | `demo.admin` | `JmsDemo!2026` |
 
-## Demo accounts
+No AI keys are seeded. In Admin → Cài đặt JMS choose a provider, supported model and its reasoning control, then supply a key. Stored keys are encrypted server-side and never returned to the browser.
 
-The Development-only seeder uses the same fictional password for these accounts: `JmsDemo!2026`.
+## Technology and verification
 
-| Role | Username |
-| --- | --- |
-| Admin | `demo.admin` |
-| Recruiter | `minh.northstar` |
-| Recruiter | `linh.paperkite` |
-| Candidate | `an.le` |
-| Candidate | `duc.pham` |
-
-These credentials are for local walkthroughs only. Do not reuse them outside this development project.
-
-## Docker demo
-
-Docker Desktop must be running. From the repository root:
+Angular 21, HttpClient, signals, typed auth forms, Bootstrap 5/Icons and selective CDK; CKEditor for rich text. ASP.NET Core/.NET 10, EF Core, SQLite, JWT and persistent Data Protection. Controllers/services/repositories remain understandable and compatible with historical `Recuirter` contracts.
 
 ```powershell
+dotnet build BackEnd/BackEndApplication/BackEndApplication.sln
+dotnet test BackEnd/BackEndApplication/APIServer.Tests/APIServer.Tests.csproj
+cd FrontEnd
+npm ci
+npm run build -- --configuration prod
+npm test
+npx playwright test
+```
+
+Playwright uses **Microsoft Edge only**, a fresh isolated demo database and the production Angular build. Five signature journeys cover discovery/saved jobs/application, CV editing, recruiter review, rich-text job editing and admin management. One focused navigation check covers keyboard menus, theme choices, all roles and desktop/tablet/mobile layouts. Set `JMS_SCREENSHOTS=1` to refresh the six real application screenshots below.
+
+GitHub Actions verifies backend, frontend, Edge journeys and both Docker build targets. It does not publish images or deploy.
+
+## Hosting preparation
+
+```powershell
+$env:JMS_JWT_KEY = '<stable local signing key of at least 32 characters>'
 docker compose up --build
 ```
 
-Open `http://localhost:4200`. The frontend container serves the Angular build and proxies `/api/*` and `/health/*` to the API container. SQLite is stored in the named `jms-data` volume. The compose file contains only development defaults; provide `JMS_JWT_KEY` locally if you want to replace the placeholder development key.
+Compose is a local demo by default. SQLite, Data Protection keys and uploads have separate persistent volumes. Production configuration, CORS origins, the public image origin and frontend API origin are external settings. Production does not seed demo users. The repository contains no provider-specific deployment.
 
-## AI configuration
+See [development](docs/development.md), [architecture](docs/architecture.md) and [deployment](docs/deployment.md) for configuration, migration, backup and smoke-test details.
 
-AI is optional. An admin can configure an encrypted Gemini provider profile from the admin settings screen. The backend validates the provider/model/reasoning combination against its current capability catalogue, never returns API keys to the browser, bounds requests, and exposes a safe connection test. Without a configured key, deterministic matching and the curated FAQ still work.
+## Real seeded application
 
-The default approved model is the economical `gemini-3.1-flash-lite` with minimal reasoning. Historical matching records retain their rules version, provider/model status, deterministic eligibility, explanation, and fallback state.
+| Job details | CV library |
+| --- | --- |
+| ![Job details](docs/screenshots/job-details.png) | ![CV library](docs/screenshots/cv-library.png) |
 
-## Themes and calibration
+| Recruiter dashboard | Candidate review |
+| --- | --- |
+| ![Recruiter dashboard](docs/screenshots/recruiter-dashboard.png) | ![Candidate review](docs/screenshots/recruiter-review.png) |
 
-The client has persisted `System`, `Light`, and `Dark` modes. System mode follows the operating-system preference and falls back safely when it changes.
+![Admin dashboard](docs/screenshots/admin-dashboard.png)
 
-The `/candidate/calibration` Career Calibration Terminal is a replayable parody questionnaire. Its collectible endings are entertainment only and never affect matching, ranking, recruiter visibility, or hiring recommendations.
-
-## Verification
-
-```powershell
-cd BackEnd/BackEndApplication
-dotnet build BackEndApplication.sln
-dotnet test APIServer.Tests/APIServer.Tests.csproj
-
-cd ../../FrontEnd
-npm ci
-npm run build -- --configuration prod
-```
-
-The frontend test target requires a locally installed Chrome/Chromium binary for `ChromeHeadless`.
+The original CV themes and compatible APIs/schema are retained. Password recovery is deliberately absent until a proper expiring reset-token workflow exists. Help uses curated FAQ content; AI is scoped to matching explanations.
