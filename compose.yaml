@@ -5,14 +5,21 @@ services:
       dockerfile: Dockerfile
       target: api
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_ENVIRONMENT: ${JMS_ENVIRONMENT:-Development}
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__JobConstr: Data Source=/app/App_Data/jms.db
-      FE_Port: http://localhost:4200
-      JMS_PUBLIC_URL: http://localhost:8080
-      Jwt__Key: ${JMS_JWT_KEY:-local-development-jwt-key-change-me-2026}
+      Cors__AllowedOrigins__0: ${JMS_FRONTEND_ORIGIN:-http://localhost:4200}
+      JMS_PUBLIC_URL: ${JMS_PUBLIC_URL:-http://localhost:4200}
+      Jwt__Key: ${JMS_JWT_KEY:?Supply JMS_JWT_KEY with a stable signing key of at least 32 characters}
+      Database__ApplyMigrations: ${JMS_APPLY_MIGRATIONS:-true}
+      Database__SeedDemo: ${JMS_SEED_DEMO:-true}
+      DataProtection__KeyPath: /app/keys
+      DataProtection__ApplicationName: JMS
+      Storage__UploadRoot: /app/uploads
     volumes:
       - jms-data:/app/App_Data
+      - jms-keys:/app/keys
+      - jms-uploads:/app/uploads
     ports:
       - "8080:8080"
 
@@ -28,3 +35,5 @@ services:
 
 volumes:
   jms-data:
+  jms-keys:
+  jms-uploads:

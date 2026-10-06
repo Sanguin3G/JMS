@@ -370,3 +370,8 @@ MigrationBackup/
 FodyWeavers.xsd
 BackEnd/BackEndApplication/APIServer/Common/gptkey.txt
 FrontEnd/yarn.lock
+
+# Local browser verification
+FrontEnd/.test-data/
+FrontEnd/test-results/
+FrontEnd/playwright-report/

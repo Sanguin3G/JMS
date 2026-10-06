@@ -1,0 +1,51 @@
+name: Verify JMS
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet restore BackEnd/BackEndApplication/BackEndApplication.sln
+      - run: dotnet build BackEnd/BackEndApplication/BackEndApplication.sln --no-restore -c Release
+      - run: dotnet test BackEnd/BackEndApplication/APIServer.Tests/APIServer.Tests.csproj --no-build -c Release
+  frontend-edge:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: FrontEnd
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: FrontEnd/package-lock.json
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: npm ci
+      - run: npm run build -- --configuration prod
+      - run: npm test
+      - run: npx playwright install msedge
+      - run: npm run e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: edge-failure-artifacts
+          path: |
+            FrontEnd/test-results
+            FrontEnd/playwright-report
+          retention-days: 7
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --target api -t jms-api-check .
+      - run: docker build --target frontend -t jms-frontend-check .
