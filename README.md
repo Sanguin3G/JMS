@@ -4,14 +4,28 @@ A Vietnamese-first recruitment application: candidates build themed CVs, discove
 
 This remaster preserves our graduation project's ideas and recognizable blue/purple lineage while finishing workflows, simplifying the frontend, and preparing the application for later hosting. It remains a modest job board.
 
+The remaster includes integrated CV/job readers, help in the header, persistent
+EN/VI controls, real Admin insights and an original bilingual Calibration story.
+See [project status](docs/project-status.md) for verification and known limits;
+[AI choices](docs/ai.md) records the official model sources and economical/stronger
+options for each provider.
+
+Calibration is authored interactive fiction for entertainment. Its results stay
+on your device and never affect recruitment. Its online CC0 backgrounds carry
+discreet in-game credits; [artwork sources](FrontEnd/src/assets/images/calibration/CREDITS.md)
+identify the original artists. No AI-generated artwork is included.
+
 ![JMS job discovery](docs/screenshots/candidate-discovery.png)
 
 ## Product
 
 - **Candidate:** server-side job search and filters, company profiles, saved jobs, nine original CV themes, CV editing and previews, application history and matching evidence.
 - **Recruiter:** real dashboard, searchable active/expired jobs, job and company editing, candidate review, shortlist and rejection actions.
-- **Admin:** real recruitment statistics, paged account/company management, protected AI profiles, matching catalogs and curated help.
-- **Every role:** coherent sign-in/register flows, grouped navigation with active destinations, account menus, a keyboard-accessible System/Light/Dark dropdown, notifications, accessible confirmations and responsive layouts.
+- **Admin:** organized operational overview, real 30/90/365-day activity statistics, account/company management, shared document previews, protected AI profiles, matching catalogs and bilingual curated help.
+- **Every role:** coherent sign-in/register flows, grouped navigation, account menus, keyboard-accessible System/Light/Dark and EN/VI dropdowns, header help, notifications, confirmations and responsive layouts.
+- **Calibration:** six illustrated scenes, four disagreeing inner voices, six endings, a local journal and ending collection. Original EN/VI writing keeps the humour and atmosphere in both languages. It is entertainment, not a personality assessment or hiring signal.
+
+Language preferences change application labels, validation, menus, help and rich-text editor controls. CVs, job descriptions and administrator-authored catalog names keep their original language. Existing help entries without English text show an explicit Vietnamese fallback; Admin can add their English versions.
 
 The fictional demo includes two distinct studios, eight job listings across engineering, design, content and operations, two detailed CVs and real rule-based matching snapshots. Workplace photographs are served locally; the blue/purple identity, layered cards and original CV themes give JMS its own character. Motion respects reduced-motion preferences.
 
@@ -58,7 +72,7 @@ npm test
 npx playwright test
 ```
 
-Playwright uses **Microsoft Edge only**, a fresh isolated demo database and the production Angular build. Five signature journeys cover discovery/saved jobs/application, CV editing, recruiter review, rich-text job editing and admin management. One focused navigation check covers keyboard menus, theme choices, all roles and desktop/tablet/mobile layouts. Set `JMS_SCREENSHOTS=1` to refresh the six real application screenshots below.
+Playwright uses **Microsoft Edge only**, a fresh isolated demo database and the production Angular build. Five signature journeys cover recruitment workflows; one navigation check covers keyboard menus and desktop/tablet/mobile themes. Three refinement journeys cover bilingual Calibration and help, the Candidate CV reader, and real Admin insights with Admin/Recruiter previews. Rich-text editing also checks that switching language preserves the unsaved draft. Set `JMS_SCREENSHOTS=1` to refresh the real application screenshots below.
 
 GitHub Actions verifies backend, frontend, Edge journeys and both Docker build targets. It does not publish images or deploy.
 
@@ -75,14 +89,18 @@ See [development](docs/development.md), [architecture](docs/architecture.md) and
 
 ## Real seeded application
 
-| Job details | CV library |
+| Job details | Integrated CV reader |
 | --- | --- |
-| ![Job details](docs/screenshots/job-details.png) | ![CV library](docs/screenshots/cv-library.png) |
+| ![Job details](docs/screenshots/job-details.png) | ![CV reader](docs/screenshots/cv-reader.png) |
 
 | Recruiter dashboard | Candidate review |
 | --- | --- |
 | ![Recruiter dashboard](docs/screenshots/recruiter-dashboard.png) | ![Candidate review](docs/screenshots/recruiter-review.png) |
 
-![Admin dashboard](docs/screenshots/admin-dashboard.png)
+| Admin overview | Recruitment statistics |
+| --- | --- |
+| ![Admin overview](docs/screenshots/admin-dashboard.png) | ![Recruitment statistics](docs/screenshots/admin-statistics.png) |
+
+![Calibration — The Department of Tomorrow](docs/screenshots/calibration.png)
 
 The original CV themes and compatible APIs/schema are retained. Password recovery is deliberately absent until a proper expiring reset-token workflow exists. Help uses curated FAQ content; AI is scoped to matching explanations.

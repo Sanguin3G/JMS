@@ -57,6 +57,11 @@ tool installed and the same production environment variables supplied:
 dotnet ef database update --project BackEnd/BackEndApplication/APIServer/APIServer.csproj
 ```
 
+The bilingual-help migration adds nullable columns and preserves existing FAQ
+content. It does not translate or reseed a populated database. Fill optional
+English help fields through Admin after upgrade. Browser language preferences
+and Calibration saves are local client state, not server persistence requirements.
+
 Do not copy a running SQLite file without a consistent backup method. Stop writes
 for a filesystem backup, or use SQLite's backup facility; preserve associated WAL
 state as appropriate. Never remove volumes as a routine restart procedure.

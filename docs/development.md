@@ -31,9 +31,25 @@ dotnet ef database update --project BackEnd/BackEndApplication/APIServer
 
 Use the same configured environment and database path as the API. Back up before an existing-database upgrade. Preserve Data Protection keys with the database so encrypted AI keys remain readable.
 
+`20261006210000_AddBilingualHelp` adds nullable English FAQ fields without
+replacing existing questions. A fresh demo includes bilingual workflow guides.
+Existing installations retain their own help content: add English versions in
+Admin → JMS settings → Help content, or accept the visibly marked Vietnamese
+fallback. Changing language never translates CVs, jobs or managed catalog text.
+
+The header language menu persists EN/VI; the adjacent help button works without
+scrolling to the page footer. Calibration is public at `/candidate/calibration`.
+Its six scenes and ending collection work without a login or provider key. Saves
+are local to the browser/device, and clearing browser storage removes them.
+Artwork sources and reuse licenses are in the asset directory's `CREDITS.md`.
+
 ## AI
 
 Use Admin → Cài đặt JMS to add a profile, select backend-provided model/reasoning choices, supply a key, test access and activate it for matching. No key is required for development or tests. Server environment fallbacks support `Ai__Provider` and `Ai__Gemini|OpenAI|Anthropic__ApiKey`, `__Model`, `__ReasoningLevel`; use nested .NET setting names, for example `Ai__OpenAI__ApiKey`. Keys must never be committed or supplied to frontend config.
+
+See [AI choices](ai.md) for the curated economical/stronger tiers and official
+model references. Existing profiles are retained; changing the default model
+does not alter historical matching metadata.
 
 ## Checks
 

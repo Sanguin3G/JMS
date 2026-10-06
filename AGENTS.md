@@ -69,6 +69,14 @@ retain System/Light/Dark through ThemeService. Preserve JMS blue/purple characte
 visual depth and restrained feedback. Respect reduced-motion preferences. Credit
 downloaded images and keep fictional demo content clearly identified.
 
+Provide EN/VI for application-owned labels, messages, controls and curated help.
+Do not silently translate user-authored CVs or job descriptions. Calibration is
+entertainment with original bilingual writing, not a psychological assessment
+or hiring signal. Its results stay local and never affect matching. Use online
+art with explicit reuse permission and discreet original-source/artist/license
+credits; do not add AI-generated artwork. Noncommercial intent alone does not
+establish permission to reuse commercial game assets.
+
 Deterministic matching remains authoritative. AI gives bounded explanation and
 evidence, never automatic hiring/rejection. Target Gemini, OpenAI, and Anthropic
 through small provider adapters and backend capability metadata. Keep provider
