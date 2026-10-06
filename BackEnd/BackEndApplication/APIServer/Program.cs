@@ -33,6 +33,7 @@ namespace APIServer
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddScoped<APIServer.Features.Admin.AdminInsightsService>();
             builder.Logging.ClearProviders();
             builder.Logging.AddConsole();
 

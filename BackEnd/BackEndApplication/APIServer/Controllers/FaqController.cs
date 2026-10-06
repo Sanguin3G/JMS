@@ -24,7 +24,7 @@ public sealed class FaqController(IFaqService faqService) : ControllerBase
     [HttpPost("chat")]
     public async Task<BaseResponseBody<FaqChatResponse>> Chat([FromBody] FaqChatRequest request, CancellationToken cancellationToken)
     {
-        var answer = await faqService.AnswerAsync(request.Message, cancellationToken);
+        var answer = await faqService.AnswerAsync(request.Message, cancellationToken, request.Language);
         return new BaseResponseBody<FaqChatResponse>
         {
             statusCode = HttpStatusCode.OK,

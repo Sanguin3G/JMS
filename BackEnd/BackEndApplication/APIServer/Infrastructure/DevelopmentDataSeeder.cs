@@ -32,6 +32,8 @@ public static class DevelopmentDataSeeder
                 new FaqEntry
                 {
                     Question = "JMS đánh giá độ phù hợp như thế nào?",
+                    QuestionEn = "How does JMS evaluate matching?",
+                    AnswerEn = "JMS compares a CV with job requirements using categories and deterministic criteria. AI can add explanations and evidence; the recruiter makes hiring decisions.",
                     Answer = "JMS so sánh CV với công việc theo ngành nghề và các tiêu chí xác định. AI có thể bổ sung giải thích và bằng chứng; quyết định tuyển dụng thuộc về nhà tuyển dụng.",
                     Keywords = "matching score eligibility explanation",
                     Category = "Matching",
@@ -42,6 +44,8 @@ public static class DevelopmentDataSeeder
                 new FaqEntry
                 {
                     Question = "Làm thế nào để cải thiện CV?",
+                    QuestionEn = "How can I improve my CV?",
+                    AnswerEn = "Keep your CV current. Describe your contribution clearly and present relevant skills and experience honestly. Matching evidence helps you see strengths and gaps worth exploring.",
                     Answer = "Cập nhật CV, mô tả cụ thể công việc đã làm và trình bày trung thực kỹ năng, kinh nghiệm liên quan. Phần đánh giá giúp bạn hiểu bằng chứng phù hợp và những điểm còn thiếu.",
                     Keywords = "CV resume improve gaps skills experience",
                     Category = "Candidates",
@@ -52,12 +56,41 @@ public static class DevelopmentDataSeeder
                 new FaqEntry
                 {
                     Question = "Điều gì xảy ra khi AI không khả dụng?",
+                    QuestionEn = "What happens when AI is unavailable?",
+                    AnswerEn = "Deterministic scores and evaluation results still work. JMS identifies unavailable AI explanations and keeps API keys on the server.",
                     Answer = "Điểm số và kết quả đánh giá theo quy tắc vẫn hoạt động. JMS thông báo khi phần giải thích AI không khả dụng và luôn giữ khóa API trên máy chủ.",
                     Keywords = "AI unavailable fallback key không khả dụng",
                     Category = "AI safety",
                     SortOrder = 3,
                     CreatedAt = new DateTime(2026, 8, 20, 9, 0, 0, DateTimeKind.Utc),
                     UpdatedAt = new DateTime(2026, 8, 20, 9, 0, 0, DateTimeKind.Utc)
+                },
+                new FaqEntry
+                {
+                    Question = "Làm sao tìm, lưu và ứng tuyển công việc?",
+                    Answer = "Dùng Tìm việc để lọc theo từ khóa, ngành nghề, địa điểm hoặc hình thức. Mở công việc để đọc yêu cầu; Lưu để xem lại sau. Khi ứng tuyển, chọn một CV đã tạo. Theo dõi CV đã gửi và trạng thái tại Ứng tuyển của bạn.",
+                    QuestionEn = "How do I find, save and apply for jobs?",
+                    AnswerEn = "Use Find jobs to filter by keyword, category, location or employment type. Open a job to read its requirements; save it to revisit later. To apply, choose a CV you have created. Follow the submitted snapshot and status in Your applications.",
+                    Keywords = "job search save bookmark apply application tìm việc lưu ứng tuyển",
+                    Category = "Candidates", SortOrder = 4, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
+                },
+                new FaqEntry
+                {
+                    Question = "Nhà tuyển dụng xem xét ứng viên ở đâu?",
+                    Answer = "Mở tin tuyển dụng trong khu vực Nhà tuyển dụng, rồi vào danh sách ứng viên. Đọc CV, bằng chứng matching và giải thích AI nếu có. Bạn có thể chọn hoặc từ chối hồ sơ; AI không thực hiện quyết định đó.",
+                    QuestionEn = "Where can recruiters review candidates?",
+                    AnswerEn = "Open a job in the recruiter workspace, then its candidate list. Read the CV, matching evidence and any available AI explanation. You can select or reject an application; AI never makes that decision.",
+                    Keywords = "recruiter review candidate shortlist reject nhà tuyển dụng ứng viên",
+                    Category = "Recruiters", SortOrder = 5, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
+                },
+                new FaqEntry
+                {
+                    Question = "Calibration có ảnh hưởng đến tuyển dụng không?",
+                    Answer = "Không. Đây là truyện tương tác để giải trí, có vài gợi ý tự suy ngẫm tùy bạn muốn nhận hay không. Kết thúc và lượt đang chơi chỉ lưu trên thiết bị; không gửi vào CV, matching hay hồ sơ nhà tuyển dụng. Bạn có thể xóa bộ sưu tập trong trò chơi.",
+                    QuestionEn = "Does Calibration affect recruitment?",
+                    AnswerEn = "No. It is interactive fiction for entertainment, with optional reflection. Endings and the current run stay on your device; they never enter your CV, matching or recruiter records. You can clear the collection in the game.",
+                    Keywords = "calibration game personality entertainment privacy trò chơi tính cách",
+                    Category = "JMS basics", SortOrder = 6, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow
                 });
             await dbContext.SaveChangesAsync(cancellationToken);
         }
