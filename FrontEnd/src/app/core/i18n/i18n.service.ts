@@ -17,4 +17,3 @@ export class I18nService {
   bilingual(value: {vi:string;en:string}): string { return value[this.language()]; }
   private read(): Language { try { return localStorage.getItem('jms-language') === 'en' ? 'en' : 'vi'; } catch { return 'vi'; } }
 }
-

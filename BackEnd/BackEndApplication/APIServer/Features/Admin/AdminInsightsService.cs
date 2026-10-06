@@ -49,4 +49,3 @@ public sealed class AdminInsightsService(JMSDBContext db, IAdminService admin)
         return new(admin.GetStatisticDTO(), attention, points, categories, status, companies, days, now);
     }
 }
-

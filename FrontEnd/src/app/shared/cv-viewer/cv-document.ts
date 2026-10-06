@@ -30,4 +30,3 @@ export function normalizeCv(value:unknown):CvDocument {
  certificates:cvItems(cv['certificates']??cv['certificate']),awards:cvItems(cv['awards']??cv['award'])
  };
 }
-

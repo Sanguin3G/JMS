@@ -5,4 +5,3 @@ export class I18nPipe implements PipeTransform {
   private readonly i18n = inject(I18nService);
   transform(value: unknown, params?: Record<string, unknown>): string { return this.i18n.t(value, params); }
 }
-

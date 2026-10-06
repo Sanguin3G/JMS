@@ -8,4 +8,3 @@ export class HelpService{
  private readonly overlay=inject(Overlay);
  open():void{if(this.dialog.getDialogById('jms-help'))return;this.dialog.open(HelpDrawerComponent,{id:'jms-help',width:'min(600px,100vw)',maxWidth:'100vw',height:'100dvh',positionStrategy:this.overlay.position().global().right('0').top('0'),ariaLabel:'JMS Help',panelClass:'jms-help-panel'});}
 }
-

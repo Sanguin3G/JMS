@@ -10,4 +10,3 @@ export class LocalizedTitleStrategy extends TitleStrategy {
  constructor() { super(); effect(() => { this.i18n.language(); this.title.setTitle(this.i18n.t(this.base)); }); }
  override updateTitle(snapshot: RouterStateSnapshot): void { this.base = this.buildTitle(snapshot) || 'JMS'; this.title.setTitle(this.i18n.t(this.base)); }
 }
-

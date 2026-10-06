@@ -21,4 +21,3 @@ export class StatisticsComponent{
  get rangeApplications(){return this.data?.activity.reduce((n,r)=>n+r.applications,0)??0;}
  status(label:string):string{return ({completed:'Có giải thích AI','not-configured':'Chỉ theo quy tắc',fallback:'AI không khả dụng',failed:'AI không khả dụng',legacy:'Dữ liệu lịch sử'} as Record<string,string>)[label]??label;}
 }
-

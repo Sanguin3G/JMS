@@ -19,4 +19,3 @@ export class CvDocumentComponent {
   return Number.isNaN(date.getTime())?value:new Intl.DateTimeFormat(this.i18n.locale(),{dateStyle:'medium'}).format(date);
  }
 }
-

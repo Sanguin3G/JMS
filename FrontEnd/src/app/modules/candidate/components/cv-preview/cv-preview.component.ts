@@ -16,4 +16,3 @@ export class CvPreviewComponent {
  }catch{if(version===this.version)this.error='Không thể tải hồ sơ. Hồ sơ có thể đã bị xóa.';}finally{if(version===this.version)this.loading=false;}}
  print():void{window.print();}
 }
-

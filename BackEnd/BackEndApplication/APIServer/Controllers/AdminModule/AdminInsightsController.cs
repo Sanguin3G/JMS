@@ -16,4 +16,3 @@ public sealed class AdminInsightsController(AdminInsightsService insights) : Con
         return Ok(new { statusCode = 200, data = await insights.GetAsync(days, cancellationToken) });
     }
 }
-
