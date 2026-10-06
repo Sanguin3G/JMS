@@ -53,12 +53,14 @@ Checks were reused unless the changed behavior needed another check.
 | Changed editor | Rich-text draft survived VI → EN → VI, saved and remained correct after reload |
 | Responsive/navigation | All-role keyboard menus, light/dark/system, desktop/tablet/mobile passed; new help/readers/statistics/profile checked at mobile width |
 | Migration | Existing FAQ survived upgrade; clean seeded SQLite initialization passed |
+| GitHub build/unit verification | 58 backend tests, 15 frontend tests, production frontend build and both Docker image build targets passed |
 | Production preparation | Earlier local Production smoke verified health, CORS, no demo seeding and persistence/restart of SQLite, uploads and protected configuration |
 
 Eight README screenshots show the real seeded application. The overview image
 waits for operational data to load. Build/test artifacts and local storage are
 ignored. GitHub Actions runs backend/frontend tests, the single Edge project and
-Docker build targets; consult repository Actions for the latest remote result.
+Docker build targets. PR updates run once, and `master` pushes are verified;
+consult repository Actions for the latest complete remote result.
 
 ## Deliberate boundaries and remaining limits
 

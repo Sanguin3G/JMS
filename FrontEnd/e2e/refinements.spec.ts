@@ -28,7 +28,7 @@ test('bilingual entertainment, local ending gallery and header help',async({page
  const help=page.getByRole('dialog');
  await help.getByLabel('Ask about JMS').fill('AI unavailable');
  await help.getByRole('button',{name:'Find an answer',exact:true}).click();
- await expect(help.getByText(/Deterministic scores and evaluation results still work/)).toBeVisible();
+ await expect(help.getByRole('status').filter({hasText:/Deterministic scores and evaluation results still work/})).toBeVisible();
  await help.getByRole('button',{name:'Close help'}).click();
  await page.getByRole('button',{name:'Board the bus'}).click();
  for(let step=0;step<6;step++){
