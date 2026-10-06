@@ -45,7 +45,6 @@ test('candidate edits a CV and verifies the saved title after reload', async ({ 
   await page.goto('/candidate/your-cvs');
   await expect(page.getByRole('heading', { name: 'Thư viện CV' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Chỉnh sửa', exact: true }).first()).toBeVisible();
-  await capture(page, 'cv-library');
   await page.getByRole('link', { name: 'Chỉnh sửa', exact: true }).first().click();
   await page.getByLabel('Tên CV', { exact: true }).fill('Frontend portfolio — JMS');
   await page.getByRole('button', { name: 'Lưu CV', exact: true }).click();
@@ -76,6 +75,12 @@ test('recruiter edits rich text and expiry, then verifies the saved job', async 
   const editor = page.locator('#description .ck-editor__editable');
   await expect(editor).toBeVisible();
   await editor.fill('Frontend Engineer — Angular, TypeScript and accessible JMS interfaces.');
+  await page.getByRole('button', { name: 'Ngôn ngữ', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: /English/ }).click();
+  await expect(editor).toContainText('accessible JMS interfaces');
+  await page.getByRole('button', { name: 'Language', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: /Tiếng Việt/ }).click();
+  await expect(editor).toContainText('accessible JMS interfaces');
   await page.getByLabel('Ngày Hết Hạn', { exact: true }).fill('2027-01-31');
   await page.getByRole('button', { name: 'Chỉnh sửa', exact: true }).click();
   await expect(page).toHaveURL(/recruiter\/list-jds/);

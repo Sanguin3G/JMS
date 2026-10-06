@@ -28,7 +28,7 @@ test('role navigation, account and theme menus work with keyboard and mobile lay
     for (const width of [1280, 768, 390]) {
       await page.setViewportSize({ width, height: 900 });
       for (const [label, value] of [['Tối', 'dark'], ['Sáng', 'light'], ['Hệ thống', 'system']]) {
-        const trigger = page.getByRole('button', { name: /^Giao diện:/ });
+        const trigger = page.getByRole('button', { name: /^Giao diện JMS:/ });
         await trigger.click();
         const choice = page.getByRole('menuitemradio', { name: new RegExp('^' + label) });
         await expect(choice).toBeVisible();
@@ -58,7 +58,7 @@ test('role navigation, account and theme menus work with keyboard and mobile lay
         await noOverflow(page);
         if (width <= 800) await page.getByRole('button', { name: 'Không gian quản trị' }).click();
       }
-      if (width < 1200 && role !== 'admin') {
+      if (width < 1380 && role !== 'admin') {
         const toggle = page.getByRole('button', { name: 'Mở điều hướng' });
         await toggle.click(); await expect(toggle).toHaveAttribute('aria-expanded', 'true');
         const nav = page.getByRole('navigation', { name: role === 'candidate' ? 'Điều hướng ứng viên' : 'Điều hướng nhà tuyển dụng' });
@@ -70,7 +70,7 @@ test('role navigation, account and theme menus work with keyboard and mobile lay
       }
     }
     await page.setViewportSize({ width: 1280, height: 900 });
-    await page.getByRole('button', { name: /^Giao diện:/ }).click();
+    await page.getByRole('button', { name: /^Giao diện JMS:/ }).click();
     await page.getByRole('menuitemradio', { name: /^Sáng/ }).click();
     await page.keyboard.press('Escape');
     if (role === 'candidate') {
@@ -82,7 +82,6 @@ test('role navigation, account and theme menus work with keyboard and mobile lay
       await capture(page, 'job-details');
       await page.goto('/candidate/your-cvs');
       await expect(page.getByRole('heading', { name: 'Thư viện CV' })).toBeVisible();
-      await capture(page, 'cv-library');
       await page.getByRole('link', { name: 'Chỉnh sửa', exact: true }).first().click();
       await expect(page.locator('.modelBackground button[aria-pressed=true]')).toHaveCount(1);
       await noOverflow(page);
