@@ -1,6 +1,5 @@
 import { editorConfig } from 'src/app/shared/rich-text/editor-config';
 import { inject, Component } from '@angular/core';
-import { ClassicEditor } from 'ckeditor5';
 import { FormControl, Validators } from '@angular/forms';
 import { ApiService } from 'src/app/core/http/api.service';
 import { AuthorizationMode, RECRUITER_TOKEN, apiRecruiter } from 'src/app/service/constant';
@@ -21,8 +20,7 @@ export class CreateCompanyComponent {
    //upload img
    displayImage = "none"
    fileSrc: any;
-   public Editor = ClassicEditor;
-   readonly config = editorConfig("Company description");
+   readonly config = editorConfig("Giới thiệu công ty");
    categories: any;
 
 

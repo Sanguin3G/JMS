@@ -30,16 +30,7 @@ export class CandidateComponent {
       if (response.statusCode !== 200) throw new Error(response.message || 'Không thể tải CV.');
       const cv = response.data?.find(item => item.isFindingJob);
       if (!cv) { this.notices.info('Ứng viên chưa chọn CV tìm việc.'); return; }
-      const skill = (cv.skills || []).map(item => ({ title: item.title, SkillDescription: item.skillDescription }));
-      const education = (cv.educations || []).map(item => ({ SchoolName: item.schoolName, MajorName: item.majorName, Description: item.description, FromYear: item.fromYear, ToYear: item.toYear, StillLearning: item.stillLearning }));
-      const jobExperience = (cv.jobExperiences || []).map(item => ({ ComapanyName: (item as { comapanyName?: string }).comapanyName || item.ComapanyName, Position: item.position, FromDate: item.fromDate, ToDate: item.toDate, Description: item.description, EmploymentTypeName: item.employmentTypeName }));
-      const project = (cv.projects || []).map(item => ({ ProjectName: item.projectName, Description: item.description, FromDate: item.fromDate, ToDate: item.toDate, IsStillWorking: item.isStillWorking }));
-      const certificate = (cv.certificates || []).map(item => ({ CertificateName: item.certificateName, CertificateProvider: item.certificateProvider, credentialURL: item.credentialURL, ExpiredDate: item.expiredDate, IssuedDate: item.issuedDate }));
-      const award = (cv.awards || []).map(item => ({ AwardName: item.awardName, Description: item.description, FromYear: item.fromYear }));
-      const snapshot = { ...cv, skill: skill.length ? skill : [{}], education: education.length ? education : [{}],
-        jobExperience: jobExperience.length ? jobExperience : [{}], project: project.length ? project : [{}],
-        certificate: certificate.length ? certificate : [{}], award: award.length ? award : [{}], level: { description: cv.levelTitle } };
-      this.dialog.open(ViewCvComponent, { width: 'min(860px, calc(100vw - 24px))', maxHeight: '95vh', ariaLabel: 'CV ứng viên', data: { jd: snapshot } });
+      this.dialog.open(ViewCvComponent, { width: '1080px', maxWidth:'96vw', maxHeight: '95vh', ariaLabel: 'CV', data: { jd: cv } });
     } catch (error) { this.notices.error(error instanceof Error ? error.message : 'Không thể tải CV.'); }
     finally { this.previewing.set(null); }
   }

@@ -16,3 +16,5 @@
 .faq-list p { margin: .65rem 0 0; color: var(--muted-text-color); line-height: 1.55; }
 .faq-empty { color: var(--muted-text-color); }
 @media (max-width: 700px) { .faq-heading { display: block; } .faq-tools, .faq-chat { flex-direction: column; } }
+
+.faq-shell{margin:0;max-width:none;padding:0;border:0;box-shadow:none}.faq-heading{display:none}.faq-list details{padding:1rem;border:1px solid var(--border-color);border-radius:12px;margin-top:.65rem;background:var(--surface-muted-color)}.faq-list details[open]{border-color:var(--accent-color);background:var(--surface-color)}.faq-tools,.faq-chat{flex-direction:row;flex-wrap:wrap}.faq-tools input,.faq-chat input{min-width:180px}button:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--focus-ring);outline-offset:3px}

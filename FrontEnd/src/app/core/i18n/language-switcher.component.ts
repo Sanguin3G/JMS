@@ -1,0 +1,9 @@
+import { Component, inject } from '@angular/core';
+import { CdkMenuModule } from '@angular/cdk/menu';
+import { I18nService } from './i18n.service';
+import { I18nPipe } from './i18n.pipe';
+@Component({selector:'jms-language-switcher',standalone:true,imports:[CdkMenuModule,I18nPipe],
+template:`<button class="language-trigger" type="button" [cdkMenuTriggerFor]="languages" [attr.aria-label]="'Ngôn ngữ' | t"><i class="bi bi-translate" aria-hidden="true"></i> {{i18n.language().toUpperCase()}}</button><ng-template #languages><div cdkMenu class="language-menu jms-popup" [attr.aria-label]="'Chọn ngôn ngữ' | t"><button type="button" cdkMenuItemRadio [cdkMenuItemChecked]="i18n.language()==='vi'" (cdkMenuItemTriggered)="i18n.setLanguage('vi')"><span lang="vi">Tiếng Việt</span><small>VI</small></button><button type="button" cdkMenuItemRadio [cdkMenuItemChecked]="i18n.language()==='en'" (cdkMenuItemTriggered)="i18n.setLanguage('en')"><span lang="en">English</span><small>EN</small></button></div></ng-template>`,
+styles:[`.language-trigger{height:42px;border:1px solid var(--border-color);border-radius:11px;background:var(--surface-color);color:var(--text-color);font-size:.8rem;font-weight:700;display:flex;align-items:center;gap:.4rem;padding:.6rem}.language-menu{min-width:190px;padding:.4rem}.language-menu button{display:flex;justify-content:space-between;width:100%;padding:.8rem;border:0;border-radius:9px;background:transparent;color:var(--text-color);text-align:left}.language-menu button:hover,.language-menu button[aria-checked=true]{background:var(--accent-soft);color:var(--accent-color)}button:focus-visible{outline:3px solid var(--focus-ring);outline-offset:2px}`]})
+export class LanguageSwitcherComponent { readonly i18n = inject(I18nService); }
+

@@ -9,7 +9,7 @@ import { CandidateMyCvsComponent } from './components/my-cvs/my-cvs.component';
 import { CompanyDetailComponent } from './components/company-detail/company-detail.component';
 import { JdDetailComponent } from './components/jd-detail/jd-detail.component';
 import { MyApplyJobComponent } from './components/my-apply-job/my-apply-job.component';
-import { CvPreviewComponent } from 'src/app/shared/cv-preview/cv-preview.component';
+import { CvPreviewComponent } from './components/cv-preview/cv-preview.component';
 import { UpdateCvComponent } from './components/update-cv/update-cv.component';
 import { ProfileComponent } from './components/profile/profile.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
@@ -32,7 +32,7 @@ const routes: Routes = [
    { path: "view-cv/:id", title: "Ứng viên - Chi tiết Hồ sơ", component: CvPreviewComponent, canActivate: [roleGuard] },
    { path: "profile", title: "Ứng viên - Chi tiết thông tin cá nhân", component: ProfileComponent, canActivate: [roleGuard] },
    { path: "change-password", title: "Ứng viên - Thay đổi mật khẩu", component: ChangePasswordComponent, canActivate: [roleGuard] },
-   { path: "calibration", title: "JMS - Career Calibration Terminal", component: CalibrationComponent },
+   { path: "calibration", title: "JMS · Sở Ngày Mai", component: CalibrationComponent },
    { path: "", component: CandidateHomeComponent }
 ];
 

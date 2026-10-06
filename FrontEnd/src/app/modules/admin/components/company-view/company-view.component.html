@@ -1,12 +1,12 @@
-<div class="jms-dialog-content"><button type="button" class="btn btn-outline-secondary float-end" (click)="dialogRef.close()" aria-label="Đóng"><i class="bi bi-x-lg" aria-hidden="true"></i></button><main class="company-profile container">
-  <p *ngIf="loading" role="status">Đang tải công ty…</p>
-  <p *ngIf="error" role="alert">{{ error }}</p>
+<div class="jms-dialog-content"><button type="button" class="btn btn-outline-secondary float-end" (click)="dialogRef.close()" [attr.aria-label]="'Đóng' | t"><i class="bi bi-x-lg" aria-hidden="true"></i></button><main class="company-profile container">
+  <p *ngIf="loading" role="status">{{ 'Đang tải công ty…' | t }}</p>
+  <p *ngIf="error" role="alert">{{ (error) | t }}</p>
   <ng-container *ngIf="company && !loading">
-    <header><img [src]="company.avatarURL || '/assets/images/avatar.svg'" alt="" width="80" height="80"><div><p>JMS · Công ty</p><h1>{{ company.companyName }}</h1><p>{{ company.categoryName }} · {{ company.size || 'Chưa công bố quy mô' }}</p></div></header>
-    <div class="company-columns"><section><h2>Giới thiệu công ty</h2><div [innerHTML]="company.description"></div></section>
-      <aside><h2>Thông tin liên hệ</h2><dl><dt>Địa chỉ</dt><dd>{{ company.address || 'Chưa công bố' }}</dd><dt>Email</dt><dd>{{ company.email || 'Chưa công bố' }}</dd><dt>Điện thoại</dt><dd>{{ company.phone || 'Chưa công bố' }}</dd><dt>Năm thành lập</dt><dd>{{ company.yearOfEstablishment || 'Chưa công bố' }}</dd><dt>Website</dt><dd><a *ngIf="company.webURL" [href]="company.webURL" target="_blank" rel="noopener noreferrer">{{ company.webURL }}</a><span *ngIf="!company.webURL">Chưa công bố</span></dd></dl></aside>
+    <header><img [src]="company.avatarURL || '/assets/images/avatar.svg'" alt="" width="80" height="80"><div><p>{{ 'JMS · Công ty' | t }}</p><h1>{{ company.companyName }}</h1><p>{{ company.categoryName }} · {{ (company.size || 'Chưa công bố quy mô') | t }}</p></div></header>
+    <div class="company-columns"><section><h2>{{ 'Giới thiệu công ty' | t }}</h2><div [innerHTML]="company.description"></div></section>
+      <aside><h2>{{ 'Thông tin liên hệ' | t }}</h2><dl><dt>{{ 'Địa chỉ' | t }}</dt><dd>{{ (company.address || 'Chưa công bố') | t }}</dd><dt>Email</dt><dd>{{ (company.email || 'Chưa công bố') | t }}</dd><dt>{{ 'Điện thoại' | t }}</dt><dd>{{ (company.phone || 'Chưa công bố') | t }}</dd><dt>{{ 'Năm thành lập' | t }}</dt><dd>{{ (company.yearOfEstablishment || 'Chưa công bố') | t }}</dd><dt>Website</dt><dd><a *ngIf="company.webURL" [href]="company.webURL" target="_blank" rel="noopener noreferrer">{{ company.webURL }}</a><span *ngIf="!company.webURL">{{ 'Chưa công bố' | t }}</span></dd></dl></aside>
     </div>
-    <section><h2>Tin tuyển dụng</h2><p *ngIf="!company.jDs?.length">Chưa có tin tuyển dụng.</p><div class="company-jobs"><article *ngFor="let job of company.jDs"><h3>{{ job.title }}</h3><p>{{ job.address }} · {{ job.salary }}</p><span>{{ job.isExpired ? 'Hết hạn' : 'Đang tuyển' }}</span><button type="button" class="btn btn-outline-primary" (click)="onClickView(job)">Xem tin tuyển dụng</button></article></div></section>
+    <section><h2>{{ 'Tin tuyển dụng' | t }}</h2><p *ngIf="!company.jDs?.length">{{ 'Chưa có tin tuyển dụng.' | t }}</p><div class="company-jobs"><article *ngFor="let job of company.jDs"><h3>{{ job.title }}</h3><p>{{ job.address }} · {{ job.salary }}</p><span>{{ (job.isExpired ? 'Hết hạn' : 'Đang tuyển') | t }}</span><button type="button" class="btn btn-outline-primary" (click)="onClickView(job)">{{ 'Xem tin tuyển dụng' | t }}</button></article></div></section>
   </ng-container>
 </main>
 </div>

@@ -1,32 +1,32 @@
 <app-header-recruiter></app-header-recruiter>
 <main class="container recruiter-dashboard">
-  <div class="page-heading"><div><p class="eyebrow">KHÔNG GIAN NHÀ TUYỂN DỤNG</p><h1>Tổng quan tuyển dụng</h1><p>Theo dõi tin tuyển dụng và hồ sơ ứng viên của bạn.</p></div>
+  <div class="page-heading"><div><p class="eyebrow">{{ 'KHÔNG GIAN NHÀ TUYỂN DỤNG' | t }}</p><h1>{{ 'Tổng quan tuyển dụng' | t }}</h1><p>{{ 'Theo dõi tin tuyển dụng và hồ sơ ứng viên của bạn.' | t }}</p></div>
 </div>
-  <div *ngIf="error()" class="workspace-state" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i><p>{{ error() }}</p><button class="btn btn-outline-primary" (click)="load()">Thử lại</button></div>
-  <div *ngIf="loading() && !data()" class="workspace-state" role="status">Đang tải hoạt động tuyển dụng…</div>
+  <div *ngIf="error()" class="workspace-state" role="alert"><i class="bi bi-exclamation-circle" aria-hidden="true"></i><p>{{ (error()) | t }}</p><button class="btn btn-outline-primary" (click)="load()">{{ 'Thử lại' | t }}</button></div>
+  <div *ngIf="loading() && !data()" class="workspace-state" role="status">{{ 'Đang tải hoạt động tuyển dụng…' | t }}</div>
   <ng-container *ngIf="data() as dashboard">
-    <section class="stat-grid" aria-label="Số liệu tuyển dụng">
-      <a class="stat-card" routerLink="/recruiter/list-jds"><i class="bi bi-briefcase" aria-hidden="true"></i><span>Tổng tin tuyển dụng</span><strong>{{ dashboard.totalJobs }}</strong><small>{{ dashboard.activeJobs }} đang tuyển · {{ dashboard.expiredJobs }} hết hạn</small></a>
-      <a class="stat-card" routerLink="/recruiter/list-jds" [queryParams]="{status:'active'}"><i class="bi bi-megaphone" aria-hidden="true"></i><span>Đang tuyển dụng</span><strong>{{ dashboard.activeJobs }}</strong><small>Tin còn nhận hồ sơ</small></a>
-      <div class="stat-card"><i class="bi bi-person-vcard" aria-hidden="true"></i><span>Hồ sơ ứng tuyển</span><strong>{{ dashboard.applications }}</strong><small>Ứng viên đã nộp CV</small></div>
-      <div class="stat-card"><i class="bi bi-person-check" aria-hidden="true"></i><span>Hồ sơ đã chọn</span><strong>{{ dashboard.selectedApplications }}</strong><small>{{ dashboard.rejectedApplications }} hồ sơ đã từ chối</small></div>
+    <section class="stat-grid" [attr.aria-label]="'Số liệu tuyển dụng' | t">
+      <a class="stat-card" routerLink="/recruiter/list-jds"><i class="bi bi-briefcase" aria-hidden="true"></i><span>{{ 'Tổng tin tuyển dụng' | t }}</span><strong>{{ dashboard.totalJobs }}</strong><small>{{ dashboard.activeJobs }} {{ 'đang tuyển ·' | t }} {{ dashboard.expiredJobs }} {{ 'hết hạn' | t }}</small></a>
+      <a class="stat-card" routerLink="/recruiter/list-jds" [queryParams]="{status:'active'}"><i class="bi bi-megaphone" aria-hidden="true"></i><span>{{ 'Đang tuyển dụng' | t }}</span><strong>{{ dashboard.activeJobs }}</strong><small>{{ 'Tin còn nhận hồ sơ' | t }}</small></a>
+      <div class="stat-card"><i class="bi bi-person-vcard" aria-hidden="true"></i><span>{{ 'Hồ sơ ứng tuyển' | t }}</span><strong>{{ dashboard.applications }}</strong><small>{{ 'Ứng viên đã nộp CV' | t }}</small></div>
+      <div class="stat-card"><i class="bi bi-person-check" aria-hidden="true"></i><span>{{ 'Hồ sơ đã chọn' | t }}</span><strong>{{ dashboard.selectedApplications }}</strong><small>{{ dashboard.rejectedApplications }} {{ 'hồ sơ đã từ chối' | t }}</small></div>
     </section>
     <section class="workspace-grid">
-      <div class="workspace-panel"><div class="panel-heading"><h2>Hồ sơ mới nhất</h2><i class="bi bi-people" aria-hidden="true"></i></div>
-        <p *ngIf="!dashboard.recentApplications.length" class="empty-copy">Chưa có hồ sơ ứng tuyển. Đăng tin rõ ràng để ứng viên tìm thấy cơ hội phù hợp.</p>
+      <div class="workspace-panel"><div class="panel-heading"><h2>{{ 'Hồ sơ mới nhất' | t }}</h2><i class="bi bi-people" aria-hidden="true"></i></div>
+        <p *ngIf="!dashboard.recentApplications.length" class="empty-copy">{{ 'Chưa có hồ sơ ứng tuyển. Đăng tin rõ ràng để ứng viên tìm thấy cơ hội phù hợp.' | t }}</p>
         <a *ngFor="let application of dashboard.recentApplications" class="activity-row" [routerLink]="['/recruiter/view-jd-detail',application.jobId]">
           <div><strong>{{ application.candidateName }}</strong><span>{{ application.jobTitle }}</span><small>{{ application.appliedAt | date:'dd/MM/yyyy' }}</small></div>
-          <span class="status-pill" [class.selected]="application.status === 'selected'" [class.rejected]="application.status === 'rejected'">{{ statusLabel(application.status) }}</span>
+          <span class="status-pill" [class.selected]="application.status === 'selected'" [class.rejected]="application.status === 'rejected'">{{ (statusLabel(application.status)) | t }}</span>
         </a>
       </div>
-      <div class="workspace-panel"><div class="panel-heading"><h2>Tin tuyển dụng gần đây</h2><a routerLink="/recruiter/list-jds">Xem tất cả</a></div>
-        <p *ngIf="!dashboard.recentJobs.length" class="empty-copy">Bạn chưa có tin tuyển dụng. Bắt đầu với một mô tả công việc cụ thể và đầy đủ.</p>
+      <div class="workspace-panel"><div class="panel-heading"><h2>{{ 'Tin tuyển dụng gần đây' | t }}</h2><a routerLink="/recruiter/list-jds">{{ 'Xem tất cả' | t }}</a></div>
+        <p *ngIf="!dashboard.recentJobs.length" class="empty-copy">{{ 'Bạn chưa có tin tuyển dụng. Bắt đầu với một mô tả công việc cụ thể và đầy đủ.' | t }}</p>
         <a *ngFor="let item of dashboard.recentJobs" class="activity-row" [routerLink]="['/recruiter/view-jd-detail',item.job.jobId]">
-          <div><strong>{{ item.job.title }}</strong><span>{{ item.applicantCount }} ứng tuyển · {{ item.matchCount }} hồ sơ phù hợp</span><small>Hạn nhận hồ sơ: {{ item.job.expiredDate }}</small></div>
-          <span class="status-pill" [class.rejected]="item.job.isExpired">{{ item.job.isExpired ? 'Hết hạn' : 'Đang tuyển' }}</span>
+          <div><strong>{{ item.job.title }}</strong><span>{{ item.applicantCount }} {{ 'ứng tuyển ·' | t }} {{ item.matchCount }} {{ 'hồ sơ phù hợp' | t }}</span><small>{{ 'Hạn nhận hồ sơ:' | t }} {{ item.job.expiredDate }}</small></div>
+          <span class="status-pill" [class.rejected]="item.job.isExpired">{{ (item.job.isExpired ? 'Hết hạn' : 'Đang tuyển') | t }}</span>
         </a>
       </div>
     </section>
-    <p class="matching-note"><i class="bi bi-info-circle" aria-hidden="true"></i> Điểm phù hợp và AI hỗ trợ xem xét hồ sơ. Quyết định tuyển dụng thuộc về bạn.</p>
+    <p class="matching-note"><i class="bi bi-info-circle" aria-hidden="true"></i> {{ 'Điểm phù hợp và AI hỗ trợ xem xét hồ sơ. Quyết định tuyển dụng thuộc về bạn.' | t }}</p>
   </ng-container>
 </main>

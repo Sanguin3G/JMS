@@ -242,6 +242,8 @@ export interface FaqEntry {
    id: number;
    question: string;
    answer: string;
+   questionEn?: string | null;
+   answerEn?: string | null;
    keywords?: string | null;
    category: string;
    isPublished?: boolean;
@@ -252,6 +254,8 @@ export interface FaqEntry {
 export interface FaqEntryRequest {
    question: string;
    answer: string;
+   questionEn?: string;
+   answerEn?: string;
    keywords: string;
    category: string;
    isPublished: boolean;

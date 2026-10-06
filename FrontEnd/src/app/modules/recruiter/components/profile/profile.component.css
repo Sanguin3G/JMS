@@ -1,109 +1,15 @@
-body {
-   margin-top: 20px;
-   background-color: #f2f6fc;
-   color: #69707a;
-}
 
-.img-account-profile {
-   height: 150px;
-   width: 150px;
-   object-fit: cover;
-}
-
-.rounded-circle {
-   border-radius: 50% !important;
-}
-
-.card {
-   box-shadow: 0 0.15rem 1.75rem 0 rgb(33 40 50 / 15%);
-}
-
-.card .card-header {
-   font-weight: 500;
-}
-
-.card-header:first-child {
-   border-radius: 0.35rem 0.35rem 0 0;
-}
-
-.card-header {
-   padding: 1rem 1.35rem;
-   margin-bottom: 0;
-   background-color: rgba(33, 40, 50, 0.03);
-   border-bottom: 1px solid rgba(33, 40, 50, 0.125);
-}
-
-.form-control,
-.dataTable-input {
-   display: block;
-   width: 100%;
-   padding: 0.875rem 1.125rem;
-   font-size: 0.875rem;
-   font-weight: 400;
-   line-height: 1;
-   color: #060606;
-   background-color: #fff;
-   background-clip: padding-box;
-   border: 1px solid #c5ccd6;
-   -webkit-appearance: none;
-   -moz-appearance: none;
-   appearance: none;
-   border-radius: 0.35rem;
-   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.nav-borders .nav-link.active {
-   color: #0061f2;
-   border-bottom-color: #0061f2;
-}
-
-.nav-borders .nav-link {
-   color: #69707a;
-   border-bottom-width: 0.125rem;
-   border-bottom-style: solid;
-   border-bottom-color: transparent;
-   padding-top: 0.5rem;
-   padding-bottom: 0.5rem;
-   padding-left: 0;
-   padding-right: 0;
-   margin-left: 1rem;
-   margin-right: 1rem;
-}
-
-.iconCamera {
-   background-color: #0d6efd;
-   padding: 10px 10px;
-   border-radius: 10px;
-   color: white;
-}
-
-.inputOldPassword {
-   position: relative;
-}
-
-.inputNewPassword {
-   position: relative;
-}
-
-.inputConformPassword {
-   position: relative;
-}
-
-.iconEyeOldPassword {
-   position: absolute;
-   top: 25%;
-   right: 2%;
-   cursor: pointer;
-}
-
-.iconEyeOldPassword:active {
-   opacity: 0.7;
-}
-
-.display {
-   display: none;
-}
-
-.field-disable{
-   background-color: #d5d5d5;
-}
+:host { display:block; }
+.profile-heading p { color:var(--accent); font-weight:700; letter-spacing:.12em; margin:0; }
+.profile-heading h1 { font-size:clamp(1.6rem,3vw,2.3rem); margin:.4rem 0 1.2rem; }
+.img-account-profile { width:150px; height:150px; object-fit:cover; border:4px solid var(--border-medium); }
+.card { border:1px solid var(--border-medium); border-radius:1rem; box-shadow:var(--boxShadow); background:var(--surface-primary); color:var(--text-primary); overflow:hidden; }
+.card-header { padding:1rem 1.35rem; font-weight:700; background:var(--surface-secondary); border-bottom:1px solid var(--border-medium); }
+.form-control,.form-select { padding:.75rem; color:var(--text-primary); background:var(--surface-primary); border-color:var(--border-medium); }
+.form-control:disabled { background:var(--surface-secondary); color:var(--text-secondary); }
+.iconCamera { display:inline-block; padding:.7rem 1rem; border-radius:.65rem; background:var(--accent); color:var(--accent-contrast); cursor:pointer; }
+.inputOldPassword,.inputNewPassword,.inputConformPassword { position:relative; }
+.inputOldPassword input,.inputNewPassword input,.inputConformPassword input { padding-right:3rem; }
+.password-toggle { position:absolute; right:.25rem; top:.25rem; bottom:.25rem; width:2.4rem; border:0; border-radius:.4rem; background:transparent; color:var(--text-secondary); }
+.password-toggle:hover { background:var(--surface-secondary); color:var(--accent); }
+.password-toggle:focus-visible { outline:3px solid var(--focus-ring); }

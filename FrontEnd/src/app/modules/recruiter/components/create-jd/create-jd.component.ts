@@ -2,7 +2,6 @@ import { editorConfig } from 'src/app/shared/rich-text/editor-config';
 import { inject, Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ClassicEditor } from 'ckeditor5';
 import { NotificationService } from 'src/app/core/notifications/notification.service';
 import { ApiService } from 'src/app/core/http/api.service';
 
@@ -19,7 +18,6 @@ import { AuthService } from 'src/app/core/auth/auth.service';
 export class CreateJdComponent {
    private readonly auth = inject(AuthService);
    private readonly api = inject(ApiService);
-   public Editor = ClassicEditor;
    datas: any[] = [];
    categories: any;
    levels: any;
@@ -63,7 +61,7 @@ export class CreateJdComponent {
          })
    }
 
-   public configDescription = editorConfig("Job description");
+   public configDescription = editorConfig("Mô tả công việc");
    public configEducationRequirement = { ...this.configDescription, placeholder: 'Nhập yêu cầu học vấn' }
    public configExperienceRequirement = { ...this.configDescription, placeholder: 'Nhập yêu cầu kinh nghiệm' }
    public configSkillRequirement = { ...this.configDescription, placeholder: 'Nhập yêu kỹ năng' }

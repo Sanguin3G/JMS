@@ -1,8 +1,8 @@
 <section class="jms-confirm" aria-labelledby="confirm-title" aria-describedby="confirm-message">
-  <h2 id="confirm-title">{{ data.title || 'Xác nhận thao tác' }}</h2>
-  <p id="confirm-message">{{ data.content }}</p>
+  <h2 id="confirm-title">{{ (data.title || 'Xác nhận thao tác') | t }}</h2>
+  <p id="confirm-message">{{ (data.content) | t }}</p>
   <div class="d-flex justify-content-end gap-2">
-    <button class="btn btn-outline-secondary" type="button" (click)="onCancelClick()">Hủy</button>
-    <button class="btn btn-primary" type="button" (click)="onConfirmClick()">Xác nhận</button>
+    <button class="btn btn-outline-secondary" type="button" (click)="onCancelClick()">{{ 'Hủy' | t }}</button>
+    <button class="btn btn-primary" type="button" (click)="onConfirmClick()">{{ 'Xác nhận' | t }}</button>
   </div>
 </section>

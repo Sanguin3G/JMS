@@ -1,9 +1,9 @@
-<button type="button" class="theme-trigger" [cdkMenuTriggerFor]="themeMenu" [attr.aria-label]="'Giao diện: ' + selected.label">
-  <i class="bi" [ngClass]="selected.icon" aria-hidden="true"></i><span>{{ selected.label }}</span><i class="bi bi-chevron-down theme-chevron" aria-hidden="true"></i>
+<button type="button" class="theme-trigger" [cdkMenuTriggerFor]="themeMenu" [attr.aria-label]="('Giao diện JMS' | t) + ': ' + (selected.label | t)">
+  <i class="bi" [ngClass]="selected.icon" aria-hidden="true"></i><span>{{ selected.label | t }}</span><i class="bi bi-chevron-down theme-chevron" aria-hidden="true"></i>
 </button>
-<ng-template #themeMenu><div class="theme-menu jms-popup" cdkMenu aria-label="Chọn giao diện">
-  <p class="popup-eyebrow">Giao diện JMS</p>
+<ng-template #themeMenu><div class="theme-menu jms-popup" cdkMenu [attr.aria-label]="'Chọn giao diện' | t">
+  <p class="popup-eyebrow">{{ 'Giao diện JMS' | t }}</p>
   <button *ngFor="let mode of modes" type="button" cdkMenuItemRadio [cdkMenuItemChecked]="theme.mode === mode.value" (cdkMenuItemTriggered)="selectMode(mode.value)" class="theme-choice" [class.selected]="theme.mode === mode.value">
-    <span class="theme-choice-icon"><i class="bi" [ngClass]="mode.icon" aria-hidden="true"></i></span><span><strong>{{ mode.label }}</strong><small>{{ mode.description }}</small></span><i *ngIf="theme.mode === mode.value" class="bi bi-check2" aria-hidden="true"></i>
+    <span class="theme-choice-icon"><i class="bi" [ngClass]="mode.icon" aria-hidden="true"></i></span><span><strong>{{ mode.label | t }}</strong><small>{{ mode.description | t }}</small></span><i *ngIf="theme.mode === mode.value" class="bi bi-check2" aria-hidden="true"></i>
   </button>
 </div></ng-template>

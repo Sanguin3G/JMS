@@ -1,9 +1,10 @@
+import { I18nModule } from '../../core/i18n/i18n.module';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CdkMenuModule } from '@angular/cdk/menu';
 import { ImageFallbackDirective } from '../image-fallback/image-fallback.directive';
-@Component({ selector: 'jms-account-menu', standalone: true, imports: [CommonModule, RouterModule, CdkMenuModule, ImageFallbackDirective], templateUrl: './account-menu.component.html', styleUrls: ['./account-menu.component.css'] })
+@Component({ selector: 'jms-account-menu', standalone: true, imports: [I18nModule, CommonModule, RouterModule, CdkMenuModule, ImageFallbackDirective], templateUrl: './account-menu.component.html', styleUrls: ['./account-menu.component.css'] })
 export class AccountMenuComponent {
   @Input() name: string | undefined = '';
   @Input() avatar: string | null | undefined;

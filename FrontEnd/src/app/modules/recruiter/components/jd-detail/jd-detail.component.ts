@@ -8,10 +8,12 @@ import { NotificationService } from 'src/app/core/notifications/notification.ser
 import { AuthService } from 'src/app/core/auth/auth.service';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
 import { JobDetail, MatchingRecord } from 'src/app/core/models/api.models';
+import { I18nService } from 'src/app/core/i18n/i18n.service';
 
 @Component({ standalone: false, selector: 'app-jd-detail', templateUrl: './jd-detail.component.html', styleUrls: ['./jd-detail.component.css'] })
 export class JdDetailComponent {
   private readonly api = inject(ApiService);
+  private readonly i18n = inject(I18nService);
   private readonly auth = inject(AuthService);
   private readonly dialog = inject(Dialog);
   private readonly notices = inject(NotificationService);
@@ -42,7 +44,7 @@ export class JdDetailComponent {
       const response = await this.api.postRequest<ApiResponse<MatchingRecord[]>>(apiRecruiter.MATCHING_JOB +
         '?recruiterId=' + this.auth.currentUser()?.id + '&jobDescriptionId=' + this.jdDetail.jobId, AuthorizationMode.BEARER_TOKEN, {});
       if (response.statusCode !== 200) throw new Error('Matching unavailable');
-      this.notices.success('Đã đối chiếu ' + (response.data?.length ?? 0) + ' hồ sơ. Xem bằng chứng trong danh sách ứng viên.');
+      this.notices.success(this.i18n.t('Đã đối chiếu {count} hồ sơ. Xem bằng chứng trong danh sách ứng viên.', {count: response.data?.length ?? 0}));
     } catch { this.notices.error('Không thể đối chiếu hồ sơ. Vui lòng thử lại.'); }
     finally { this.isMatching = false; }
   }

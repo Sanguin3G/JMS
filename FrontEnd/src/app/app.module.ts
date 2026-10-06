@@ -1,3 +1,6 @@
+import { TitleStrategy } from '@angular/router';
+import { LocalizedTitleStrategy } from './core/i18n/localized-title.strategy';
+import { I18nModule } from './core/i18n/i18n.module';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bearerInterceptor } from './core/http/api.service';
 import { NgModule, provideZoneChangeDetection } from '@angular/core';
@@ -15,13 +18,14 @@ import { NotificationsComponent } from './shared/notifications/notifications.com
    ],
    imports: [
       BrowserModule,
+      I18nModule,
       AppRoutingModule,
       FormsModule,
       NotificationsComponent,
    ],
    // Legacy NgModule screens still use ordinary fields after async requests.
    // Keep their change detection coherent while touched state moves to signals.
-   providers: [provideZoneChangeDetection(), provideHttpClient(withInterceptors([bearerInterceptor]))],
+   providers: [{provide:TitleStrategy,useClass:LocalizedTitleStrategy}, provideZoneChangeDetection(), provideHttpClient(withInterceptors([bearerInterceptor]))],
    bootstrap: [AppComponent],
 })
 export class AppModule { }

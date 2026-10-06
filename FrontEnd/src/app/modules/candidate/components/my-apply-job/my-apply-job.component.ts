@@ -23,13 +23,12 @@ export class MyApplyJobComponent implements OnInit {
       if (response.statusCode !== 200) throw new Error('Applications unavailable');
       if (version !== this.version) return;
       this.totalItems = response.objectLength ?? 0; this.totalPages = response.totalPage ?? 0; this.page = Number(response['currentPage']) || 1;
-      this.listJds = (response.data ?? []).map(application => ({ ...application, award: this.parseArray(application.award), certificate: this.parseArray(application.certificate), education: this.parseArray(application.education), jobExperience: this.parseArray(application.jobExperience), project: this.parseArray(application.project), skill: this.parseArray(application.skill), matchingInsight: parseMatchingExplanation(application.jsonMatching) }));
+      this.listJds = (response.data ?? []).map(application => ({ ...application, matchingInsight: parseMatchingExplanation(application.jsonMatching) }));
     } catch { if (version === this.version) this.error = 'Không thể tải danh sách ứng tuyển. Vui lòng thử lại.'; }
     finally { if (version === this.version) this.loading = false; }
   }
   pageChanged(page: number): void { void this.router.navigate([], { relativeTo: this.route, queryParams: { page: page > 1 ? page : null } }); }
   status(application: ApplicationDisplay): string { if (application.isReject) return 'Không được chọn'; if (application.isSelected) return 'Được chọn'; return 'Đã ứng tuyển'; }
-  openViewCVDialog(application: ApplicationDisplay): void { this.dialog.open(ViewCvComponent, { width: '900px', maxWidth: '96vw', maxHeight: '95vh', data: { jd: application } }); }
-  private parseArray(value: unknown): unknown[] { if (Array.isArray(value)) return value; if (typeof value !== 'string') return []; try { const parsed: unknown = JSON.parse(value); return Array.isArray(parsed) ? parsed : []; } catch { return []; } }
+  openViewCVDialog(application: ApplicationDisplay): void { this.dialog.open(ViewCvComponent, { width: '1080px', maxWidth: '96vw', maxHeight: '95vh', data: { jd: application } }); }
 
 }

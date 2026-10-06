@@ -1,3 +1,4 @@
+import { CvPreviewComponent } from './components/cv-preview/cv-preview.component';
 import { A11yModule } from '@angular/cdk/a11y';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -19,7 +20,6 @@ import { UpdateCvComponent } from './components/update-cv/update-cv.component';
 import { MyApplyJobComponent } from './components/my-apply-job/my-apply-job.component';
 import { DialogModule } from '@angular/cdk/dialog';
 import { ProfileComponent } from './components/profile/profile.component';
-import { NotFoundComponent } from 'src/app/components/not-found/not-found.component';
 import { ViewNullCandidateComponent } from './components/view-null/view-null.component';
 import { ViewLoadingCandidateComponent } from './components/view-loading/view-loading.component';
 import { ChangePasswordComponent } from './components/change-password/change-password.component';
@@ -30,7 +30,7 @@ import { JobCardComponent } from 'src/app/shared/job-card/job-card.component';
 import { PaginationComponent } from 'src/app/shared/pagination/pagination.component';
 
 @NgModule({
-   declarations: [
+   declarations: [CvPreviewComponent,
       CandidateComponent,
       HeaderComponent,
 
@@ -47,7 +47,7 @@ import { PaginationComponent } from 'src/app/shared/pagination/pagination.compon
       UpdateCvComponent,
       MyApplyJobComponent,
       ProfileComponent,
-      NotFoundComponent,
+
       ViewNullCandidateComponent,
       ViewLoadingCandidateComponent,
       ChangePasswordComponent,

@@ -5,38 +5,38 @@
          <div class="col-12 col-lg-9 col-xl-7">
             <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
                <div class="card-body p-4 p-md-5">
-                  <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Tạo Thông Tin Công Ty</h3>
+                  <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">{{ 'Tạo Thông Tin Công Ty' | t }}</h3>
                   <form (ngSubmit)="submitButtonClicked()">
 
                      <div class="row">
                         <div class="col-md-6 mb-2">
-                           <label class="form-label" for="name">Tên Công Ty</label><span class="link-danger">
+                           <label class="form-label" for="name">{{ 'Tên công ty' | t }}</label><span class="link-danger">
                               *</span>
                            <div class="jms-field">
-                              <input class="form-control" type="text" id="name" placeholder="Nhập tên công ty" required
+                              <input class="form-control" type="text" id="name" [attr.placeholder]="'Nhập tên công ty' | t" required
                                  [formControl]="nameRq" />
-                              <small class="text-danger" role="alert" *ngIf="nameRq.invalid && (nameRq.touched || checkReq)">{{getErrorMessageName()}}</small>
+                              <small class="text-danger" role="alert" *ngIf="nameRq.invalid && (nameRq.touched || checkReq)">{{ (getErrorMessageName()) | t }}</small>
                            </div>
                         </div>
                         <div class="col-md-6 mb-2">
                            <label class="form-label" for="email">Email</label><span class="link-danger">
                               *</span>
                            <div class="jms-field">
-                              <input class="form-control" type="email" id="email" placeholder="Nhập email" required
+                              <input class="form-control" type="email" id="email" [attr.placeholder]="'Nhập email' | t" required
                                  [formControl]="emailRq" />
-                              <small class="text-danger" role="alert" *ngIf="emailRq.invalid && (emailRq.touched || checkReq)">{{getErrorMessageEmail()}}</small>
+                              <small class="text-danger" role="alert" *ngIf="emailRq.invalid && (emailRq.touched || checkReq)">{{ (getErrorMessageEmail()) | t }}</small>
                            </div>
                         </div>
                      </div>
 
                      <div class="row">
                         <div class="col-md-6 mb-2">
-                           <label for="taxNum" class="form-label">Mã Số Thuế</label><span class="link-danger">
+                           <label for="taxNum" class="form-label">{{ 'Mã Số Thuế' | t }}</label><span class="link-danger">
                               *</span>
                            <div class="jms-field">
-                              <input class="form-control" type="number" id="taxNum" placeholder="Nhập mã số thuế" required
+                              <input class="form-control" type="number" id="taxNum" [attr.placeholder]="'Nhập mã số thuế' | t" required
                                  [formControl]="taxNumRq" />
-                              <small class="text-danger" role="alert" *ngIf="taxNumRq.invalid && (taxNumRq.touched || checkReq)">{{getErrorMessageTaxNum()}}</small>
+                              <small class="text-danger" role="alert" *ngIf="taxNumRq.invalid && (taxNumRq.touched || checkReq)">{{ (getErrorMessageTaxNum()) | t }}</small>
                            </div>
                         </div>
                         <div class="col-md-6 mb-2">
@@ -51,45 +51,45 @@
                      <div class="row">
 
                         <div class="col-md-12 mb-2">
-                           <label class="form-label select-label">Quy Mô</label><span class="link-danger">
+                           <label class="form-label select-label">{{ 'Quy Mô' | t }}</label><span class="link-danger">
                               *</span>
                            <div class="jms-field">
-                              <select class="form-select" required [formControl]="sizeRq" id="sizeRq" aria-label="Quy mô công ty">
-                                 <option value="0" disabled selected>Chọn quy mô công ty</option>
-                                 <option value="1 - 100 người">1 - 100 người</option>
-                                 <option value="101 - 500 người">101 - 500 người</option>
-                                 <option value="Trên 500 người">Trên 500 người</option>
+                              <select class="form-select" required [formControl]="sizeRq" id="sizeRq" [attr.aria-label]="'Quy mô công ty' | t">
+                                 <option value="0" disabled selected>{{ 'Chọn quy mô công ty' | t }}</option>
+                                 <option value="1 - 100 người">{{ '1 - 100 người' | t }}</option>
+                                 <option value="101 - 500 người">{{ '101 - 500 người' | t }}</option>
+                                 <option value="Trên 500 người">{{ 'Trên 500 người' | t }}</option>
                               </select>
-                              <small class="text-danger" role="alert" *ngIf="sizeRq.invalid && (sizeRq.touched || checkReq)">{{getErrorMessageSize()}}</small>
+                              <small class="text-danger" role="alert" *ngIf="sizeRq.invalid && (sizeRq.touched || checkReq)">{{ (getErrorMessageSize()) | t }}</small>
                            </div>
                         </div>
                      </div>
 
                      <div class="row">
                         <div class="col-md-6 mb-2">
-                           <label for="yearOfEstablishment" class="form-label">Năm thành lập</label>
+                           <label for="yearOfEstablishment" class="form-label">{{ 'Năm thành lập' | t }}</label>
                            <div class="jms-field">
-                              <input class="form-control" type="number" id="yearOfEstablishment" placeholder="Nhập năm thành lập"
+                              <input class="form-control" type="number" id="yearOfEstablishment" [attr.placeholder]="'Nhập năm thành lập' | t"
                                  [formControl]="yearOfEstablishmentRq" />
                            </div>
                         </div>
                         <div class="col-md-6 mb-2 pb-2">
-                           <label class="form-label" for="phone">Số Điện Thoại</label>
+                           <label class="form-label" for="phone">{{ 'Số điện thoại' | t }}</label>
                            <div class="jms-field">
-                              <input class="form-control" type="tel" id="phone" placeholder="Nhập số điện thoại công ty" required
+                              <input class="form-control" type="tel" id="phone" [attr.placeholder]="'Nhập số điện thoại công ty' | t" required
                                  [formControl]="phoneRq" />
-                              <small class="text-danger" role="alert" *ngIf="phoneRq.invalid && (phoneRq.touched || checkReq)">{{getErrorMessagePhone()}}</small>
+                              <small class="text-danger" role="alert" *ngIf="phoneRq.invalid && (phoneRq.touched || checkReq)">{{ (getErrorMessagePhone()) | t }}</small>
                            </div>
                         </div>
                      </div>
                      <div class="row">
                         <div class="col-md-12 mb-2 pb-2">
-                           <label class="form-label" for="address">Địa Chỉ</label><span class="link-danger">
+                           <label class="form-label" for="address">{{ 'Địa chỉ' | t }}</label><span class="link-danger">
                               *</span>
                            <div class="jms-field">
-                              <input class="form-control" type="text" id="address" placeholder="Nhập địa chỉ công ty" required
+                              <input class="form-control" type="text" id="address" [attr.placeholder]="'Nhập địa chỉ công ty' | t" required
                                  [formControl]="addressRq" />
-                              <small class="text-danger" role="alert" *ngIf="addressRq.invalid && (addressRq.touched || checkReq)">{{getErrorMessageAddress()}}</small>
+                              <small class="text-danger" role="alert" *ngIf="addressRq.invalid && (addressRq.touched || checkReq)">{{ (getErrorMessageAddress()) | t }}</small>
                            </div>
                         </div>
                      </div>
@@ -97,20 +97,20 @@
                      <div class="row">
                         <div class="col-12 pb-4">
                            <div class="form-outline">
-                              <label class="form-label" for="description">Mô Tả</label><span class="link-danger">
+                              <label class="form-label" for="description">{{ 'Mô Tả' | t }}</label><span class="link-danger">
                                  *</span>
-                              <ckeditor [config]="config" [editor]="Editor" data=""
+                              <jms-rich-text [config]="config"
                                  required [formControl]="descriptionRq">
-                              </ckeditor>
+                              </jms-rich-text>
                               <small class="text-danger" role="alert"
-                                 *ngIf="descriptionRq.invalid && checkReq">{{getErrorMessageDescriptionRequirement()}}</small>
+                                 *ngIf="descriptionRq.invalid && checkReq">{{ (getErrorMessageDescriptionRequirement()) | t }}</small>
                            </div>
                         </div>
                      </div>
 
                      <div class="mt-4 pt-2">
                         <button type="submit" [disabled]="submitting" [attr.aria-busy]="submitting"
-                           class="btn btn-lg col-2 btnBlueLight">Lưu</button>
+                           class="btn btn-lg col-2 btnBlueLight">{{ 'Lưu' | t }}</button>
                      </div>
                   </form>
                </div>

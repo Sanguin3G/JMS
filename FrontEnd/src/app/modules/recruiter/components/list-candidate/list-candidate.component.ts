@@ -80,7 +80,7 @@ export class ListCandidateComponent {
       const normalized = this.normalizeMatchingRecord(jd);
 
       const dialogRef = this.dialog.open(ViewCvComponent, {
-         width: '900px', maxWidth: '96vw', maxHeight: '95vh',
+         width: '1080px', maxWidth: '96vw', maxHeight: '95vh',
          height: '100%',
          data: { jd: normalized, recruiterId: this.data.recruiterId }
       });
@@ -138,26 +138,10 @@ export class ListCandidateComponent {
       const matchingInsight = parseMatchingExplanation(record.jsonMatching);
       return {
          ...record,
-         award: this.parseArray(record.award),
-         certificate: this.parseArray(record.certificate),
-         education: this.parseArray(record.education),
-         jobExperience: this.parseArray(record.jobExperience),
-         project: this.parseArray(record.project),
-         skill: this.parseArray(record.skill),
          jsonMatching: matchingInsight,
          matchingInsight
       };
    }
 
-   private parseArray(value: unknown): unknown[] {
-      if (Array.isArray(value)) return value;
-      if (typeof value !== 'string' || value.trim().length === 0) return [];
-      try {
-         const parsed: unknown = JSON.parse(value);
-         return Array.isArray(parsed) ? parsed : [];
-      } catch {
-         return [];
-      }
-   }
 
 }

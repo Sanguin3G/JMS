@@ -2,7 +2,6 @@ import { editorConfig } from 'src/app/shared/rich-text/editor-config';
 import { inject, Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ClassicEditor } from 'ckeditor5';
 import { NotificationService } from 'src/app/core/notifications/notification.service';
 import { ApiService } from 'src/app/core/http/api.service';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
@@ -19,7 +18,6 @@ import { DatePipe } from '@angular/common';
 export class JdUpdateComponent {
    private readonly auth = inject(AuthService);
    private readonly api = inject(ApiService);
-   public Editor = ClassicEditor;
    categories: any;
    levels: any;
    employmentTypes: any;

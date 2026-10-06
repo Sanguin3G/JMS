@@ -1,0 +1,3 @@
+export interface AdminTotals {totalCompany:number;totalCandidates:number;totalRecruiters:number;totalCV:number;activeCVs:number;totalJDs:number;activeJobs:number;expiredJobs:number;totalMatching:number;applications:number;selectedApplications:number;rejectedApplications:number;}
+export interface AdminInsights {totals:AdminTotals;attention:{pendingApplications:number;expiringJobs:number;jobsWithoutApplications:number;candidatesWithoutCv:number;recruitersWithoutCompany:number};activity:{date:string;jobs:number;applications:number}[];categories:{label:string;count:number}[];evaluationStatus:{label:string;count:number}[];companies:{id:number;name:string;activeJobs:number;applications:number}[];days:number;generatedAtUtc:string;}
+

@@ -63,16 +63,17 @@ export class AdminSettingComponent implements OnInit {
   }
 
   get providers(): string[] { return [...new Set(this.modelOptions.map(model => model.provider))]; }
-  get providerModels(): AiModelCapability[] { return this.modelOptions.filter(model => model.provider === this.draft.provider && model.supportsMatching); }
+  get providerModels(): AiModelCapability[] { return this.modelOptions.filter(model => model.provider === this.draft.provider && model.supportsMatching && (model.tier !== 'legacy' || model.modelId === this.draft.modelId && this.editingProfileId !== null)); }
   get reasoningLabel(): string {
     switch (this.selectedModel?.reasoningControl) {
       case 'thinking-budget': return 'Ngân sách suy nghĩ';
+      case 'effort':
       case 'reasoning-effort': return 'Mức độ suy luận';
       default: return 'Mức độ suy nghĩ';
     }
   }
   providerName(provider: string): string { return ({ gemini: 'Google Gemini', openai: 'OpenAI', anthropic: 'Anthropic' } as Record<string, string>)[provider] ?? provider; }
-  reasoningName(level: string): string { return ({ disabled: 'Tắt', minimal: 'Tối thiểu', low: 'Thấp', medium: 'Vừa', high: 'Cao', 'budget-1024': '1.024 token' } as Record<string, string>)[level] ?? level; }
+  reasoningName(level: string): string { return ({ none: 'Đã tắt', disabled: 'Tắt', minimal: 'Tối thiểu', low: 'Thấp', medium: 'Vừa', high: 'Cao', 'budget-1024': '1.024 token' } as Record<string, string>)[level] ?? level; }
   onProviderChanged(): void {
     const model = this.providerModels[0];
     this.draft.modelId = model?.modelId ?? '';
@@ -199,6 +200,8 @@ export class AdminSettingComponent implements OnInit {
     this.faqDraft = {
       question: entry.question,
       answer: entry.answer,
+      questionEn: entry.questionEn ?? '',
+      answerEn: entry.answerEn ?? '',
       keywords: entry.keywords ?? '',
       category: entry.category,
       isPublished: entry.isPublished !== false,
@@ -349,6 +352,8 @@ export class AdminSettingComponent implements OnInit {
     return {
       question: '',
       answer: '',
+      questionEn: '',
+      answerEn: '',
       keywords: '',
       category: 'Hướng dẫn JMS',
       isPublished: true,

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
+import { RichTextComponent } from 'src/app/shared/rich-text/rich-text.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RecruiterRoutingModule } from './recruiter-routing.module';
 
@@ -48,7 +48,7 @@ import { SharedModule } from 'src/app/shared/shared.module';
    imports: [
       CommonModule,
       RecruiterRoutingModule,
-      CKEditorModule,
+      RichTextComponent,
       FormsModule,
       ReactiveFormsModule,
 

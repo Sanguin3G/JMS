@@ -1,3 +1,4 @@
+import {StatisticsComponent} from './components/statistics/statistics.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminSettingComponent } from './components/setting/setting.component';
@@ -11,6 +12,7 @@ import { roleGuard } from 'src/app/core/auth/role.guard';
 import { ProfileComponent } from './components/profile/profile.component';
 
 const routes: Routes = [
+   {path:'statistics',title:'JMS · Thống kê',component:StatisticsComponent,canActivate:[roleGuard]},
    { path: "setting", component: AdminSettingComponent, canActivate: [roleGuard] },
    { path: "sign-in", component: AuthSignInComponent },
    { path: "company-page", component: CompanyComponent, canActivate: [roleGuard] },

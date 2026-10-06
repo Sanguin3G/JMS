@@ -7,6 +7,7 @@ export interface AiModelCapability {
    supportsMatching: boolean;
    supportsAssistant: boolean;
    reasoningControl: string;
+   tier: 'economic' | 'quality' | 'legacy';
 }
 
 export interface AiProviderProfile {

@@ -1,45 +1,65 @@
-<div class="terminal-page">
-   <candidate-header></candidate-header>
-   <main class="terminal-shell" aria-labelledby="terminal-title">
-      <header class="terminal-header">
-         <div>
-            <span class="terminal-kicker">JMS // CAREER CALIBRATION TERMINAL</span>
-            <h1 id="terminal-title">A serious questionnaire about your alleged future</h1>
-            <p class="terminal-warning">PARODY MODE: ON. This is entertainment, not a psychological assessment. It never affects matching, ranking, recruiter visibility, or hiring recommendations.</p>
-         </div>
-         <div class="terminal-readout" aria-label="Calibration progress">
-            <span>ROUTE {{ route.length + 1 | number:'2.0-0' }}</span>
-            <span>TRACE {{ route.join(' · ') || 'UNINITIALIZED' }}</span>
-         </div>
-      </header>
-
-      <section *ngIf="!ending" class="terminal-panel" aria-live="polite">
-         <div class="panel-label">{{ current.chapter }}</div>
-         <h2>{{ current.prompt }}</h2>
-         <div class="option-grid">
-            <button *ngFor="let option of current.options; index as index" type="button" class="terminal-option" (click)="choose(option)">
-               <span class="option-index">0{{ index + 1 }}</span>
-               <span>{{ option.label }}</span>
-            </button>
-         </div>
-         <p class="terminal-note">Choose the answer that makes the least theatrical claim. Or do not. The terminal has seen worse.</p>
-      </section>
-
-      <section *ngIf="ending" class="terminal-panel terminal-ending" aria-live="polite">
-         <div class="panel-label">SIGNAL ACQUIRED / {{ ending.code }}</div>
-         <h2>{{ ending.title }}</h2>
-         <p class="ending-description">{{ ending.description }}</p>
-         <div class="ending-advice"><strong>FIELD NOTE:</strong> {{ ending.advice }}</div>
-         <div class="ending-meta"><span>DETERMINISTIC TRACE: {{ score }} points</span><span>COLLECTIBLE: {{ ending.code }}</span></div>
-         <div class="ending-actions">
-            <button type="button" class="terminal-button" (click)="reset()">Replay route</button>
-            <button type="button" class="terminal-button terminal-button-primary" (click)="saveResult()" [disabled]="saved">{{ saved ? 'Saved locally' : 'Save this ending' }}</button>
-         </div>
-      </section>
-
-      <footer class="terminal-footer">
-         <span>NO PERSONNEL DECISIONS ARE GENERATED HERE.</span>
-         <span>LOCAL HISTORY ONLY · {{ route.length ? 'TRACE RECORDED' : 'AWAITING INPUT' }}</span>
-      </footer>
-   </main>
-</div>
+<candidate-header></candidate-header>
+<main class="calibration" [class.city]="art==='city'" aria-labelledby="calibration-title">
+ <div class="game-atmosphere" aria-hidden="true"></div>
+ <header class="game-masthead">
+  <div><span class="bureau-seal"><i class="bi bi-stars" aria-hidden="true"></i> JMS / CALIBRATION</span>
+   <h1 id="calibration-title">{{ ui('Sở Ngày Mai','The Department of Tomorrow') }}</h1>
+   <p>{{ ui('Một chuyến đi rất nghiêm túc. Cơ quan chủ quản là một con bồ câu.','A very serious journey. The supervising authority is a pigeon.') }}</p></div>
+  <div class="edition">{{ ui('Truyện tương tác · 5–8 phút','Interactive fiction · 5–8 minutes') }}<span>EN / VI</span></div>
+ </header>
+ <div class="game-layout">
+  <aside class="voice-panel" [attr.aria-label]="ui('Những giọng nói trong đầu','The inner voices')">
+   <span class="small-label">{{ ui('Hội đồng nội tâm','Your internal committee') }}</span>
+   <div class="voice" *ngFor="let voice of voices" [attr.data-voice]="voice.id">
+    <i [class]="'bi bi-'+voice.icon" aria-hidden="true"></i><div><strong>{{ l(voice.name) }}</strong><p>{{ l(voice.aside) }}</p>
+    <div class="voice-meter" *ngIf="started"><span [style.width.%]="count(voice.id)/scenes.length*100"></span></div></div>
+   </div>
+   <p class="voice-note">{{ ui('Đây là các vai trong câu chuyện, không phải điểm tính cách của bạn.','These are roles in a story, not personality scores.') }}</p>
+  </aside>
+  <section class="story-stage">
+   <div *ngIf="!started" class="story-paper prologue">
+    <span class="file-stamp">FILE 000 / {{ ui('CHƯA PHÂN LOẠI','UNCLASSIFIED') }}</span>
+    <h2 #sceneHeading tabindex="-1">{{ ui('Ngày mai của bạn cần bổ sung giấy tờ.','Your tomorrow needs more paperwork.') }}</h2>
+    <p>{{ ui('Một thành phố trong khe núi. Một chuyến xe không số. Bốn giọng nói không thống nhất nổi chuyện ăn sáng. Bạn có sáu trạm dừng để tìm lối ra, hoặc ít nhất một câu chuyện đáng kể lại.','A city between cliffs. An unnumbered bus. Four voices unable to agree on breakfast. Six stops to find a way out, or at least something worth retelling.') }}</p>
+    <p class="parody-note">{{ ui('Chơi cho vui, có thể nghĩ thêm một chút. Đây không phải bài kiểm tra tâm lý hay hướng nghiệp; kết quả không đi vào CV, matching hoặc quyết định tuyển dụng.','Play for fun; reflect if you feel like it. This is no psychological or career assessment. Results never enter your CV, matching, or hiring decisions.') }}</p>
+    <button class="game-action primary" (click)="start()"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>{{ ui('Lên xe','Board the bus') }}</button>
+    <button class="game-action" *ngIf="resumeRoute.length" (click)="start(true)">{{ ui('Tiếp tục chuyến trước','Continue the previous trip') }} · {{ resumeRoute.length }}/6</button>
+   </div>
+   <div *ngIf="started&&!ending" class="story-paper">
+    <div class="scene-meta"><span>{{ l(feedback ? scenes[route.length-1].place : current.place) }}</span><span>{{ feedback ? route.length : route.length+1 }}/6</span></div>
+    <div class="trip-progress" role="progressbar" [attr.aria-label]="ui('Tiến độ câu chuyện','Story progress')" [attr.aria-valuenow]="route.length" aria-valuemin="0" aria-valuemax="6"><span [style.width.%]="route.length/scenes.length*100"></span></div>
+    <ng-container *ngIf="!feedback; else response">
+     <h2 #sceneHeading tabindex="-1">{{ l(current.title) }}</h2><p class="narrative">{{ l(current.text) }}</p>
+     <div class="choices"><button *ngFor="let option of current.choices;index as index" class="choice" (click)="choose(index)" [attr.data-voice]="option.voice">
+      <span class="choice-number">0{{ index+1 }}</span><span>{{ l(option.text) }}</span><i class="bi bi-arrow-up-right" aria-hidden="true"></i></button></div>
+    </ng-container>
+    <ng-template #response><div class="response" role="status"><span class="small-label">{{ ui('Thành phố trả lời','The city answers') }}</span><h2 #sceneHeading tabindex="-1">{{ l(feedback!.reply) }}</h2>
+     <p class="souvenir"><i class="bi bi-inbox" aria-hidden="true"></i>{{ ui('Bỏ túi:','Pocketed:') }} {{ l(feedback!.souvenir) }}</p>
+     <button class="game-action primary" (click)="next()">{{ route.length===6 ? ui('Mở cánh cửa','Open the door') : ui('Đi tiếp','Keep walking') }}<i class="bi bi-arrow-right" aria-hidden="true"></i></button></div></ng-template>
+   </div>
+   <div *ngIf="ending as result" class="story-paper ending">
+    <span class="file-stamp">{{ ui('HỒ SƠ ĐÃ ĐÓNG · TẠM THỜI','FILE CLOSED · FOR NOW') }}</span>
+    <i [class]="'ending-icon bi bi-'+result.icon" aria-hidden="true"></i>
+    <h2 #sceneHeading tabindex="-1">{{ l(result.title) }}</h2><p class="narrative">{{ l(result.text) }}</p>
+    <blockquote><span>{{ ui('Nếu muốn mang theo một ý nghĩ','A thought, if you want one') }}</span>{{ l(result.reflection) }}</blockquote>
+    <p class="parody-note">{{ ui('Kết thúc thuộc về lựa chọn trong truyện, không định nghĩa con người bạn.','This ending belongs to your story choices. It does not define you.') }}</p>
+    <div class="game-actions"><button class="game-action primary" (click)="saveResult()" [disabled]="saved">{{ saved ? ui('Đã lưu trên thiết bị','Saved on this device') : ui('Lưu vào bộ sưu tập','Save to the collection') }}</button><button class="game-action" (click)="restart()">{{ ui('Đi chuyến khác','Take another trip') }}</button></div>
+   </div>
+   <p class="storage-error" role="alert" *ngIf="storageError">{{ ui('Trình duyệt không cho lưu. Bạn vẫn chơi được, nhưng lượt này có thể không được giữ lại.','Browser storage is unavailable. You can still play, but this run may not be kept.') }}</p>
+   <div class="stage-footer"><span>{{ ui('Không AI. Không hồ sơ tuyển dụng. Chỉ một chuyến đi.','No AI. No hiring record. Just a trip.') }}</span><button *ngIf="started&&!ending" (click)="restart()">{{ ui('Chơi lại','Start over') }}</button></div>
+  </section>
+  <aside class="journal-panel">
+   <span class="small-label">{{ ui('Túi áo / nhật ký','Pockets / field notes') }}</span>
+   <p *ngIf="!souvenirs.length" class="journal-empty">{{ ui('Chưa có gì ngoài phong bì. Đủ để bắt đầu.','Nothing but an envelope yet. Enough to begin.') }}</p>
+   <ol><li *ngFor="let item of souvenirs">{{ l(item) }}</li></ol>
+   <details class="collection" open><summary>{{ ui('Bộ sưu tập kết thúc','Ending collection') }} <span>{{ discovered.size }}/{{ endings.length }}</span></summary>
+    <div *ngFor="let item of endings" class="collection-item" [class.found]="discovered.has(item.id)">
+     <i [class]="'bi bi-'+(discovered.has(item.id)?item.icon:'lock')" aria-hidden="true"></i>
+     <span>{{ discovered.has(item.id) ? l(item.title) : ui('Một cánh cửa chưa mở','An unopened door') }}</span></div>
+    <p>{{ ui('Lưu kết thúc để mở ô sưu tập. Chỉ lưu trên thiết bị này.','Save an ending to unlock its entry. Stored on this device only.') }}</p>
+    <button *ngIf="history.length" (click)="clearHistory()">{{ ui('Xóa bộ sưu tập','Clear collection') }}</button>
+   </details>
+  </aside>
+ </div>
+ <footer class="art-credits"><span>{{ ui('Tranh nền:','Background art:') }}</span> <a href="https://opengameart.org/content/city-in-a-canyon" target="_blank" rel="noopener noreferrer">City In A Canyon — zonked</a><span>·</span><a href="https://opengameart.org/content/abandon-city-seamless-background" target="_blank" rel="noopener noreferrer">Abandon City — acasas</a><span>· CC0</span></footer>
+</main>
