@@ -1,0 +1,21 @@
+<article class="cv-paper" [style.font-family]="cv.font" aria-label="CV">
+ <aside class="cv-sidebar" [style.background-image]="'url('+theme.backgroudSelectedLink+')'" [style.color]="theme.colorLeftInput">
+  <img class="cv-avatar" [src]="cv.avatar || '/assets/images/avatar.svg'" jmsImageFallback alt="" width="120" height="120">
+  <section><h2 [style.color]="theme.colorLeftHeader">{{'Thông tin cá nhân' | t}}</h2><ul class="contact-list">
+   <li *ngIf="cv.email"><i class="bi bi-envelope" aria-hidden="true"></i><span>{{cv.email}}</span></li>
+   <li *ngIf="cv.phone"><i class="bi bi-telephone" aria-hidden="true"></i><span>{{cv.phone}}</span></li>
+   <li *ngIf="cv.address"><i class="bi bi-geo-alt" aria-hidden="true"></i><span>{{cv.address}}</span></li>
+   <li *ngIf="cv.dob"><i class="bi bi-calendar" aria-hidden="true"></i><span>{{date(cv.dob)}}</span></li>
+   <li *ngIf="cv.gender"><i class="bi bi-person" aria-hidden="true"></i><span>{{cv.gender | t}}</span></li>
+  </ul></section>
+  <section *ngIf="cv.skills.length"><h2 [style.color]="theme.colorLeftHeader">{{'Kỹ năng' | t}}</h2><div class="cv-entry" *ngFor="let item of cv.skills"><h3>{{value(item,'title')}}</h3><p>{{value(item,'skillDescription')}}</p></div></section>
+  <section *ngIf="cv.certificates.length"><h2 [style.color]="theme.colorLeftHeader">{{'Chứng chỉ' | t}}</h2><div class="cv-entry" *ngFor="let item of cv.certificates"><h3>{{value(item,'certificateName')}}</h3><p>{{value(item,'certificateProvider')}}</p><small>{{value(item,'issuedDate')}}<ng-container *ngIf="value(item,'expiredDate')"> — {{value(item,'expiredDate')}}</ng-container></small></div></section>
+ </aside>
+ <div class="cv-main"><header><p class="cv-category">{{cv.category}}</p><h1>{{cv.displayName || ('CV của bạn' | t)}}</h1><p class="cv-subtitle">{{cv.level}}<ng-container *ngIf="cv.level && cv.employment"> · </ng-container>{{cv.employment}}</p></header>
+  <section *ngIf="cv.goal"><h2>{{'Mục tiêu nghề nghiệp' | t}}</h2><p>{{cv.goal}}</p></section>
+  <section *ngIf="cv.experiences.length"><h2>{{'Kinh nghiệm làm việc' | t}}</h2><div class="cv-entry" *ngFor="let item of cv.experiences"><h3>{{value(item,'position')}}</h3><strong>{{value(item,'comapanyName') || value(item,'companyName')}}</strong><small>{{value(item,'fromDate')}} — {{value(item,'toDate')}}</small><p>{{value(item,'description')}}</p></div></section>
+  <section *ngIf="cv.educations.length"><h2>{{'Học vấn' | t}}</h2><div class="cv-entry" *ngFor="let item of cv.educations"><h3>{{value(item,'schoolName')}}</h3><strong>{{value(item,'majorName')}}</strong><small>{{value(item,'fromYear')}} — {{value(item,'toYear')}}</small><p>{{value(item,'description')}}</p></div></section>
+  <section *ngIf="cv.projects.length"><h2>{{'Dự án' | t}}</h2><div class="cv-entry" *ngFor="let item of cv.projects"><h3>{{value(item,'projectName')}}</h3><small>{{value(item,'fromDate')}} — {{value(item,'toDate')}}</small><p>{{value(item,'description')}}</p></div></section>
+  <section *ngIf="cv.awards.length"><h2>{{'Giải thưởng' | t}}</h2><div class="cv-entry" *ngFor="let item of cv.awards"><h3>{{value(item,'awardName')}}</h3><small>{{value(item,'fromYear')}}</small><p>{{value(item,'description')}}</p></div></section>
+ </div>
+</article>

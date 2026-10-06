@@ -14,6 +14,7 @@ using APIServer.Models.Entity;
 using APIServer.Repositories;
 using APIServer.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,21 @@ namespace APIServer
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddScoped<APIServer.Features.Admin.AdminInsightsService>();
+            builder.Logging.ClearProviders();
+            builder.Logging.AddConsole();
+
+            var publicUrl = Environment.GetEnvironmentVariable("JMS_PUBLIC_URL");
+            if (!builder.Environment.IsDevelopment() &&
+                (string.IsNullOrWhiteSpace(publicUrl) ||
+                 !Uri.TryCreate(publicUrl, UriKind.Absolute, out var publicUri) ||
+                 publicUri.Scheme is not ("http" or "https") ||
+                 publicUri.AbsolutePath != "/" ||
+                 !string.IsNullOrEmpty(publicUri.Query) ||
+                 !string.IsNullOrEmpty(publicUri.Fragment) ||
+                 !string.IsNullOrEmpty(publicUri.UserInfo)))
+                throw new InvalidOperationException(
+                    "JMS_PUBLIC_URL must be configured as the public HTTP(S) backend origin without a path for non-development deployments.");
 
             var jwtKey = builder.Configuration["Jwt:Key"];
             if (string.IsNullOrWhiteSpace(jwtKey))
@@ -47,22 +63,32 @@ namespace APIServer
                 builder.Configuration["Jwt:Key"] = jwtKey;
             }
 
-            var allowFE = "_AllowFrontEndClient";
-            var dataProtectionPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys");
-            Directory.CreateDirectory(dataProtectionPath);
-            builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(dataProtectionPath));
+            if (Encoding.UTF8.GetByteCount(jwtKey) < 32)
+                throw new InvalidOperationException("Jwt:Key must contain at least 32 UTF-8 bytes.");
 
-            //add Cors
-            builder.Services.AddCors(options =>
+            var allowFE = "_AllowFrontEndClient";
+            var dataProtectionPath = Path.GetFullPath(
+                builder.Configuration["DataProtection:KeyPath"] ?? "App_Data/keys",
+                builder.Environment.ContentRootPath);
+            Directory.CreateDirectory(dataProtectionPath);
+            var dataProtection = builder.Services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionPath));
+            var applicationName = builder.Configuration["DataProtection:ApplicationName"];
+            if (!string.IsNullOrWhiteSpace(applicationName)) dataProtection.SetApplicationName(applicationName);
+            builder.Services.AddSingleton<LocalImageStorage>();
+
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? (builder.Environment.IsDevelopment() ? ["http://localhost:4200"] : []);
+            if (allowedOrigins.Any(origin => !Uri.TryCreate(origin, UriKind.Absolute, out var uri)
+                || uri.Scheme is not ("http" or "https") || uri.AbsolutePath != "/"
+                || !string.IsNullOrEmpty(uri.Query) || !string.IsNullOrEmpty(uri.Fragment)
+                || !string.IsNullOrEmpty(uri.UserInfo) || origin.EndsWith('/')))
+                throw new InvalidOperationException("Cors:AllowedOrigins must contain HTTP(S) origins without paths or trailing slashes.");
+            builder.Services.AddCors(options => options.AddPolicy(allowFE, policy =>
             {
-                options.AddPolicy(name: allowFE,
-                                  policy =>
-                                  {
-                                      policy.WithOrigins(builder.Configuration.GetValue<string>("FE_Port"))
-                                      .AllowAnyHeader()
-                                      .AllowAnyMethod();
-                                  });
-            });
+                if (allowedOrigins.Length > 0)
+                    policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
+            }));
             // Add services to the container.
 
             builder.Services.AddControllers(options =>
@@ -119,7 +145,7 @@ namespace APIServer
                         OnAuthenticationFailed = context =>
                         {
                             var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                            logger.LogWarning(context.Exception, "JWT authentication failed for {Path}.", context.HttpContext.Request.Path);
+                            logger.LogWarning("JWT authentication failed for {Path}.", context.HttpContext.Request.Path);
                             return Task.CompletedTask;
                         }
                     };
@@ -159,16 +185,30 @@ namespace APIServer
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            // Migrations are explicit outside Development; seeding is development-only.
+            var applyMigrations = builder.Configuration.GetValue<bool?>("Database:ApplyMigrations")
+                ?? app.Environment.IsDevelopment();
+            if (applyMigrations)
             {
                 await using var scope = app.Services.CreateAsyncScope();
                 var dbContext = scope.ServiceProvider.GetRequiredService<JMSDBContext>();
                 await dbContext.Database.MigrateAsync();
-                await DevelopmentDataSeeder.SeedAsync(dbContext, app.Logger);
-
+                if (app.Environment.IsDevelopment() &&
+                    builder.Configuration.GetValue("Database:SeedDemo", true))
+                    await DevelopmentDataSeeder.SeedAsync(dbContext, app.Logger);
+            }
+            if (app.Environment.IsDevelopment())
+            {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+            }
+            else
+            {
+                app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    await context.Response.WriteAsJsonAsync(new { statusCode = 500, message = "An unexpected error occurred." });
+                }));
             }
 
             app.UseCors(allowFE);
@@ -202,6 +242,14 @@ namespace APIServer
             app.UseDefaultFiles();
 
             app.UseStaticFiles();
+            var images = app.Services.GetRequiredService<LocalImageStorage>();
+            foreach (var folder in new[] { "images", "images_clone", "slider" })
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(Path.Combine(images.Root, folder)),
+                    RequestPath = "/" + folder,
+                    OnPrepareResponse = context => context.Context.Response.Headers["X-Content-Type-Options"] = "nosniff"
+                });
 
             app.Run();
         }
@@ -227,11 +275,15 @@ namespace APIServer
             builder.Services.AddTransient<IRecurterCommon, RecuirterCommonService>();
             builder.Services.AddTransient<ICandidateRepository, CandidateRepository>();
             builder.Services.AddTransient<IBaseRepository<Slider>, SliderRepository>();
-            builder.Services.AddTransient<IEmailService, EmailService>();
+
             builder.Services.AddTransient<IRegisterService, RegisterService>();
             builder.Services.AddTransient<IAdminRepository, AdminRepository>();
             builder.Services.AddTransient<IAdminService, AdminService>();
-            builder.Services.AddTransient<IMatchEvaluationProvider, GeminiMatchEvaluationProvider>();
+            builder.Services.AddHttpClient("AiProviders", client => client.Timeout = TimeSpan.FromSeconds(20));
+            builder.Services.AddTransient<IAiProviderAdapter, GeminiProviderAdapter>();
+            builder.Services.AddTransient<IAiProviderAdapter, OpenAiProviderAdapter>();
+            builder.Services.AddTransient<IAiProviderAdapter, AnthropicProviderAdapter>();
+            builder.Services.AddTransient<IMatchEvaluationProvider, AiMatchEvaluationProvider>();
             builder.Services.AddTransient<IMatchEvaluationService, MatchEvaluationService>();
             builder.Services.AddScoped<IAiProviderProfileService, AiProviderProfileService>();
             builder.Services.AddScoped<IFaqService, FaqService>();

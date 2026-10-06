@@ -6,6 +6,8 @@ export interface AiModelCapability {
    reasoningLevels: string[];
    supportsMatching: boolean;
    supportsAssistant: boolean;
+   reasoningControl: string;
+   tier: 'economic' | 'quality' | 'legacy';
 }
 
 export interface AiProviderProfile {
@@ -27,6 +29,7 @@ export interface AiProviderProfileDraft {
    modelId: string;
    reasoningLevel: string;
    apiKey: string;
+   removeApiKey: boolean;
    isEnabled: boolean;
    isDefaultForMatching: boolean;
    isEnabledForAssistant: boolean;

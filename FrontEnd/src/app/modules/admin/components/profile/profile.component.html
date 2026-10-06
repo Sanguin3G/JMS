@@ -1,70 +1,70 @@
 <div class="container-xl px-4 mt-4">
     <div class="row justify-content-center">
         <div class="col-xl-8">
-            <!-- Account details card-->
+
             <div class="card mb-4">
-                <div class="card-header">Thông Tin Tài Khoản</div>
+                <div class="card-header">{{ 'Thông Tin Tài Khoản' | t }}</div>
                 <div class="card-body">
                     <form>
-                        <!-- Form Group (username)-->
+
                         <div class="mb-3">
-                            <label class="small mb-1" for="inputUsername">Họ và tên</label>
-                            <input #fullname class="form-control disableInput" type="text" placeholder="Nhập tên của bạn"
+                            <label class="small mb-1" for="inputUsername">{{ 'Họ và tên' | t }}</label>
+                            <input #fullname class="form-control disableInput" type="text" [attr.placeholder]="'Nhập tên của bạn' | t"
                                 [value]="profile?.fullName" disabled>
                         </div>
-                        <!-- Form Row-->
+
                         <div class="row gx-3 mb-3">
-                            <!-- Form Group (first name)-->
+
                             <div class="col-md-12">
-                                <label class="small mb-1" for="inputFirstName">Tài khoản</label>
+                                <label class="small mb-1" for="inputFirstName">{{ 'Tài khoản' | t }}</label>
                                 <input class="form-control disableInput" id="inputFirstName" type="text"
-                                    placeholder="Tài khoản của bạn" value={{profile?.userName}} disabled>
+                                    [attr.placeholder]="'Tài khoản của bạn' | t" value={{profile?.userName}} disabled>
                             </div>
                             </div>
-                        <!-- Form Row-->
+
                         <div class="row gx-3 mb-3">
-                            <!-- Form Group (phone number)-->
+
                             <div class="col-md-6">
-                                <label class="small mb-1" for="inputPhone">Số điện thoại</label>
+                                <label class="small mb-1" for="inputPhone">{{ 'Số điện thoại' | t }}</label>
                                 <input #phone class="form-control disableInput" id="inputPhone" type="tel"
-                                    placeholder="Nhập số điện thoại" [value]="profile?.phoneNumber" disabled>
+                                    [attr.placeholder]="'Nhập số điện thoại' | t" [value]="profile?.phoneNumber" disabled>
                             </div>
-                            <!-- Form Group (birthday)-->
+
                             <div class="col-md-6">
-                                <label class="small mb-1" for="inputBirthday">Ngày sinh</label>
+                                <label class="small mb-1" for="inputBirthday">{{ 'Ngày sinh' | t }}</label>
                                 <input #dob class="form-control disableInput" id="inputBirthday" type="text" name="birthday"
-                                    placeholder="Nhập ngày sinh" [value]="dobb" disabled>
+                                    [attr.placeholder]="'Nhập ngày sinh' | t" [value]="dobb" disabled>
                             </div>
                         </div>
-                        <!-- Save changes button-->
-                        <!-- <button class="btn btn-primary" type="button" (click)="updateProfile(fullname, gender, phone, dob)">Cập Nhật</button> -->
+
+
                     </form>
                 </div>
             </div>
 
             <div class="card mb-4">
-                <div class="card-header">Thay Đổi Mật Khẩu</div>
+                <div class="card-header">{{ 'Thay Đổi Mật Khẩu' | t }}</div>
                 <div class="card-body">
                     <form class="form" role="form" autocomplete="off">
                         <div class="form-group">
-                            <label for="inputPasswordOld">Mật Khẩu Hiện Tại</label>
+                            <label for="inputPasswordOld">{{ 'Mật Khẩu Hiện Tại' | t }}</label>
                             <input #oldPass type="password" class="form-control" id="inputPasswordOld" required="">
                         </div>
                         <div class="form-group">
-                            <label for="inputPasswordNew">Mật khẩu mới</label>
+                            <label for="inputPasswordNew">{{ 'Mật khẩu mới' | t }}</label>
                             <input #newPass type="password" class="form-control" id="inputPasswordNew" required="">
                             <span class="form-text small text-muted">
-                                    Mật khẩu mới phải từ 8 - 20 ký tự, không được chứa khoảng trắng.
+                                    {{ 'Mật khẩu mới phải từ 8 - 20 ký tự, không được chứa khoảng trắng.' | t }}
                                 </span>
                         </div>
                         <div class="form-group">
-                            <label for="inputPasswordNewVerify">Xác nhận mật khẩu</label>
+                            <label for="inputPasswordNewVerify">{{ 'Xác nhận mật khẩu' | t }}</label>
                             <input #rePass type="password" class="form-control" id="inputPasswordNewVerify" required="">
                             <span class="form-text small text-muted">
-                                    Hãy nhập lại mật khẩu để xác nhận.
+                                    {{ 'Hãy nhập lại mật khẩu để xác nhận.' | t }}
                                 </span>
                         </div>
-                            <button class="btn btn-primary" type="button" (click)="changePassword(oldPass, newPass, rePass)">Cập Nhật</button>
+                            <button class="btn btn-primary" type="button" (click)="changePassword(oldPass, newPass, rePass)">{{ 'Cập Nhật' | t }}</button>
                     </form>
                 </div>
             </div>

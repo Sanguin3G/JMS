@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { inject, Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
-import { postFileRequest, postRequest } from 'src/app/service/api-requests';
-import { showError, showInfo, showSuccess } from 'src/app/service/common';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
+import { ApiService } from 'src/app/core/http/api.service';
+
 import { AuthorizationMode, apiCandidate } from 'src/app/service/constant';
-import { getToken, saveItem } from 'src/app/service/localstorage';
+import { AuthService } from 'src/app/core/auth/auth.service';
 
 @Component({
   standalone: false,
@@ -14,6 +14,8 @@ import { getToken, saveItem } from 'src/app/service/localstorage';
 })
 
 export class ProfileComponent {
+   private readonly auth = inject(AuthService);
+   private readonly api = inject(ApiService);
    profile: any
 
    FullName: any
@@ -58,7 +60,7 @@ export class ProfileComponent {
    }
 
    getProfile = () => {
-      postRequest(apiCandidate.GET_PROFILE_USER, AuthorizationMode.BEARER_TOKEN, {})
+      this.api.postRequest(apiCandidate.GET_PROFILE_USER, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
             if (res.statusCode == 200) {
                this.profile = res.data
@@ -68,14 +70,14 @@ export class ProfileComponent {
                this.Phone = this.profile.phoneNumber
                this.genderId = this.profile.isMale ? '1' : '2';
 
-               saveItem("profile", res.data);
+               this.auth.updateProfile(res.data);
             }
          })
          .catch(error => {
          })
    }
 
-   constructor(private toastr: ToastrService, private router: Router) {
+   constructor(private toastr: NotificationService, private router: Router) {
       this.getProfile()
    }
 
@@ -86,16 +88,16 @@ export class ProfileComponent {
          let formData: FormData = new FormData();
          formData.append('file', file, file.name);
 
-         postFileRequest(`${apiCandidate.UPDATE_AVATAR_CANDIDATE}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, formData)
+         this.api.postFileRequest(`${apiCandidate.UPDATE_AVATAR_CANDIDATE}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, formData)
             .then(res => {
                if (res.statusCode == 200) {
-                  showSuccess(this.toastr, "Chỉnh sửa ảnh thành công")
+                  this.toastr.success("Chỉnh sửa ảnh thành công")
                   this.getProfile()
                }
             })
             .catch(data => {
-               showError(this.toastr, "Chỉnh sửa ảnh thất bại")
-               console.log(data);
+               this.toastr.error("Chỉnh sửa ảnh thất bại")
+
             })
       }
    }
@@ -110,23 +112,23 @@ export class ProfileComponent {
             genderId: this.genderId
          });
 
-         postRequest(`${apiCandidate.UPDATE_PROFILE_CANDIDATE}?${parameters.toString()}`, AuthorizationMode.BEARER_TOKEN, {})
+         this.api.postRequest(`${apiCandidate.UPDATE_PROFILE_CANDIDATE}?${parameters.toString()}`, AuthorizationMode.BEARER_TOKEN, {})
             .then(res => {
                if (res.statusCode == 200) {
-                  showSuccess(this.toastr, "Chỉnh sửa thông tin cá nhân thành công")
+                  this.toastr.success("Chỉnh sửa thông tin cá nhân thành công")
                   this.getProfile()
                }
                if (res.statusCode == 400) {
-                  showError(this.toastr, "Chỉnh sửa thông tin cá nhân thất bại")
+                  this.toastr.error("Chỉnh sửa thông tin cá nhân thất bại")
                }
             })
             .catch(res => {
-               showError(this.toastr, "Chỉnh sửa thông tin cá nhân thất bại")
+               this.toastr.error("Chỉnh sửa thông tin cá nhân thất bại")
                console.warn(res);
 
             })
       } else {
-         showInfo(this.toastr, "Điền các trường ở bên dưới")
+         this.toastr.info("Điền các trường ở bên dưới")
       }
    }
 }

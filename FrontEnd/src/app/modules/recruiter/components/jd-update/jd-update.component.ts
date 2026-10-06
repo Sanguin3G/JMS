@@ -1,13 +1,13 @@
-import { Component } from '@angular/core';
+import { editorConfig } from 'src/app/shared/rich-text/editor-config';
+import { inject, Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ClassicEditor } from 'ckeditor5';
-import { ToastrService } from 'ngx-toastr';
-import { getRequest, postRequest } from 'src/app/service/api-requests';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
+import { ApiService } from 'src/app/core/http/api.service';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
-import { getProfile } from 'src/app/service/localstorage';
+import { AuthService } from 'src/app/core/auth/auth.service';
 import { DatePipe } from '@angular/common';
-import { showError, showSuccess } from 'src/app/service/common';
+
 
 @Component({
   standalone: false,
@@ -16,7 +16,8 @@ import { showError, showSuccess } from 'src/app/service/common';
    styleUrls: ['./jd-update.component.css']
 })
 export class JdUpdateComponent {
-   public Editor = ClassicEditor;
+   private readonly auth = inject(AuthService);
+   private readonly api = inject(ApiService);
    categories: any;
    levels: any;
    employmentTypes: any;
@@ -27,60 +28,34 @@ export class JdUpdateComponent {
    startDate: any
    endDate: any
 
-   constructor(private route: ActivatedRoute, private toastr: ToastrService, public datePipe: DatePipe, private router: Router) {
-      this.profile = getProfile();
+   constructor(private route: ActivatedRoute, private toastr: NotificationService, public datePipe: DatePipe, private router: Router) {
+      this.profile = this.auth.getProfile();
 
-      getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
-         .then(res => {
-            this.categories = res?.data
-         })
-         .catch(data => {
-            console.warn(apiRecruiter.GET_ALL_CATEGORY, data);
-         })
-
-      getRequest(apiRecruiter.GET_ALL_GENDER, AuthorizationMode.PUBLIC, { page: 10 })
-         .then(res => {
-            this.genders = res?.data
-         })
-         .catch(data => {
-            console.warn(apiRecruiter.GET_ALL_GENDER, data);
-         })
-
-      getRequest(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 })
-         .then(res => {
-            this.levels = res?.data
-         })
-         .catch(data => {
-            console.warn(apiRecruiter.GET_ALL_LEVEL_TITLE, data);
-         })
-
-      getRequest(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 })
-         .then(res => {
-            this.employmentTypes = res?.data
-         })
-         .catch(data => {
-            console.warn(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, data);
-         })
-
-
-      this.route.params.subscribe(params => {
-         this.id = params['id'];
-      });
-
-      getRequest(apiRecruiter.GET_JD_BY_ID, AuthorizationMode.BEARER_TOKEN, { jdId: this.id })
-         .then(res => {
-            this.jdDetail = res.data
-            console.log(res);
-            this.formatDate();
-            this.setValueInput()
-         })
-         .catch(data => {
-            console.warn(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, data);
-         })
+      void this.initialize();
+   }
+   loading = true;
+   loadError = '';
+   private async initialize() {
+      try {
+         this.id = this.route.snapshot.paramMap.get('id');
+         const [categories, genders, levels, employmentTypes, job] = await Promise.all([
+            this.api.getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC),
+            this.api.getRequest(apiRecruiter.GET_ALL_GENDER, AuthorizationMode.PUBLIC),
+            this.api.getRequest(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC),
+            this.api.getRequest(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC),
+            this.api.getRequest(apiRecruiter.GET_JD_BY_RECRUITER + '/' + this.profile.id + '/' + this.id, AuthorizationMode.BEARER_TOKEN),
+         ]);
+         if ([categories, genders, levels, employmentTypes, job].some(result => result.statusCode !== 200)) throw new Error('Data unavailable');
+         this.categories = categories.data; this.genders = genders.data; this.levels = levels.data;
+         this.employmentTypes = employmentTypes.data; this.jdDetail = job.data;
+         this.formatDate(); this.setValueInput();
+      } catch { this.loadError = 'Không tải được tin tuyển dụng. Hãy quay lại danh sách và thử lại.'; }
+      finally { this.loading = false; }
    }
 
    setValueInput() {
       this.titleRq.setValue(this.jdDetail?.title)
+      this.CreateAtRq.setValue(this.jdDetail?.createdAt)
       this.numberRequiredRq.setValue(this.jdDetail?.numberRequirement)
       this.emailRq.setValue(this.jdDetail?.contactEmail)
       this.positionRq.setValue(this.jdDetail?.positionTitle)
@@ -125,17 +100,7 @@ export class JdUpdateComponent {
       return formattedDate
    }
 
-   public configDescription = {
-      toolbar: {
-         items: [
-            'undo',
-            'redo',
-            '|',
-            'bulletedList', // Add 'bulletedList' here
-         ],
-      },
-      placeholder: 'Nhập mô tả công việc'
-   }
+   public configDescription = editorConfig("Nhập mô tả công việc");
    public configEducationRequirement = { ...this.configDescription, placeholder: 'Nhập yêu cầu học vấn' }
    public configExperienceRequirement = { ...this.configDescription, placeholder: 'Nhập yêu cầu kinh nghiệm' }
    public configSkillRequirement = { ...this.configDescription, placeholder: 'Nhập yêu kỹ năng' }
@@ -154,7 +119,7 @@ export class JdUpdateComponent {
    genderRq = new FormControl('0');
    typeRq = new FormControl('0', [Validators.required, Validators.min(1)]);
    categoryRq = new FormControl('0', [Validators.required, Validators.min(1)]);
-   expiredDateRq = new FormControl({value: null, disabled: true});
+   expiredDateRq = new FormControl<string | null>(null, [Validators.required]);
    CreateAtRq = new FormControl({value: null, disabled: true});
    addressRq = new FormControl(null, [Validators.required]);
    salaryRq = new FormControl(null, [Validators.required, Validators.min(0)]);
@@ -289,8 +254,11 @@ export class JdUpdateComponent {
    checkDes: any = false;
    checkBen: any = false;
 
+   submitting = false;
+
    submitButtonClicked() {
-      if (this.titleRq.valid && this.emailRq.valid && this.addressRq.valid && this.salaryRq.valid && this.descriptionRq.valid && this.educationRq.valid && this.experienceRq.valid && this.skillRq.valid && this.benefitRq.valid && this.numberRequiredRq.valid && this.levelRq.valid && this.typeRq.valid && this.categoryRq.valid) {
+      if (this.submitting || this.loading || this.loadError) return;
+      if (this.titleRq.valid && this.emailRq.valid && this.addressRq.valid && this.salaryRq.valid && this.descriptionRq.valid && this.educationRq.valid && this.experienceRq.valid && this.skillRq.valid && this.benefitRq.valid && this.numberRequiredRq.valid && this.levelRq.valid && this.typeRq.valid && this.categoryRq.valid && this.expiredDateRq.valid) {
 
          const title = this.titleRq.value;
          const numberRequirement = this.numberRequiredRq.value;
@@ -336,31 +304,29 @@ export class JdUpdateComponent {
             numberRequirement: numberRequirement,
             companyName: this.profile.companyId.toString(),
             categoryName: categoryName,
-            expiredDate: this.formatDate2(this.jdDetail?.expiredDate),
+            expiredDate: expiredDate,
             levelTitle: levelTitle,
             positionTitle: positionTitle,
             companyDTO: {}
          }
 
-         console.log(data);
-         
-
-         postRequest(`${apiRecruiter.UPDATE_JD_BY_RECRUITER}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, data)
+         this.submitting = true;
+         this.api.postRequest(`${apiRecruiter.UPDATE_JD_BY_RECRUITER}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, data)
             .then(res => {
                if (res?.statusCode == 200) {
-                  showSuccess(this.toastr, "Cập nhật bài viết thành công")
+                  this.toastr.success("Cập nhật bài viết thành công")
                   setTimeout(() => {
                      this.router.navigate(['recruiter/list-jds'])
                   }, 1000);
                }else{
-                  showError(this.toastr, "Cập nhật bài viết thất bại")
+                  this.toastr.error("Cập nhật bài viết thất bại")
                }
-               console.log(res);
+
             })
             .catch(data => {
-               showError(this.toastr, "Cập nhật bài viết thất bại")
-               console.log(data);
-            })
+               this.toastr.error("Cập nhật bài viết thất bại")
+
+            }).finally(() => { this.submitting = false; })
          return
       }
 
@@ -416,6 +382,6 @@ export class JdUpdateComponent {
       // this.startDate = this.datePipe.transform(date, 'yyyy-MM-dd');
       // this.endDate = this.datePipe.transform(date2, 'yyyy-MM-dd');
       this.startDate = this.jdDetail.createdAt
-      this.endDate = this.jdDetail.expiredDate
+      this.endDate = [year2, String(month2 + 1).padStart(2, '0'), String(day2).padStart(2, '0')].join('-')
    }
 }

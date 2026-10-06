@@ -1,4 +1,5 @@
-﻿using APIServer.Common;
+using APIServer.Infrastructure;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
 using APIServer.Features.Matching;
@@ -28,8 +29,9 @@ namespace APIServer.Services
         private readonly IConfiguration _configuration;
         private readonly ICandidateRepository _candidateRepository;
         private readonly IMatchEvaluationService _matchEvaluationService;
+        private readonly LocalImageStorage _imageStorage;
 
-        public CandidateService(ICurriculumVitaeRepository context, ICVMatchingRepository CVMatchingRepository, IMapper mapper, IConfiguration configuration, ICandidateRepository candidateRepository, IJobRepository JobContext, IMatchEvaluationService matchEvaluationService)
+        public CandidateService(ICurriculumVitaeRepository context, ICVMatchingRepository CVMatchingRepository, IMapper mapper, IConfiguration configuration, ICandidateRepository candidateRepository, IJobRepository JobContext, IMatchEvaluationService matchEvaluationService, LocalImageStorage imageStorage)
         {
             _context = context;
             _CVMatchingRepository = CVMatchingRepository;
@@ -38,6 +40,7 @@ namespace APIServer.Services
             _candidateRepository = candidateRepository;
             _JobContext = JobContext;
             _matchEvaluationService = matchEvaluationService;
+            _imageStorage = imageStorage;
         }
         public int Create(Candidate data)
         {
@@ -96,29 +99,33 @@ namespace APIServer.Services
                 if (candidateId < 1 || CVid < 1 || jobDescriptionId < 1)
                     throw new Exception("Data not valid");
                 List<CurriculumVitae> curriculumVitaes = getAllCVByCandidateId(candidateId);
-                var CVList = _mapper.Map<List<CurriculumVitaeDTO>>(curriculumVitaes);
                 List<CVMatching> cVMatchings = _CVMatchingRepository.GetByCVIdAndJobDescriptionId(CVid, jobDescriptionId);
                 CurriculumVitae? cv1 = GetCVById(CVid);
                 var curriculumVitae = _mapper.Map<CurriculumVitaeDTO>(cv1);
                 JobDescription jobDescription = _JobContext.GetById(jobDescriptionId);
                 if (jobDescription == null)
                     throw new Exception("JD not found");
+                if (jobDescription.ExpiredDate <= DateTime.Now)
+                    throw new Exception("This job is no longer accepting applications");
                 if (cv1 != null)
                 {
                     if (curriculumVitaes.Any(cv => cv.Id == cv1.Id))
                     {
                         CVMatching CVApplied = new CVMatching();
 
-                        if (cVMatchings.Any(x => x.CurriculumVitaeId == curriculumVitae.Id && x.JobDescriptionId == jobDescriptionId && x.LastUpdateDate == cv1.LastUpdateDate && x.IsMatched == true && x.IsApplied == false && x.IsReject == false))
-                        {
-                            CVApplied = _CVMatchingRepository.GetByCVIdAndLastUpdateDate(curriculumVitae.Id, cv1.LastUpdateDate);
-                            CVApplied.IsApplied = true;
-                            CVApplied.IsReject = false;
-                            return _CVMatchingRepository.Update(CVApplied);
-                        }
-                        if (cVMatchings.Any(x => x.CandidateId == candidateId && x.JobDescriptionId == jobDescriptionId && x.IsApplied == true && x.IsReject == false))
+                        if (_CVMatchingRepository.HasApplication(candidateId, jobDescriptionId))
                         {
                             return -1;
+                        }
+
+                        var existingMatch = cVMatchings.FirstOrDefault(x => x.CandidateId == candidateId && x.LastUpdateDate == cv1.LastUpdateDate && x.IsMatched && !x.IsApplied && x.IsReject == false);
+                        if (existingMatch != null)
+                        {
+                            CVApplied = existingMatch;
+                            CVApplied.IsApplied = true;
+                            CVApplied.IsReject = false;
+                            CVApplied.ApplyDate = DateTime.Now;
+                            return _CVMatchingRepository.Update(CVApplied);
                         }
                         else
                         {
@@ -131,7 +138,7 @@ namespace APIServer.Services
                             CVApplied.CategoryName = curriculumVitae.CategoryName;
                             CVApplied.EmploymentTypeId = cv1.EmploymentTypeId;
                             CVApplied.DisplayEmail = curriculumVitae.DisplayEmail;
-                            CVApplied.DOB = Convert.ToDateTime(curriculumVitae.DOB);
+                            CVApplied.DOB = cv1.DOB;
                             CVApplied.Address = curriculumVitae.Address;
                             CVApplied.Education = JsonConvert.SerializeObject(curriculumVitae.Educations);
                             CVApplied.JobExperience = JsonConvert.SerializeObject(curriculumVitae.JobExperiences);
@@ -316,34 +323,9 @@ namespace APIServer.Services
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }
 
-        private static void PreserveAvatarSnapshot(string? avatarUrl, CVMatching matching)
+        private void PreserveAvatarSnapshot(string? avatarUrl, CVMatching matching)
         {
-            if (string.IsNullOrWhiteSpace(avatarUrl))
-            {
-                return;
-            }
-
-            // Development seed data uses curated remote URLs. Only copy a local
-            // upload when it actually resolves inside wwwroot; never treat a URL
-            // query string as a filesystem path.
-            matching.AvatarURL = avatarUrl;
-            if (Uri.TryCreate(avatarUrl, UriKind.Absolute, out _))
-            {
-                return;
-            }
-
-            var relativePath = avatarUrl.Replace('\\', '/').TrimStart('/');
-            var sourcePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath);
-            if (!File.Exists(sourcePath))
-            {
-                return;
-            }
-
-            var fileName = Path.GetFileName(relativePath);
-            var destinationDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images_clone");
-            Directory.CreateDirectory(destinationDirectory);
-            File.Copy(sourcePath, Path.Combine(destinationDirectory, fileName), overwrite: true);
-            matching.AvatarURL = "/images_clone/" + fileName;
+            matching.AvatarURL = _imageStorage.Snapshot(avatarUrl);
         }
     }
 }

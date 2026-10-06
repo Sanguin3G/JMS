@@ -1,11 +1,13 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
+import { inject, Component, ElementRef, ViewChild, HostListener, DestroyRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { validateImageFile } from 'src/app/core/files/image-file';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
 import { environment } from 'src/environments/environment';
-import { ApiResponse, getRequest, postFileRequest, postRequest } from 'src/app/service/api-requests';
+import { ApiService, ApiResponse } from 'src/app/core/http/api.service';
 import { AuthorizationMode, apiCandidate, apiRecruiter } from 'src/app/service/constant';
-import { getProfile } from 'src/app/service/localstorage';
-import { showError, showInfo, showSuccess } from 'src/app/service/common';
+import { AuthService } from 'src/app/core/auth/auth.service';
+
 import { themeList } from './constant';
 import { CatalogItem, CurriculumVitae, CurriculumVitaePayload, CvAward, CvCertificate, CvEducation, CvExperience, CvProject, CvSkill, UserProfile } from 'src/app/core/models/api.models';
 
@@ -13,9 +15,18 @@ import { CatalogItem, CurriculumVitae, CurriculumVitaePayload, CvAward, CvCertif
   standalone: false,
    selector: 'app-update-cv',
    templateUrl: './update-cv.component.html',
-   styleUrls: ['./update-cv.component.css']
+   styleUrls: ['../../../../shared/cv-theme-picker.css', './update-cv.component.css']
 })
 export class UpdateCvComponent {
+   private readonly auth = inject(AuthService);
+   private readonly api = inject(ApiService);
+   private readonly destroyRef = inject(DestroyRef);
+   readonly themes = [0,1,2,3,4,5,6,7,8];
+   validationMessages: string[] = [];
+   loading = true;
+   loadError = '';
+   savedMessage = '';
+   private initialSnapshot = '';
    categories: CatalogItem[] = [];
    levels: CatalogItem[] = [];
    employmentTypes: CatalogItem[] = [];
@@ -46,40 +57,42 @@ export class UpdateCvComponent {
 
    @ViewChild('avatarInput') private avatarInput?: ElementRef<HTMLInputElement>;
 
-   constructor(private readonly route: ActivatedRoute, private readonly toastr: ToastrService) {
-      this.profile = getProfile();
-      this.route.params.subscribe(params => {
+   constructor(private readonly route: ActivatedRoute, private readonly toastr: NotificationService) {
+      this.profile = this.auth.getProfile();
+      this.route.params.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
          this.cvId = Number(params['id']) || 0;
          void this.loadCv();
       });
    }
 
    async loadCv() {
+      this.loading = true;
+      this.loadError = '';
       try {
          const [categories, levels, employmentTypes] = await Promise.all([
-            getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 }),
-            getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 }),
-            getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 }),
+            this.api.getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 }),
+            this.api.getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 }),
+            this.api.getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 }),
          ]);
          this.categories = categories?.data ?? [];
          this.levels = levels?.data ?? [];
          this.employmentTypes = employmentTypes?.data ?? [];
 
          if (!this.profile?.id || !this.cvId) throw new Error('Candidate profile or CV is unavailable.');
-         const response = await getRequest<ApiResponse<CurriculumVitae>>(`${apiCandidate.GET_CV_CANDIDATE_BY_ID}/${this.profile.id}/${this.cvId}`, AuthorizationMode.BEARER_TOKEN);
-         if (!response?.data) throw new Error('CV not found');
+         const response = await this.api.getRequest<ApiResponse<CurriculumVitae>>(`${apiCandidate.GET_CV_CANDIDATE_BY_ID}/${this.profile.id}/${this.cvId}`, AuthorizationMode.BEARER_TOKEN);
+         if (response.statusCode !== 200 || !response.data) throw new Error('CV not found');
          this.applyCv(response.data);
+         this.initialSnapshot = this.snapshot();
       } catch (error) {
-         console.error(error);
-         showError(this.toastr, 'Không thể tải hồ sơ');
-      }
+         this.loadError = 'Không thể tải CV hoặc danh mục. Vui lòng thử lại.';
+      } finally { this.loading = false; }
    }
 
    async submitCV() {
-      if (this.isSaving || !this.validateForm()) return;
+      if (this.isSaving || this.loading || this.loadError || !this.validateForm()) return;
       this.isSaving = true;
       const data: CurriculumVitaePayload = {
-         id: 0, candidateId: 1, careerGoal: this.form.careerGoal, employmentTypeName: this.form.employmentTypeId.toString(), phone: this.form.phone,
+         id: this.cvId, candidateId: this.profile?.id ?? 0, careerGoal: this.form.careerGoal, employmentTypeName: this.form.employmentTypeId.toString(), phone: this.form.phone,
          displayName: this.form.displayName, genderDisplay: this.form.gender, displayEmail: this.form.displayEmail,
          address: this.form.address, dob: this.form.dob, jobExperiences: this.experiences,
          skills: this.skills, educations: this.educations, projects: this.projects, certificates: this.certificates, awards: this.awards,
@@ -88,22 +101,29 @@ export class UpdateCvComponent {
       };
       try {
          if (!this.profile?.id || !this.cvId) throw new Error('Candidate profile or CV is unavailable.');
-         await postRequest<ApiResponse<number>>(`${apiCandidate.UPDATE_CV_BY_CANDIDATE_ID}?candidateId=${this.profile.id}&cvId=${this.cvId}`, AuthorizationMode.BEARER_TOKEN, data);
+         const response = await this.api.postRequest<ApiResponse<number>>(`${apiCandidate.UPDATE_CV_BY_CANDIDATE_ID}?candidateId=${this.profile.id}&cvId=${this.cvId}`, AuthorizationMode.BEARER_TOKEN, data);
+         if (response.statusCode !== 200) throw new Error('CV update failed');
          if (this.avatarFile) {
             const formData = new FormData();
             formData.append('file', this.avatarFile, this.avatarFile.name);
-            await postFileRequest<ApiResponse<unknown>>(`${apiCandidate.UPDATE_IMAGES_CV}/${this.profile.id}/${this.cvId}`, AuthorizationMode.BEARER_TOKEN, formData);
+            const imageResponse = await this.api.postFileRequest<ApiResponse<unknown>>(`${apiCandidate.UPDATE_IMAGES_CV}/${this.profile.id}/${this.cvId}`, AuthorizationMode.BEARER_TOKEN, formData);
+            if (imageResponse.statusCode !== 200) { this.toastr.warning('Nội dung CV đã lưu, nhưng ảnh chưa được cập nhật. Thử lưu lại để tải ảnh.'); return; }
          }
-         showSuccess(this.toastr, 'Chỉnh sửa hồ sơ thành công');
+         this.avatarFile = undefined;
+         this.initialSnapshot = this.snapshot();
+         this.savedMessage = 'Đã lưu thay đổi.';
+         this.toastr.success('Chỉnh sửa hồ sơ thành công');
       } catch (error) {
-         console.error(error);
-         showError(this.toastr, 'Cập nhật hồ sơ thất bại');
+         this.toastr.error('Cập nhật hồ sơ thất bại');
       } finally { this.isSaving = false; }
    }
 
-   getFile(event: Event) {
-      const [file] = Array.from((event.target as HTMLInputElement).files ?? []);
+   async getFile(event: Event) {
+      const input = event.target as HTMLInputElement;
+      const [file] = Array.from(input.files ?? []);
       if (!file) return;
+      const error = await validateImageFile(file);
+      if (error) { this.toastr.error(error); input.value = ''; return; }
       this.avatarFile = file;
       this.hideImage = 'none'; this.displayImage = 'block'; this.displayChange = 'block';
       const reader = new FileReader();
@@ -156,12 +176,19 @@ export class UpdateCvComponent {
       if (this.form.levelId === '0') messages.push('Cấp bậc không được để trống');
       if (this.form.employmentTypeId === '0') messages.push('Loại việc làm không được để trống');
       if (!this.form.phone.trim()) messages.push('Số điện thoại không được để trống');
+      if (!/^\d{9,10}$/.test(this.form.phone)) messages.push('Số điện thoại phải có 9 hoặc 10 chữ số');
       if (!this.form.dob) messages.push('Ngày sinh không được để trống');
       if (!this.form.cvTitle.trim()) messages.push('Tên hồ sơ không được để trống');
-      if (messages.length) { showInfo(this.toastr, messages.map(message => `- ${message}`).join('<br/>')); return false; }
+      if (!this.form.displayName.trim()) messages.push('Họ tên không được để trống');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.displayEmail)) messages.push('Email chưa hợp lệ');
+      this.validationMessages = messages;
+      if (messages.length) { this.toastr.info('Vui lòng kiểm tra các trường được liệt kê phía trên CV.'); document.getElementById('cv-validation')?.focus(); return false; }
       return true;
    }
    private resolveId(items: CatalogItem[], property: keyof CatalogItem, title: unknown, fallback: unknown) { return String(fallback ?? items.find(item => item[property] === title)?.id ?? '0'); }
+   hasUnsavedChanges(): boolean { return this.initialSnapshot !== '' && this.snapshot() !== this.initialSnapshot; }
+   @HostListener('window:beforeunload', ['$event']) onBeforeUnload(event: BeforeUnloadEvent): void { if (this.hasUnsavedChanges()) { event.preventDefault(); event.returnValue = ''; } }
+   private snapshot(): string { return JSON.stringify({ form: this.form, skills: this.skills, certificates: this.certificates, awards: this.awards, experiences: this.experiences, projects: this.projects, educations: this.educations, font: this.fontCV, theme: this.themeId, avatar: this.avatarFile?.name }); }
    private toInputDate(value?: string) { if (!value) return ''; if (/^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10); const parts = value.split('/'); return parts.length === 3 ? `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}` : ''; }
    private withFallback<T>(items: T[] | undefined, fallback: T) { return items?.length ? items : [fallback]; }
    private remove<T>(items: T[], index: number) { if (items.length > 1) items.splice(index, 1); }

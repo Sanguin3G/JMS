@@ -1,4 +1,4 @@
-﻿using APIServer.Models.Entity;
+using APIServer.Models.Entity;
 using System.ComponentModel.DataAnnotations;
 
 namespace APIServer.DTO.EntityDTO
@@ -25,5 +25,6 @@ namespace APIServer.DTO.EntityDTO
         public string? AvatarURL { get; set; }
         public string? RecuirterFounder { get; set; }
         public string? Size { get; set; }
+        public bool IsDelete { get; set; }
     }
 }

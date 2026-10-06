@@ -1,14 +1,12 @@
 using APIServer.Features.AiConfiguration.Contracts;
 using APIServer.Models;
 using APIServer.Models.Entity;
-using Google.GenAI;
-using Google.GenAI.Types;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 
 namespace APIServer.Features.AiConfiguration;
 
-public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtectionProvider dataProtectionProvider)
+public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtectionProvider dataProtectionProvider, IEnumerable<IAiProviderAdapter> adapters)
     : IAiProviderProfileService
 {
     private readonly IDataProtector _keyProtector = dataProtectionProvider.CreateProtector("JMS.AiProviderProfile.ApiKey.v1");
@@ -56,9 +54,9 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
         var profile = await dbContext.AiProviderProfiles.FindAsync([id], cancellationToken)
             ?? throw new KeyNotFoundException("AI provider profile was not found.");
 
-        if (!profile.IsEnabled)
+        if (!profile.IsEnabled || string.IsNullOrWhiteSpace(profile.EncryptedApiKey))
         {
-            throw new InvalidOperationException("An inactive AI provider profile cannot be activated.");
+            throw new InvalidOperationException("An enabled profile with an API key is required.");
         }
 
         await ClearDefaultMatchingProfileAsync(cancellationToken, profile.Id);
@@ -85,7 +83,7 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
             return new(false, "No API key is stored for this profile.", profile.Provider, profile.ModelId, testedAtUtc);
         }
 
-        if (!GeminiModelCatalog.TryResolve(profile.Provider, profile.ModelId, profile.ReasoningLevel, out var capability, out _))
+        if (!AiModelCatalog.TryResolve(profile.Provider, profile.ModelId, profile.ReasoningLevel, out var capability, out _))
         {
             return new(false, "The saved model configuration is no longer supported.", profile.Provider, profile.ModelId, testedAtUtc);
         }
@@ -95,21 +93,9 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
             var apiKey = _keyProtector.Unprotect(profile.EncryptedApiKey);
             using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             timeoutCancellation.CancelAfter(TimeSpan.FromSeconds(10));
-            using var client = new Client(apiKey: apiKey);
-            var response = await client.Models.GenerateContentAsync(
-                model: profile.ModelId,
-                contents: "Reply with the single word OK.",
-                config: new GenerateContentConfig
-                {
-                    MaxOutputTokens = 8,
-                    ThinkingConfig = new ThinkingConfig { ThinkingLevel = ThinkingLevel.Minimal }
-                },
-                cancellationToken: timeoutCancellation.Token);
-
-            var text = response.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text;
-            return string.IsNullOrWhiteSpace(text)
-                ? new(false, "The provider returned no response.", capability.Provider, profile.ModelId, testedAtUtc)
-                : new(true, "Connection succeeded.", capability.Provider, profile.ModelId, testedAtUtc);
+            var adapter = adapters.Single(candidate => candidate.Provider == profile.Provider);
+            await adapter.TestAsync(new ResolvedAiProfile(profile.Provider, apiKey, profile.ModelId, profile.ReasoningLevel), timeoutCancellation.Token);
+            return new(true, "API key and model access verified. Evaluation may still depend on quota and provider availability.", capability.Provider, profile.ModelId, testedAtUtc);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -125,19 +111,20 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
         }
     }
 
-    public async Task<ResolvedGeminiProfile?> GetActiveGeminiMatchingProfileAsync(CancellationToken cancellationToken = default)
+    public async Task<ResolvedAiProfile?> GetActiveMatchingProfileAsync(CancellationToken cancellationToken = default)
     {
         var profile = await dbContext.AiProviderProfiles
             .AsNoTracking()
-            .SingleOrDefaultAsync(candidate => candidate.Provider == "gemini" && candidate.IsEnabled && candidate.IsDefaultForMatching, cancellationToken);
+            .SingleOrDefaultAsync(candidate => candidate.IsEnabled && candidate.IsDefaultForMatching, cancellationToken);
 
         if (profile is null || string.IsNullOrWhiteSpace(profile.EncryptedApiKey)
-            || !GeminiModelCatalog.TryResolve(profile.Provider, profile.ModelId, profile.ReasoningLevel, out _, out var reasoningLevel))
+            || !AiModelCatalog.TryResolve(profile.Provider, profile.ModelId, profile.ReasoningLevel, out _, out var reasoningLevel))
         {
             return null;
         }
 
-        return new ResolvedGeminiProfile(
+        return new ResolvedAiProfile(
+            profile.Provider,
             _keyProtector.Unprotect(profile.EncryptedApiKey),
             profile.ModelId,
             reasoningLevel);
@@ -145,7 +132,9 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
 
     private void Apply(AiProviderProfile profile, UpsertAiProviderProfileRequest request, bool requireApiKey)
     {
-        if (!GeminiModelCatalog.TryResolve(request.Provider, request.ModelId, request.ReasoningLevel, out var capability, out var reasoningLevel))
+        if (string.IsNullOrWhiteSpace(request.DisplayName))
+            throw new ArgumentException("A profile name is required.");
+        if (!AiModelCatalog.TryResolve(request.Provider, request.ModelId, request.ReasoningLevel, out var capability, out var reasoningLevel))
         {
             throw new ArgumentException("The selected provider, model, and reasoning level are not an approved combination.");
         }
@@ -160,12 +149,19 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
             throw new ArgumentException("The selected model cannot be used for the assistant.");
         }
 
+        if (request.RemoveApiKey && !string.IsNullOrWhiteSpace(request.ApiKey))
+            throw new ArgumentException("Replace or remove the API key, not both.");
+        if (!requireApiKey && profile.Provider != capability.Provider && string.IsNullOrWhiteSpace(request.ApiKey) && !request.RemoveApiKey)
+            throw new ArgumentException("A new API key is required when changing providers.");
         if (requireApiKey && string.IsNullOrWhiteSpace(request.ApiKey))
         {
             throw new ArgumentException("An API key is required when creating an AI provider profile.");
         }
+        if (request.IsDefaultForMatching && !request.RemoveApiKey && string.IsNullOrWhiteSpace(request.ApiKey)
+            && string.IsNullOrWhiteSpace(profile.EncryptedApiKey))
+            throw new ArgumentException("An API key is required for the matching profile.");
 
-        profile.Provider = GeminiModelCatalog.ProviderId;
+        profile.Provider = capability.Provider;
         profile.DisplayName = request.DisplayName.Trim();
         profile.ModelId = request.ModelId;
         profile.ReasoningLevel = reasoningLevel;
@@ -174,6 +170,12 @@ public sealed class AiProviderProfileService(JMSDBContext dbContext, IDataProtec
         profile.IsEnabledForAssistant = request.IsEnabledForAssistant && request.IsEnabled;
         profile.UpdatedAt = DateTime.UtcNow;
 
+        if (request.RemoveApiKey)
+        {
+            profile.EncryptedApiKey = string.Empty;
+            profile.IsDefaultForMatching = false;
+            profile.IsEnabledForAssistant = false;
+        }
         if (!string.IsNullOrWhiteSpace(request.ApiKey))
         {
             profile.EncryptedApiKey = _keyProtector.Protect(request.ApiKey.Trim());

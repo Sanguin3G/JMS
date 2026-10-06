@@ -1,137 +1,65 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { ListCandidateComponent } from '../list-candidate/list-candidate.component';
-import { ApiResponse, getRequest, postRequest } from 'src/app/service/api-requests';
-import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { OptionMatchModalComponent } from '../option-match-modal/option-match-modal.component';
-import { ToastrService } from 'ngx-toastr';
-import { environment } from 'src/environments/environment';
-import { ViewportScroller } from '@angular/common';
-import { getProfile } from 'src/app/service/localstorage';
-import { showError, showInfo, showSuccess, showSuccessWithTime } from 'src/app/service/common';
-import { JobDetail, MatchingRecord, RecruiterCandidateDialogData, UserProfile } from 'src/app/core/models/api.models';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Dialog } from '@angular/cdk/dialog';
+import { ListCandidateComponent } from '../list-candidate/list-candidate.component';
+import { ApiService, ApiResponse } from 'src/app/core/http/api.service';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
+import { AuthService } from 'src/app/core/auth/auth.service';
+import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
+import { JobDetail, MatchingRecord } from 'src/app/core/models/api.models';
+import { I18nService } from 'src/app/core/i18n/i18n.service';
 
-@Component({
-  standalone: false,
-   selector: 'app-jd-detail',
-   templateUrl: './jd-detail.component.html',
-   styleUrls: ['./jd-detail.component.css']
-})
+@Component({ standalone: false, selector: 'app-jd-detail', templateUrl: './jd-detail.component.html', styleUrls: ['./jd-detail.component.css'] })
 export class JdDetailComponent {
-   jdDetail: JobDetail | null = null
-   id: string | null = null
-   listCandidate: MatchingRecord[] = []
-   jobDescription: any
-   jobBenefit: any
-   jobRequirement: any
-   matchOption: any
-   descriptionJd: any
-   jobRequirementJd: any
-   skillRequirementJd: any
-   experienceRequirementJd: any
-   educationRequirementJd: any
-   candidateBenefitJd: any
-   isMatching: boolean = false;
-   Url = environment.Url;
-   profile: UserProfile | null
-
-   constructor(public dialog: MatDialog, private route: ActivatedRoute, private toastr: ToastrService, private viewportScroller: ViewportScroller, private changeDetector: ChangeDetectorRef) {
-      this.route.params.subscribe(params => {
-         this.id = params['id'];
-      });
-      this.profile = getProfile()
-
-      this.viewportScroller.scrollToPosition([0, 0]);
-
-      //get jd detail
-      getRequest<ApiResponse<JobDetail>>(apiRecruiter.GET_JD_BY_RECRUITER + "/" + this.profile?.id + "/" + this.id, AuthorizationMode.BEARER_TOKEN, { jdId: this.id })
-         .then(res => {
-            this.jdDetail = res.data ?? null
-            this.handleData();
-            this.changeDetector.detectChanges();
-         })
-         .catch(data => {
-            console.warn(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, data);
-         })
-   }
-
-   openMatchingDialog(): void {
-      const dialogRef = this.dialog.open(OptionMatchModalComponent, {
-         width: '40%'
-      });
-
-      dialogRef.afterClosed().subscribe(result => {
-         if (result !== undefined) {
-            this.matchOption = result;
-            console.log(this.matchOption);
-            this.isMatching = true;
-            showSuccess(this.toastr, "Xác nhận thành công <br/> Hệ thống đang tìm ứng viên phù hợp");
-            // call matching api
-            if (!this.jdDetail) return;
-            postRequest<ApiResponse<MatchingRecord[]>>(apiRecruiter.MATCHING_JOB + "?recruiterId=" + this.jdDetail.recuirterId + "&jobDescriptionId=" + this.jdDetail.jobId, AuthorizationMode.BEARER_TOKEN, {})
-               .then(res => {
-                  if (res.statusCode == 200) {
-                     this.isMatching = false;
-                     showSuccessWithTime(this.toastr, "Đề xuất thành công <br/>Đã tìm thấy " + (res.data?.length ?? 0) + " ứng viên. Vui lòng xem chi tiết tại danh sách đề xuất", 3000);
-                  } else if(res.statusCode == 500){
-                     this.isMatching = false;
-                     showError(this.toastr, "Đề xuất thất bại <br/> GPT AI hiện tại đang có vấn đề. Vui lòng thử lại sau");
-                  } 
-                  else {
-                     showError(this.toastr, "Đề xuất thất bại <br/> Vui lòng thử lại sau")
-                  }
-                  console.log(res);
-                  this.changeDetector.detectChanges();
-               })
-               .catch(data => {
-                  showError(this.toastr, "Đề xuất thất bại <br/> Vui lòng thử lại sau")
-                  console.log(data);
-               })
-         }
-      });
-   }
-
-   async openCandidateDialog(type: number): Promise<void> {
-      // type 0: matched list 
-      // type 1: matched list left
-      // type 2: selected list
-      const typeCandidate = type == 0 ? apiRecruiter.GET_CV_MATCHED : type == 1 ? apiRecruiter.GET_CV_MATCHED_LEFT : apiRecruiter.GET_CV_SELECTED
-      if (!this.jdDetail?.recuirterId) return;
-      await getRequest<ApiResponse<MatchingRecord[]>>(typeCandidate, AuthorizationMode.BEARER_TOKEN, { recruiterId: this.jdDetail.recuirterId, jobDescriptionId: this.jdDetail.jobId, pageIndex: 1 })
-         .then(async res => {
-            this.listCandidate = res.data ?? []
-            this.changeDetector.detectChanges();
-            const dialogData: RecruiterCandidateDialogData = {
-               listType: type,
-               recruiterId: this.jdDetail?.recuirterId ?? 0,
-               jdId: this.jdDetail?.jobId ?? 0,
-               content: this.listCandidate
-            };
-            this.dialog.open(ListCandidateComponent, {
-               width: '60%',
-               data: dialogData
-            });
-         })
-         .catch(data => {
-            console.warn(data);
-         })
-   }
-
-   handleData() {
-      if (!this.jdDetail) return;
-      this.descriptionJd = this.handleText(this.jdDetail.jobDetail);
-      this.candidateBenefitJd = this.handleText(this.jdDetail.candidateBenefit);
-      this.skillRequirementJd = this.handleText(this.jdDetail.skillRequirement);
-      this.experienceRequirementJd = this.handleText(this.jdDetail.experienceRequirement);
-      this.educationRequirementJd = this.handleText(this.jdDetail.educationRequirement);
-      // this.jobRequirementJd = this.handleText(skillRq) + '\n' + this.handleText(expRq) + '\n' + this.handleText(eduRq)
-   }
-
-   handleText(text: string | undefined) {
-      const lines: string[] = (text ?? '').trim().split('\n');
-      const linesWithHyphen: string[] = lines.map((line: string) => (line.startsWith('-') ? line : `${line}`));
-      const newText: string = linesWithHyphen.join('\n');
-      return newText
-   }
+  private readonly api = inject(ApiService);
+  private readonly i18n = inject(I18nService);
+  private readonly auth = inject(AuthService);
+  private readonly dialog = inject(Dialog);
+  private readonly notices = inject(NotificationService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
+  jdDetail: JobDetail | null = null;
+  loadError = '';
+  isMatching = false;
+  reviewLoading = false;
+  private version = 0;
+  constructor() {
+    this.route.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => void this.load(Number(params.get('id'))));
+  }
+  async load(id: number): Promise<void> {
+    const version = ++this.version;
+    this.jdDetail = null; this.loadError = '';
+    try {
+      const response = await this.api.getRequest<ApiResponse<JobDetail>>(
+        apiRecruiter.GET_JD_BY_RECRUITER + '/' + this.auth.currentUser()?.id + '/' + id, AuthorizationMode.BEARER_TOKEN);
+      if (response.statusCode !== 200 || !response.data) throw new Error('Job unavailable');
+      if (version === this.version) this.jdDetail = response.data;
+    } catch { if (version === this.version) this.loadError = 'Không thể tải tin tuyển dụng.'; }
+  }
+  async openMatchingDialog(): Promise<void> {
+    if (this.isMatching || !this.jdDetail || this.jdDetail.isExpired) return;
+    this.isMatching = true;
+    try {
+      const response = await this.api.postRequest<ApiResponse<MatchingRecord[]>>(apiRecruiter.MATCHING_JOB +
+        '?recruiterId=' + this.auth.currentUser()?.id + '&jobDescriptionId=' + this.jdDetail.jobId, AuthorizationMode.BEARER_TOKEN, {});
+      if (response.statusCode !== 200) throw new Error('Matching unavailable');
+      this.notices.success(this.i18n.t('Đã đối chiếu {count} hồ sơ. Xem bằng chứng trong danh sách ứng viên.', {count: response.data?.length ?? 0}));
+    } catch { this.notices.error('Không thể đối chiếu hồ sơ. Vui lòng thử lại.'); }
+    finally { this.isMatching = false; }
+  }
+  async openCandidateDialog(type: number): Promise<void> {
+    if (!this.jdDetail || this.reviewLoading) return;
+    this.reviewLoading = true;
+    try {
+      // Fetch the same review collection, retaining selected records for status visibility.
+      const response = await this.api.getRequest<ApiResponse<MatchingRecord[]>>(apiRecruiter.GET_CV_MATCHED_LEFT,
+        AuthorizationMode.BEARER_TOKEN, { recruiterId: this.auth.currentUser()?.id, jobDescriptionId: this.jdDetail.jobId });
+      if (response.statusCode !== 200) throw new Error('Review unavailable');
+      const content = type === 2 ? (response.data ?? []).filter(item => item.isSelected) : response.data ?? [];
+      this.dialog.open(ListCandidateComponent, { width: '900px', maxWidth: '96vw', maxHeight: '95vh',
+        ariaLabel: 'Danh sách ứng viên', data: { listType: type, recruiterId: this.auth.currentUser()?.id, jdId: this.jdDetail.jobId, content } });
+    } catch { this.notices.error('Không thể tải hồ sơ ứng viên. Vui lòng thử lại.'); }
+    finally { this.reviewLoading = false; }
+  }
 }

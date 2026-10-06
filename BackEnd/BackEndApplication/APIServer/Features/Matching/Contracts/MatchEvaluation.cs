@@ -21,4 +21,5 @@ public sealed record MatchEvaluation(
     int? DeterministicProjectAndCertificateScore = null,
     string EligibilityStatus = "unknown",
     string? EligibilityReason = null,
-    string RulesVersion = DeterministicMatchScorer.RulesVersion);
+    string RulesVersion = DeterministicMatchScorer.RulesVersion,
+    string? ReasoningLevel = null);

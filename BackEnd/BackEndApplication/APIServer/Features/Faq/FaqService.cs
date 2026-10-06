@@ -35,17 +35,20 @@ public sealed class FaqService(JMSDBContext dbContext) : IFaqService
             .ToList();
     }
 
-    public async Task<FaqChatResponse> AnswerAsync(string message, CancellationToken cancellationToken = default)
+    public async Task<FaqChatResponse> AnswerAsync(string message, CancellationToken cancellationToken = default, string language = "vi")
     {
         var matches = await SearchAsync(message, cancellationToken: cancellationToken);
         var match = matches.FirstOrDefault();
         return match is null
             ? new FaqChatResponse(
-                "I could not find that in the JMS help notes. Try asking about jobs, CVs, matching, or AI settings.",
+                language == "en"
+                    ? "No matching guide in JMS help yet. Try asking about jobs, CVs, matching or AI settings."
+                    : "Chưa tìm thấy câu trả lời trong trợ giúp JMS. Hãy thử hỏi về việc làm, CV, matching hoặc cài đặt AI.",
                 "curated-faq-fallback",
                 false,
                 null)
-            : new FaqChatResponse(match.Answer, "curated-faq", false, match.Id);
+            : new FaqChatResponse(language == "en" && !string.IsNullOrWhiteSpace(match.AnswerEn) ? match.AnswerEn : match.Answer,
+                language == "en" && string.IsNullOrWhiteSpace(match.AnswerEn) ? "curated-faq-vi" : "curated-faq", false, match.Id);
     }
 
     public async Task<FaqEntryResponse> CreateAsync(FaqEntryRequest request, CancellationToken cancellationToken = default)
@@ -80,6 +83,8 @@ public sealed class FaqService(JMSDBContext dbContext) : IFaqService
     {
         entry.Question = request.Question.Trim();
         entry.Answer = request.Answer.Trim();
+        entry.QuestionEn = string.IsNullOrWhiteSpace(request.QuestionEn) ? null : request.QuestionEn.Trim();
+        entry.AnswerEn = string.IsNullOrWhiteSpace(request.AnswerEn) ? null : request.AnswerEn.Trim();
         entry.Keywords = request.Keywords?.Trim();
         entry.Category = string.IsNullOrWhiteSpace(request.Category) ? "JMS basics" : request.Category.Trim();
         entry.IsPublished = request.IsPublished;
@@ -88,8 +93,8 @@ public sealed class FaqService(JMSDBContext dbContext) : IFaqService
 
     private static int Score(FaqEntry entry, IReadOnlySet<string> tokens)
     {
-        var question = Tokens(entry.Question);
-        var answer = Tokens(entry.Answer);
+        var question = Tokens(entry.Question + " " + entry.QuestionEn);
+        var answer = Tokens(entry.Answer + " " + entry.AnswerEn);
         var keywords = Tokens(entry.Keywords);
         return tokens.Sum(token => question.Contains(token) ? 5 : keywords.Contains(token) ? 4 : answer.Contains(token) ? 1 : 0);
     }
@@ -108,5 +113,7 @@ public sealed class FaqService(JMSDBContext dbContext) : IFaqService
         entry.Category,
         entry.IsPublished,
         entry.SortOrder,
-        entry.UpdatedAt);
+        entry.UpdatedAt,
+        entry.QuestionEn,
+        entry.AnswerEn);
 }

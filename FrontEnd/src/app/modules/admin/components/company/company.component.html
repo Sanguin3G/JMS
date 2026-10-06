@@ -1,68 +1,16 @@
-<div class="container mt-3">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="input-group mb-3">
-                <!-- <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Filter
-                    </button>
-                </div> -->
-                <!-- <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                      <li><a class="dropdown-item">Tên Công ty</a></li>
-                      <li><a class="dropdown-item">Địa Chỉ</a></li>
-                      <li><a class="dropdown-item">Lĩnh Vực</a></li>
-                      <li><a class="dropdown-item">Quản Trị Viên</a></li>
-                    </ul> -->
-                <input type="text" class="form-control" placeholder="Nhập tên công ty..." [(ngModel)]="searchText"
-                    (input)="onInputChange()">
-                <!-- <div class="search-hero">
-                    <input class="form-control" type="text" name="search" [(ngModel)]="searchText" autocomplete="off" placeholder="&#61442;  Start searching for a hero by id or name or country">
-                  </div> -->
-                <div class="input-group-append">
-                    <button class="btn btn-primary" type="button">Tìm kiếm</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container mt-3">
-    <table class="table table-striped text-center table-hover ">
-        <thead class="table-success">
-            <tr>
-                <th>STT</th>
-                <!-- <th>ID</th> -->
-                <th>Tên Công Ty</th>
-                <th>Địa Chỉ</th>
-                <th>Lĩnh Vực</th>
-                <th>Ngày Tạo</th>
-                <th>Quản Trị Viên</th>
-                <th>Trạng thái</th>
-                <th>Tùy chọn</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let elm of listDisplay;  let i = index">
-                <td>{{i+1}}</td>
-                <!-- <td>{{elm.companyId}}</td> -->
-                <td>{{elm.companyName}}</td>
-                <td>{{elm.address}}</td>
-                <td>{{elm.categoryName}}</td>
-                <td>{{elm.dateCreatedDisplay}}</td>
-                <td>{{elm.recuirterFounder}}</td>
-                <td><button [ngClass]="{ 'btn': true, 'btn-success': true }">Active</button></td>
-                <td>
-                    <button class="btn" title="Xem Chi Tiết" (click)="openCompanyDialog(elm.companyId)"><i class="bi bi-eye"></i></button>
-                    <!-- <button class="btn" title="Chỉnh Sửa"><i class="bi bi-pencil-square"></i></button> -->
-                    <!-- <button class="btn" title="Xóa"><i class="bi bi-person-x"></i></button> -->
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-<div>
-    <mat-paginator class="col-7" *ngIf="companies != null" [length]="pageLength" [pageSize]="pageSize"
-        [showFirstLastButtons]="true" [hidePageSize]="true" [pageIndex]="pageIndex"
-        (page)="handlePage($event)"></mat-paginator>
-</div>
+<main class="entity-page">
+  <header class="entity-heading"><h1>{{ 'Công ty' | t }}</h1><p>{{ 'Tra cứu hồ sơ công ty và trạng thái hiển thị thực tế.' | t }}</p></header>
+  <form class="entity-filters" (ngSubmit)="page.navigate()" role="search">
+    <div class="search-field"><label for="admin-company-query">{{ 'Tìm công ty' | t }}</label><input id="admin-company-query" name="query" type="search" class="form-control" [(ngModel)]="page.query" maxlength="120" [attr.placeholder]="'Tên, tài khoản hoặc email' | t"></div>
+    <div><label for="admin-company-status">{{ 'Trạng thái' | t }}</label><select id="admin-company-status" name="status" class="form-select" [(ngModel)]="page.status" (ngModelChange)="page.navigate()"><option value="all">{{ 'Tất cả' | t }}</option><option value="active">{{ 'Đang hiển thị' | t }}</option><option value="inactive">{{ 'Đã xóa' | t }}</option></select></div>
+    <button type="submit" class="btn btn-primary" [disabled]="page.loading()"><i class="bi bi-search" aria-hidden="true"></i> {{ 'Tìm kiếm' | t }}</button><button *ngIf="page.query || page.status !== 'all'" type="button" class="btn btn-outline-secondary" (click)="page.clear()">{{ 'Xóa bộ lọc' | t }}</button>
+  </form>
+  <p class="result-count" *ngIf="!page.loading() && !page.error()" aria-live="polite">{{ page.total }} {{ 'Công ty' | t }}</p>
+  <div class="entity-state" *ngIf="page.loading()" role="status">{{ 'Đang tải dữ liệu…' | t }}</div>
+  <div class="entity-state" *ngIf="page.error()" role="alert"><p>{{ (page.error()) | t }}</p><button type="button" class="btn btn-outline-primary" (click)="page.load()">{{ 'Thử lại' | t }}</button></div>
+  <div class="entity-state" *ngIf="!page.loading() && !page.error() && !page.rows().length"><h2>{{ 'Chưa có kết quả' | t }}</h2><p>{{ 'Thử thay đổi từ khóa hoặc trạng thái.' | t }}</p><button type="button" class="btn btn-outline-primary" (click)="page.clear()">{{ 'Xem tất cả' | t }}</button></div>
+  <div class="entity-table-wrap" *ngIf="!page.loading() && !page.error() && page.rows().length"><table class="entity-table"><thead><tr><th>{{ 'Công ty' | t }}</th><th>{{ 'Địa chỉ' | t }}</th><th>{{ 'Lĩnh Vực' | t }}</th><th>{{ 'Người quản lý' | t }}</th><th>{{ 'Trạng thái' | t }}</th><th>{{ 'Thao tác' | t }}</th></tr></thead><tbody>
+    <tr *ngFor="let company of page.rows()"><td [attr.data-label]="'Công ty' | t"><div class="entity-name">{{ company.companyName }}<small class="subtext">{{ (company.email || 'Chưa cập nhật email') | t }}</small></div></td><td [attr.data-label]="'Địa chỉ' | t">{{ (company.address || 'Chưa cập nhật') | t }}</td><td [attr.data-label]="'Lĩnh vực' | t">{{ (company.categoryName || 'Chưa cập nhật') | t }}</td><td [attr.data-label]="'Quản lý' | t">{{ (company.recuirterFounder || 'Chưa cập nhật') | t }}</td><td [attr.data-label]="'Trạng thái' | t"><span class="status-pill" [class.inactive]="company.isDelete">{{ (company.isDelete ? 'Đã xóa' : 'Đang hiển thị') | t }}</span></td><td [attr.data-label]="'Thao tác' | t"><div class="row-actions"><button type="button" class="btn btn-outline-primary" (click)="openCompanyDialog(company.companyId)"><i class="bi bi-eye" aria-hidden="true"></i> {{ 'Chi tiết' | t }}</button></div></td></tr>
+  </tbody></table></div>
+  <app-jms-pagination [page]="page.page" [pageSize]="page.pageSize" [total]="page.total" [totalPages]="page.totalPages" [loading]="page.loading()" (pageChange)="page.navigate($event)"></app-jms-pagination>
+</main>

@@ -1,85 +1,25 @@
 <app-header-recruiter></app-header-recruiter>
-<mat-tab-group (selectedIndexChange)="setTabIndexValue($event)" class="tab-group primary">
-   [ <mat-tab [label]="firstTabTitle">
-      ] <div class="tab-content">
-         <ng-container *ngTemplateOutlet="externalContent"></ng-container>
+<main class="container recruiter-jobs">
+  <div class="page-heading"><div><a routerLink="/recruiter/dashboard" class="back-link"><i class="bi bi-arrow-left" aria-hidden="true"></i> {{ 'Tổng quan' | t }}</a><h1>{{ 'Tin tuyển dụng của bạn' | t }}</h1><p>{{ 'Quản lý tin đăng, thời hạn và hồ sơ ứng viên trong một nơi.' | t }}</p></div><a class="btn btn-primary" routerLink="/recruiter/create-jd"><i class="bi bi-plus-lg" aria-hidden="true"></i> {{ 'Đăng tin tuyển dụng' | t }}</a></div>
+  <form class="job-filters" (ngSubmit)="filter()" role="search">
+    <div class="search-field"><label for="recruiter-job-query">{{ 'Tìm tin tuyển dụng' | t }}</label><input id="recruiter-job-query" name="query" type="search" class="form-control" [(ngModel)]="query" maxlength="120" [attr.placeholder]="'Chức danh hoặc tên công ty' | t"></div>
+    <div><label for="recruiter-job-status">{{ 'Trạng thái' | t }}</label><select id="recruiter-job-status" name="status" class="form-select" [(ngModel)]="status" (ngModelChange)="filter()"><option value="all">{{ 'Tất cả tin' | t }}</option><option value="active">{{ 'Đang tuyển dụng' | t }}</option><option value="expired">{{ 'Đã hết hạn' | t }}</option></select></div>
+    <button class="btn btn-primary" type="submit" [disabled]="loading()"><i class="bi bi-search" aria-hidden="true"></i> {{ 'Tìm kiếm' | t }}</button>
+    <button *ngIf="query || status !== 'all'" class="btn btn-outline-secondary" type="button" (click)="clear()">{{ 'Xóa bộ lọc' | t }}</button>
+  </form>
+  <p class="result-count" aria-live="polite" *ngIf="!loading() && !error()">{{ total }} {{ 'Tin tuyển dụng' | t }}{{ (query ? ' phù hợp với tìm kiếm' : '') | t }}</p>
+  <div *ngIf="error()" class="workspace-state" role="alert"><p>{{ (error()) | t }}</p><button type="button" class="btn btn-outline-primary" (click)="load()">{{ 'Thử lại' | t }}</button></div>
+  <div *ngIf="loading()" class="workspace-state" role="status">{{ 'Đang tải tin tuyển dụng…' | t }}</div>
+  <div *ngIf="!loading() && !error() && !jobs().length" class="workspace-state"><i class="bi bi-briefcase" aria-hidden="true"></i><h2>{{ (query || status !== 'all' ? 'Không tìm thấy tin phù hợp' : 'Bắt đầu tuyển dụng cùng JMS') | t }}</h2><p>{{ (query || status !== 'all' ? 'Thử thay đổi từ khóa hoặc trạng thái để xem thêm tin.' : 'Đăng mô tả công việc đầu tiên để ứng viên tìm thấy công ty bạn.') | t }}</p><button *ngIf="query || status !== 'all'" class="btn btn-outline-primary" (click)="clear()">{{ 'Xem tất cả tin' | t }}</button><a *ngIf="!query && status === 'all'" class="btn btn-primary" routerLink="/recruiter/create-jd">{{ 'Đăng tin đầu tiên' | t }}</a></div>
+  <section class="job-list" *ngIf="!loading() && !error()" [attr.aria-label]="'Danh sách tin tuyển dụng' | t">
+    <article class="job-card" *ngFor="let item of jobs()">
+      <div class="job-main"><div class="job-heading"><a [routerLink]="['/recruiter/view-jd-detail',item.job.jobId]"><h2>{{ item.job.title }}</h2></a><span class="status-pill" [class.expired]="item.job.isExpired">{{ (item.job.isExpired ? 'Đã hết hạn' : 'Đang tuyển dụng') | t }}</span></div>
+        <p class="company-name">{{ (item.job.companyName || 'Công ty của bạn') | t }}</p>
+        <div class="job-meta"><span><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ (item.job.address || 'Chưa cập nhật địa điểm') | t }}</span><span><i class="bi bi-cash-stack" aria-hidden="true"></i> {{ (item.job.salary || 'Thỏa thuận') | t }}</span><span><i class="bi bi-calendar-event" aria-hidden="true"></i> {{ 'Hạn:' | t }} {{ item.job.expiredDate }}</span></div>
+        <div class="job-counts"><span><strong>{{ item.applicantCount }}</strong> {{ 'Hồ sơ ứng tuyển' | t }}</span><span><strong>{{ item.matchCount }}</strong> {{ 'hồ sơ phù hợp' | t }}</span><span *ngIf="item.job.levelTitle">{{ item.job.levelTitle }}</span></div>
       </div>
-   </mat-tab>
-   <mat-tab [label]="secondTabTitle"> <ng-container *ngTemplateOutlet="externalContent"></ng-container> </mat-tab>
-</mat-tab-group>
-
-<ng-template #externalContent>
-
-   <section class="formListJds container">
-      
-      <div class="input-group formInputSearch justify-content-center">
-         <input type="text" [(ngModel)]="inputSearch" class="form-control shadow-none customInput"
-            placeholder="   Tìm kiếm nhanh..." (keyup.enter)="searchChange()">
-         <div class="input-group-append ">
-            <button class="btn btnBlueLight" type="button" style="border-radius: 22px; width: 44px; margin: 0px;" (click)="searchChange()">
-               <i class="fa fa-search"></i>
-            </button>
-         </div>
-      </div>
-
-      <div class="listJobs">
-         <div *ngIf="!listJds" style="height: 500px;">
-            <app-view-loading></app-view-loading>
-         </div>
-         <div class="itemJob" *ngFor="let jd of listJds | paginate
-        : {
-            itemsPerPage: itemsPerPage,
-            currentPage: page,
-            totalItems: totalItems
-          }" [class.hidden]="!jd.isShow">
-            <div class="col-2">
-               <img src="https://i.postimg.cc/7ZscYqHR/JOB-MATCHING.png" alt="">
-            </div>
-            <div class="col-9">
-               <div class="textHeader" (click)="onClickView(jd)">{{jd?.title | uppercase}}</div>
-               <div class="row time">
-                  <div class="col-4 textOver">Ngày tạo bài: {{jd?.createdAt}}</div>
-                  <div class="col-4 textOver">Ngày hết hạn: {{jd?.expiredDate}}</div>
-                  <div class="col-4 textOver">Số lượng tuyển: {{jd?.numberRequirement ? jd?.numberRequirement
-                     :
-                     0}}</div>
-               </div>
-
-               <div class="row more">
-                  <div class="col-4 textOver">
-                     Vị trí: {{jd?.positionTitle ? jd?.positionTitle : 'Không'}}
-                  </div>
-                  <div class="col-4 textOver">
-                     Cấp bậc: {{jd?.levelTitle  ? jd?.levelTitle : 'Không'}}
-                  </div>
-                  <div class="col-4 textOver">
-                     Mức lương: {{jd?.salary}}
-                  </div>
-               </div>
-            </div>
-            <div class="col-1">
-               <div class="btn-grp">
-                  <i *ngIf="!jd?.isExpired" class="fa-solid fa-circle status"></i>
-                  <i *ngIf="jd?.isExpired" class="fa-solid fa-circle status-red"></i>
-                  <button style="padding-top: 40px;" (click)="onClickUpdate(jd)">
-                     <i class="bi bi-pencil-square h3 " title="Chỉnh sửa bài tuyển dụng"></i>
-                  </button>
-                  <button (click)="openDialog(jd)">
-                     <i class="bi bi-trash h3" title="Hủy bỏ bài tuyển dụng"></i>
-                  </button>
-               </div>
-            </div>
-         </div>
-      </div>
-      <nav *ngIf="listJds?.length > 0" aria-label="Page navigation example">
-         <ul class="pagination justify-content-center">
-            <pagination-controls class="pagi" previousLabel="" nextLabel=""
-               (pageChange)="pageChanged((page = $event))"></pagination-controls>
-         </ul>
-      </nav>
-   </section>
-   <div *ngIf="listJds?.length == 0" class="text-center" style="padding-top: 250px;">
-      <p>Không có bài viết nào trong mục này!</p>
-   </div>
-
-</ng-template>
+      <div class="job-actions"><a class="btn btn-primary" [routerLink]="['/recruiter/view-jd-detail',item.job.jobId]">{{ 'Xem hồ sơ' | t }} <i class="bi bi-arrow-right" aria-hidden="true"></i></a><a class="btn btn-outline-secondary" [routerLink]="['/recruiter/jd-detail',item.job.jobId]"><i class="bi bi-pencil-square" aria-hidden="true"></i> {{ 'Chỉnh sửa' | t }}</a><button type="button" class="delete-button" [disabled]="deleting() !== null" (click)="remove(item)"><i class="bi bi-trash" aria-hidden="true"></i> {{ (deleting() === item.job.jobId ? 'Đang xóa…' : 'Xóa tin') | t }}</button></div>
+    </article>
+  </section>
+  <app-jms-pagination [page]="page" [pageSize]="pageSize" [total]="total" [totalPages]="totalPages" [loading]="loading()" (pageChange)="navigate($event)"></app-jms-pagination>
+</main>

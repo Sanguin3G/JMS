@@ -1,55 +1,16 @@
-<div class="container mt-3">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" placeholder="Nhập tên ứng viên..." [(ngModel)]="searchText"
-                    (input)="onInputChange()">
-                <div class="input-group-append">
-                    <button class="btn btn-primary" type="button">Tìm kiếm</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="container mt-3">
-    <table class="table table-striped text-center table-hover ">
-        <thead class="table-success">
-            <tr>
-                <th>STT</th>
-                <!-- <th>ID</th> -->
-                <th>Tài Khoản</th>
-                <th>Họ Tên</th>
-                <th>Ngày Sinh</th>
-                <th>Email</th>
-                <th>SĐT</th>
-                <th>Giới Tính</th>
-                <th>Trạng thái</th>
-                <th>Tùy chọn</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr *ngFor="let elm of listDisplay;  let i = index">
-                <td>{{i+1}}</td>
-                <!-- <td>{{elm.id}}</td> -->
-                <td>{{elm.userName}}</td>
-                <td>{{elm.fullName}}</td>
-                <td>{{elm.dob | date:'dd/MM/yyyy'}}</td>
-                <td>{{elm.email}}</td>
-                <td>{{elm.phoneNumber}}</td>
-                <td>{{elm.isMale === true ? 'Nam' : 'Nữ'}}</td>
-                <td><button [ngClass]="{ 'btn': true, 'btn-success': elm.isActive, 'btn-danger': !elm.isActive }" (click)="changeActive(elm?.id, elm.isActive)">{{elm.isActive ? 'Active' : 'Locked'}}</button></td>
-                <td>
-                    <button class="btn" title="Xem Chi Tiết" (click)="openCVDialog(elm.id)"><i class="bi bi-eye"></i></button>
-                    <!-- <button class="btn" title="Chỉnh Sửa"><i class="bi bi-pencil-square"></i></button> -->
-                    <!-- <button class="btn" title="Xóa"><i class="bi bi-person-x"></i></button> -->
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-<div>
-    <mat-paginator class="col-7" *ngIf="candidates != null" [length]="pageLength" [pageSize]="pageSize"
-        [showFirstLastButtons]="true" [hidePageSize]="true" [pageIndex]="pageIndex"
-        (page)="handlePage($event)"></mat-paginator>
-</div>
+<main class="entity-page">
+  <header class="entity-heading"><h1>{{ 'Ứng viên' | t }}</h1><p>{{ 'Quản lý tài khoản ứng viên và xem CV đang tìm việc.' | t }}</p></header>
+  <form class="entity-filters" (ngSubmit)="page.navigate()" role="search">
+    <div class="search-field"><label for="admin-candidate-query">{{ 'Tìm ứng viên' | t }}</label><input id="admin-candidate-query" name="query" type="search" class="form-control" [(ngModel)]="page.query" maxlength="120" [attr.placeholder]="'Tên, tài khoản hoặc email' | t"></div>
+    <div><label for="admin-candidate-status">{{ 'Trạng thái' | t }}</label><select id="admin-candidate-status" name="status" class="form-select" [(ngModel)]="page.status" (ngModelChange)="page.navigate()"><option value="all">{{ 'Tất cả' | t }}</option><option value="active">{{ 'Đang hoạt động' | t }}</option><option value="inactive">{{ 'Đã khóa' | t }}</option></select></div>
+    <button type="submit" class="btn btn-primary" [disabled]="page.loading()"><i class="bi bi-search" aria-hidden="true"></i> {{ 'Tìm kiếm' | t }}</button><button *ngIf="page.query || page.status !== 'all'" type="button" class="btn btn-outline-secondary" (click)="page.clear()">{{ 'Xóa bộ lọc' | t }}</button>
+  </form>
+  <p class="result-count" *ngIf="!page.loading() && !page.error()" aria-live="polite">{{ page.total }} {{ 'Ứng viên' | t }}</p>
+  <div class="entity-state" *ngIf="page.loading()" role="status">{{ 'Đang tải dữ liệu…' | t }}</div>
+  <div class="entity-state" *ngIf="page.error()" role="alert"><p>{{ (page.error()) | t }}</p><button type="button" class="btn btn-outline-primary" (click)="page.load()">{{ 'Thử lại' | t }}</button></div>
+  <div class="entity-state" *ngIf="!page.loading() && !page.error() && !page.rows().length"><h2>{{ 'Chưa có kết quả' | t }}</h2><p>{{ 'Thử thay đổi từ khóa hoặc trạng thái.' | t }}</p><button type="button" class="btn btn-outline-primary" (click)="page.clear()">{{ 'Xem tất cả' | t }}</button></div>
+  <div class="entity-table-wrap" *ngIf="!page.loading() && !page.error() && page.rows().length"><table class="entity-table"><thead><tr><th>{{ 'Tài khoản' | t }}</th><th>{{ 'Liên hệ' | t }}</th><th>{{ 'Trạng thái' | t }}</th><th>{{ 'Thao tác' | t }}</th></tr></thead><tbody>
+    <tr *ngFor="let account of page.rows()"><td [attr.data-label]="'Tài khoản' | t"><div class="entity-name">{{ account.fullName }}<small class="subtext">{{ account.userName }}</small></div></td><td [attr.data-label]="'Liên hệ' | t"><div>{{ account.email }}<small class="subtext">{{ (account.phoneNumber || 'Chưa cập nhật số điện thoại') | t }}</small></div></td><td [attr.data-label]="'Trạng thái' | t"><span class="status-pill" [class.inactive]="!account.isActive">{{ (account.isActive ? 'Đang hoạt động' : 'Đã khóa') | t }}</span></td><td [attr.data-label]="'Thao tác' | t"><div class="row-actions"><button type="button" class="btn btn-outline-primary" [disabled]="previewing() !== null" (click)="openCVDialog(account.id)"><i class="bi bi-file-earmark-person" aria-hidden="true"></i> {{ (previewing() === account.id ? 'Đang tải…' : 'Xem CV') | t }}</button><button type="button" class="btn btn-outline-secondary" [disabled]="actions.busyId() !== null" (click)="changeActive(account)"><i class="bi" [class.bi-lock]="account.isActive" [class.bi-unlock]="!account.isActive" aria-hidden="true"></i> {{ (actions.busyId() === account.id ? 'Đang xử lý…' : account.isActive ? 'Khóa' : 'Mở khóa') | t }}</button></div></td></tr>
+  </tbody></table></div>
+  <app-jms-pagination [page]="page.page" [pageSize]="page.pageSize" [total]="page.total" [totalPages]="page.totalPages" [loading]="page.loading()" (pageChange)="page.navigate($event)"></app-jms-pagination>
+</main>

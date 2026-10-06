@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
 using APIServer.IServices;
@@ -136,11 +136,11 @@ namespace APIServer.Controllers.CandidateModule
             {
                 return new BaseResponseBody<CVMatchingDTO>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
-            
+
         }
 
         [HttpPost("update-profile")]
@@ -168,7 +168,7 @@ namespace APIServer.Controllers.CandidateModule
             {
                 return new BaseResponseBody<CVMatchingDTO>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -177,11 +177,11 @@ namespace APIServer.Controllers.CandidateModule
         [HttpPost("change-password")]
         [Authorize(Roles = GlobalStrings.ROLE_CANDIDATE)]
         [UserIdMatchesClaim("candidateId")]
-        public BaseResponseBody<int> ChangePassword(int candidateId, string oldPassword, string newPassword, string confirmPassword)
+        public BaseResponseBody<int> ChangePassword(int candidateId, [FromBody] ChangePasswordRequest request)
         {
             try
             {
-                int n = _candidateService.UpdatePassword(candidateId, oldPassword, newPassword, confirmPassword);
+                int n = _candidateService.UpdatePassword(candidateId, request.OldPassword, request.NewPassword, request.ConfirmPassword);
                 if (n > 0)
                     return new BaseResponseBody<int>
                     {
@@ -216,7 +216,7 @@ namespace APIServer.Controllers.CandidateModule
             {
                 return new BaseResponseBody<int>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }

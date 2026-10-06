@@ -12,14 +12,16 @@ RUN dotnet restore BackEnd/BackEndApplication/APIServer/APIServer.csproj
 COPY BackEnd/BackEndApplication/APIServer/ BackEnd/BackEndApplication/APIServer/
 RUN dotnet publish BackEnd/BackEndApplication/APIServer/APIServer.csproj -c Release -o /app/publish --no-restore
 
-FROM nginx:1.27-alpine AS frontend
-COPY --from=frontend-build /src/FrontEnd/dist/front-end/ /usr/share/nginx/html/
+FROM nginx:stable-alpine AS frontend
+COPY --from=frontend-build /src/FrontEnd/dist/front-end/browser/ /usr/share/nginx/html/
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS api
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:8080
 COPY --from=api-build /app/publish/ ./
-RUN mkdir -p /app/App_Data/keys /app/wwwroot/images /app/wwwroot/images_clone
+RUN mkdir -p /app/App_Data/keys /app/keys /app/uploads/images /app/uploads/images_clone /app/uploads/slider \
+    && chown -R app:app /app/App_Data /app/keys /app/uploads
+USER app
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "APIServer.dll"]

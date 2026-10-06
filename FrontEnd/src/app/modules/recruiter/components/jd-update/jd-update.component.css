@@ -2,10 +2,6 @@
    padding-top: 80px;
 }
 
-.mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input {
-   color: black !important;
-}
-
 .bi{
    color: coral;
 }

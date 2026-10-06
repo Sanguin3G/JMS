@@ -5,124 +5,113 @@
          <div class="col-10">
             <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
                <div class="card-body p-4 p-md-5">
-                  <h3 class="mb-4 pb-2 pb-md-0 mb-md-5 link-danger">CẬP NHẬT THÔNG TIN CÔNG TY</h3>
-                  <form>
-                     <!-- row 1 -->
+                  <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">{{ 'CẬP NHẬT THÔNG TIN CÔNG TY' | t }}</h3>
+                  <form (ngSubmit)="submitButtonClicked()">
+
                      <div class="row">
                         <div class="col-md-6 mb-2">
-                           <label class="form-label" for="name">Tên Công Ty</label><span class="link-danger">
+                           <label class="form-label" for="name">{{ 'Tên công ty' | t }}</label><span class="link-danger">
                               *</span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="text" id="name" placeholder="Nhập tên công ty" required
+                           <div class="jms-field">
+                              <input class="form-control" type="text" id="name" [attr.placeholder]="'Nhập tên công ty' | t" required
                                  [formControl]="nameRq" />
-                              <mat-error *ngIf="nameRq.invalid">{{getErrorMessageName()}}</mat-error>
-                           </mat-form-field>
+                              <small class="text-danger" role="alert" *ngIf="nameRq.invalid && (nameRq.touched || checkReq)">{{ (getErrorMessageName()) | t }}</small>
+                           </div>
                         </div>
                         <div class="col-md-6 mb-2">
                            <label class="form-label" for="email">Email</label><span class="link-danger">
                               *</span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="email" id="email" placeholder="Nhập email" required
+                           <div class="jms-field">
+                              <input class="form-control" type="email" id="email" [attr.placeholder]="'Nhập email' | t" required
                                  [formControl]="emailRq" />
-                              <mat-error *ngIf="emailRq.invalid">{{getErrorMessageEmail()}}</mat-error>
-                           </mat-form-field>
-                        </div>
-                     </div>
-                     <!-- row 2 -->
-                     <div class="row">
-                        <div class="col-md-6 mb-2">
-                           <label for="taxNum" class="form-label">Mã Số Thuế</label><span class="link-danger">
-                              *</span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="number" id="taxNum" placeholder="Nhập mã số thuế" required
-                                 [formControl]="taxNumRq" />
-                              <mat-error *ngIf="taxNumRq.invalid">{{getErrorMessageTaxNum()}}</mat-error>
-                           </mat-form-field>
-                        </div>
-                        <div class="col-md-6 mb-2">
-                           <label for="website" class="form-label">Website</label>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="text" id="website" placeholder="https://"
-                                 [formControl]="websiteRq" />
-                           </mat-form-field>
-                        </div>
-                     </div>
-                     <!-- row 3 -->
-                     <div class="row">
-                        <!-- <div class="col-md-6 mb-2">
-                           <label class="form-label select-label">Lĩnh Vực</label><span class="link-danger">
-                              *</span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <mat-select required [formControl]="categoryRq">
-                                 <mat-option value="0" disabled>Chọn lĩnh vực</mat-option>
-                                 <mat-option *ngFor="let elm of categories; index as i"
-                                    value={{elm.id}}>{{elm.categoryName}}</mat-option>
-                              </mat-select>
-                              <mat-error *ngIf="categoryRq.invalid">{{getErrorMessageCategory()}}</mat-error>
-                           </mat-form-field>
-                        </div> -->
-                        <div class="col-md-12 mb-2">
-                           <label class="form-label select-label">Quy Mô</label><span class="link-danger">
-                              *</span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <mat-select required [formControl]="sizeRq">
-                                 <mat-option value="0" disabled>Chọn quy mô công ty</mat-option>
-                                 <mat-option *ngFor="let elm of sizes; index as i" value={{elm}}>{{elm}}</mat-option>
-                              </mat-select>
-                              <mat-error *ngIf="sizeRq.invalid">{{getErrorMessageSize()}}</mat-error>
-                           </mat-form-field>
-                        </div>
-                     </div>
-                     <!-- row 4 -->
-                     <div class="row">
-                        <div class="col-md-6 mb-2">
-                           <label for="yearOfEstablishment" class="form-label">Năm thành lập</label>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="number" id="yearOfEstablishment" placeholder="Nhập năm thành lập"
-                                 required [formControl]="yearOfEstablishmentRq" />
-
-                           </mat-form-field>
-                        </div>
-                        <div class="col-md-6 mb-2 pb-2">
-                           <label class="form-label" for="phone">Số Điện Thoại</label>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="tel" id="phone" placeholder="Nhập số điện thoại công ty" required
-                                 [formControl]="phoneRq" />
-                           </mat-form-field>
-                        </div>
-                     </div>
-                     <div class="row">
-                        <div class="col-md-12 mb-2 pb-2">
-                           <label class="form-label" for="address">Địa Chỉ</label><span class="link-danger">
-                              *</span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="text" id="address" placeholder="Nhập địa chỉ công ty" required
-                                 [formControl]="addressRq" />
-                              <mat-error *ngIf="addressRq.invalid">{{getErrorMessageAddress()}}</mat-error>
-                           </mat-form-field>
-                        </div>
-                     </div>
-                     <!-- row 5 -->
-                     <div class="row">
-                        <div class="col-12 pb-4">
-                           <div class="form-outline">
-                              <label class="form-label" for="description">Mô Tả</label><span class="link-danger">
-                                 *</span>
-                              <ckeditor [config]="{placeholder: 'Nhập mô tả công ty'}" [editor]="Editor" data=""
-                                 required [formControl]="descriptionRq">
-                              </ckeditor>
-                              <mat-error
-                                 *ngIf="descriptionRq.invalid && checkReq">{{getErrorMessageDescriptionRequirement()}}</mat-error>
+                              <small class="text-danger" role="alert" *ngIf="emailRq.invalid && (emailRq.touched || checkReq)">{{ (getErrorMessageEmail()) | t }}</small>
                            </div>
                         </div>
                      </div>
 
-                     
+                     <div class="row">
+                        <div class="col-md-6 mb-2">
+                           <label for="taxNum" class="form-label">{{ 'Mã Số Thuế' | t }}</label><span class="link-danger">
+                              *</span>
+                           <div class="jms-field">
+                              <input class="form-control" type="number" id="taxNum" [attr.placeholder]="'Nhập mã số thuế' | t" required
+                                 [formControl]="taxNumRq" />
+                              <small class="text-danger" role="alert" *ngIf="taxNumRq.invalid && (taxNumRq.touched || checkReq)">{{ (getErrorMessageTaxNum()) | t }}</small>
+                           </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                           <label for="website" class="form-label">Website</label>
+                           <div class="jms-field">
+                              <input class="form-control" type="text" id="website" placeholder="https://"
+                                 [formControl]="websiteRq" />
+                           </div>
+                        </div>
+                     </div>
 
-                     <!-- row 6 -->
+                     <div class="row">
+
+                        <div class="col-md-12 mb-2">
+                           <label class="form-label select-label">{{ 'Quy Mô' | t }}</label><span class="link-danger">
+                              *</span>
+                           <div class="jms-field">
+                              <select class="form-select" required [formControl]="sizeRq" id="sizeRq" [attr.aria-label]="'Quy mô công ty' | t">
+                                 <option value="0" disabled>{{ 'Chọn quy mô công ty' | t }}</option>
+                                 <option *ngFor="let elm of sizes; index as i" value={{elm}}>{{elm}}</option>
+                              </select>
+                              <small class="text-danger" role="alert" *ngIf="sizeRq.invalid && (sizeRq.touched || checkReq)">{{ (getErrorMessageSize()) | t }}</small>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div class="row">
+                        <div class="col-md-6 mb-2">
+                           <label for="yearOfEstablishment" class="form-label">{{ 'Năm thành lập' | t }}</label>
+                           <div class="jms-field">
+                              <input class="form-control" type="number" id="yearOfEstablishment" [attr.placeholder]="'Nhập năm thành lập' | t"
+                                 required [formControl]="yearOfEstablishmentRq" />
+
+                           </div>
+                        </div>
+                        <div class="col-md-6 mb-2 pb-2">
+                           <label class="form-label" for="phone">{{ 'Số điện thoại' | t }}</label>
+                           <div class="jms-field">
+                              <input class="form-control" type="tel" id="phone" [attr.placeholder]="'Nhập số điện thoại công ty' | t" required
+                                 [formControl]="phoneRq" />
+                           </div>
+                        </div>
+                     </div>
+                     <div class="row">
+                        <div class="col-md-12 mb-2 pb-2">
+                           <label class="form-label" for="address">{{ 'Địa chỉ' | t }}</label><span class="link-danger">
+                              *</span>
+                           <div class="jms-field">
+                              <input class="form-control" type="text" id="address" [attr.placeholder]="'Nhập địa chỉ công ty' | t" required
+                                 [formControl]="addressRq" />
+                              <small class="text-danger" role="alert" *ngIf="addressRq.invalid && (addressRq.touched || checkReq)">{{ (getErrorMessageAddress()) | t }}</small>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div class="row">
+                        <div class="col-12 pb-4">
+                           <div class="form-outline">
+                              <label class="form-label" for="description">{{ 'Mô Tả' | t }}</label><span class="link-danger">
+                                 *</span>
+                              <jms-rich-text [config]="config"
+                                 required [formControl]="descriptionRq">
+                              </jms-rich-text>
+                              <small class="text-danger" role="alert"
+                                 *ngIf="descriptionRq.invalid && checkReq">{{ (getErrorMessageDescriptionRequirement()) | t }}</small>
+                           </div>
+                        </div>
+                     </div>
+
+
+
+
                      <div class="row mt-3">
                         <div class="col-12 pb-4">
-                           <label class="form-label pb-2">Hình Ảnh Công Ty</label>
+                           <label class="form-label pb-2">{{ 'Hình Ảnh Công Ty' | t }}</label>
 
                            <img class="file-upload-image pb-2 avatar" [src]="imageAvatarSrc" alt="your image"
                               [style.display]="displayImageAvatar" />
@@ -134,10 +123,10 @@
                         </div>
                      </div>
 
-                     <!-- row 6 -->
+
                      <div class="row">
                         <div class="col-12 pb-2">
-                           <label class="form-label pb-2">Hình nền Công Ty</label>
+                           <label class="form-label pb-2">{{ 'Hình nền Công Ty' | t }}</label>
                            <img class="file-upload-image pb-2 bacground" [src]="imageBackgroundSrc" alt="your image"
                               [style.display]="displayImageBackground" />
                            <div class="image-upload-wrap" ng-hide="true">
@@ -147,10 +136,10 @@
                         </div>
                      </div>
 
-                     <!-- button submit -->
+
                      <div class="mt-3 pt-2">
-                        <button mat-stroked-button (click)="submitButtonClicked()"
-                           class="btn btn-lg col-2 btnBlueLight">Lưu</button>
+                        <button type="submit" [disabled]="submitting" [attr.aria-busy]="submitting"
+                           class="btn btn-lg col-2 btnBlueLight">{{ 'Lưu' | t }}</button>
                      </div>
                   </form>
                </div>

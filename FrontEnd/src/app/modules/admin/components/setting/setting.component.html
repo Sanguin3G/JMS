@@ -1,151 +1,35 @@
-<main class="ai-settings" aria-labelledby="ai-settings-title">
-  <header class="ai-settings__header">
-    <p class="ai-settings__eyebrow">ADMIN / AI LABORATORY</p>
-    <h1 id="ai-settings-title">Matching provider profiles</h1>
-    <p>Choose the approved Gemini model and reasoning effort used for future matching runs. This is deliberately a small control surface, not a prompt playground.</p>
-  </header>
-
-  <p class="ai-settings__notice">Changing the active profile does not rewrite historical CV matches. Re-run matching explicitly when you actually want new results.</p>
-
-  <p *ngIf="errorMessage" class="ai-settings__message ai-settings__message--error" role="alert">{{ errorMessage }}</p>
-  <p *ngIf="successMessage" class="ai-settings__message ai-settings__message--success" role="status">{{ successMessage }}</p>
-
-  <section class="ai-settings__grid" *ngIf="!isLoading; else loading">
-    <form class="ai-settings__panel" (ngSubmit)="save()">
-      <div class="ai-settings__panel-heading">
-        <h2>{{ editingProfileId ? 'Edit profile' : 'New Gemini profile' }}</h2>
-        <button *ngIf="editingProfileId" type="button" class="ai-settings__text-button" (click)="cancelEditing()">Discard edit</button>
-      </div>
-
-      <label>
-        Profile name
-        <input name="displayName" [(ngModel)]="draft.displayName" maxlength="100" required>
-      </label>
-
-      <label>
-        Gemini model
-        <select name="modelId" [(ngModel)]="draft.modelId" (change)="onModelChanged()" required>
-          <option *ngFor="let model of modelOptions" [value]="model.modelId">{{ model.label }}</option>
-        </select>
-      </label>
-
-      <label>
-        Reasoning effort
-        <select name="reasoningLevel" [(ngModel)]="draft.reasoningLevel" required>
-          <option *ngFor="let level of selectedModel?.reasoningLevels" [value]="level">{{ level }}</option>
-        </select>
-      </label>
-
-      <label>
-        {{ editingProfileId ? 'Replace API key (optional)' : 'Gemini API key' }}
-        <input name="apiKey" type="password" [(ngModel)]="draft.apiKey" maxlength="500" autocomplete="new-password" [required]="!editingProfileId">
-        <small>Saved server-side in protected form. It is never returned to this page.</small>
-      </label>
-
-      <label class="ai-settings__toggle"><input type="checkbox" name="isEnabled" [(ngModel)]="draft.isEnabled"> Enable this profile</label>
-      <label class="ai-settings__toggle"><input type="checkbox" name="isDefaultForMatching" [(ngModel)]="draft.isDefaultForMatching"> Use for future matching</label>
-      <label class="ai-settings__toggle"><input type="checkbox" name="isEnabledForAssistant" [(ngModel)]="draft.isEnabledForAssistant"> Reserve for the future FAQ assistant</label>
-
-      <button type="submit" class="ai-settings__save" [disabled]="isSaving">{{ isSaving ? 'Saving…' : 'Save profile' }}</button>
-    </form>
-
-    <section class="ai-settings__panel" aria-labelledby="saved-profiles-title">
-      <div class="ai-settings__panel-heading">
-        <h2 id="saved-profiles-title">Saved profiles</h2>
-        <span>{{ profiles.length }} configured</span>
-      </div>
-
-      <article class="ai-settings__profile" *ngFor="let profile of profiles">
-        <div>
-          <h3>{{ profile.displayName }}</h3>
-          <p>{{ profile.modelId }} · {{ profile.reasoningLevel }} reasoning</p>
-          <p class="ai-settings__profile-meta">{{ profile.hasApiKey ? 'Key stored' : 'No key' }} · {{ profile.isEnabled ? 'Enabled' : 'Disabled' }}</p>
-        </div>
-        <div class="ai-settings__profile-actions">
-          <span *ngIf="profile.isDefaultForMatching" class="ai-settings__active">Active for matching</span>
-          <button type="button" (click)="testConnection(profile)" [disabled]="testingProfileId === profile.id || !profile.hasApiKey">{{ testingProfileId === profile.id ? 'Testing…' : 'Test connection' }}</button>
-          <button type="button" (click)="activateForMatching(profile)" [disabled]="!profile.isEnabled || profile.isDefaultForMatching">Use for matching</button>
-          <button type="button" class="ai-settings__text-button" (click)="beginEditing(profile)">Edit</button>
-        </div>
-      </article>
-
-      <p *ngIf="profiles.length === 0" class="ai-settings__empty">No provider profile is saved yet. Matching falls back to the local development environment setting when one exists.</p>
-    </section>
-  </section>
-
-  <ng-template #loading><p class="ai-settings__empty">Loading the lab controls…</p></ng-template>
-  <section class="faq-admin" aria-labelledby="faq-admin-title">
-    <header class="faq-admin__header">
-      <div>
-        <p class="ai-settings__eyebrow">ADMIN / HELP CONTENT</p>
-        <h2 id="faq-admin-title">Curated FAQ entries</h2>
-        <p>Deterministic FAQ search is the always-on fallback for candidate and recruiter help. Keep this content factual and development-scoped.</p>
-      </div>
-      <button *ngIf="faqEditingId" type="button" class="ai-settings__text-button" (click)="cancelFaqEditing()">New entry</button>
-    </header>
-
-    <div class="faq-admin__grid">
-      <form class="ai-settings__panel" (ngSubmit)="saveFaq()">
-        <div class="ai-settings__panel-heading"><h3>{{ faqEditingId ? 'Edit entry' : 'New entry' }}</h3></div>
-        <label>Question <input name="faqQuestion" [(ngModel)]="faqDraft.question" maxlength="200" required></label>
-        <label>Answer <textarea name="faqAnswer" [(ngModel)]="faqDraft.answer" maxlength="4000" rows="7" required></textarea></label>
-        <label>Search keywords <input name="faqKeywords" [(ngModel)]="faqDraft.keywords" maxlength="500" placeholder="cv, matching, privacy"></label>
-        <div class="faq-admin__row">
-          <label>Category <input name="faqCategory" [(ngModel)]="faqDraft.category" maxlength="80"></label>
-          <label>Sort order <input name="faqSortOrder" type="number" [(ngModel)]="faqDraft.sortOrder" min="0" max="999"></label>
-        </div>
-        <label class="ai-settings__toggle"><input type="checkbox" name="faqPublished" [(ngModel)]="faqDraft.isPublished"> Published in help search</label>
-        <button type="submit" class="ai-settings__save" [disabled]="faqSaving">{{ faqSaving ? 'Saving...' : 'Save FAQ entry' }}</button>
-      </form>
-
-      <section class="ai-settings__panel" aria-label="Saved FAQ entries">
-        <div class="ai-settings__panel-heading"><h3>Saved entries</h3><span>{{ faqEntries.length }} configured</span></div>
-        <article class="faq-admin__entry" *ngFor="let entry of faqEntries">
-          <div><h4>{{ entry.question }}</h4><p>{{ entry.category }} · {{ entry.isPublished === false ? 'Draft' : 'Published' }}</p></div>
-          <div class="faq-admin__actions"><button type="button" (click)="beginFaqEditing(entry)">Edit</button><button type="button" (click)="deleteFaq(entry)">Delete</button></div>
-        </article>
-        <p *ngIf="faqEntries.length === 0" class="ai-settings__empty">No FAQ entries are configured.</p>
-      </section>
-    </div>
-  </section>
-
-  <section class="catalog-admin" aria-labelledby="catalog-admin-title">
-    <header class="faq-admin__header">
-      <div>
-        <p class="ai-settings__eyebrow">ADMIN / MATCHING VOCABULARY</p>
-        <h2 id="catalog-admin-title">Catalogs used by CVs and jobs</h2>
-        <p>Keep the shared categories, career levels, and employment labels data-backed. Archiving hides an entry from new forms without rewriting historical records.</p>
-      </div>
-    </header>
-
-    <div class="catalog-admin__grid">
-      <section class="ai-settings__panel catalog-admin__panel" *ngFor="let panel of catalogPanels" [attr.aria-labelledby]="'catalog-' + panel.kind">
-        <div class="ai-settings__panel-heading">
-          <div>
-            <h3 [id]="'catalog-' + panel.kind">{{ panel.title }}</h3>
-            <p class="catalog-admin__description">{{ panel.description }}</p>
-          </div>
-          <span>{{ panel.entries.length }} active</span>
-        </div>
-
-        <form class="catalog-admin__form" (ngSubmit)="saveCatalog(panel)">
-          <label>{{ panel.title }} name
-            <input [name]="'catalog-name-' + panel.kind" [(ngModel)]="panel.draft.name" maxlength="200" required>
-          </label>
-          <label *ngIf="panel.kind !== 'employment-types'">Description
-            <input [name]="'catalog-description-' + panel.kind" [(ngModel)]="panel.draft.description" maxlength="1000">
-          </label>
-          <button type="submit" class="ai-settings__save" [disabled]="catalogSaving === panel.kind">{{ catalogSaving === panel.kind ? 'Adding...' : 'Add entry' }}</button>
+<main class="ai-settings" aria-labelledby="settings-title">
+  <header class="ai-settings__header"><p class="ai-settings__eyebrow">{{ 'JMS · Quản trị' | t }}</p><h1 id="settings-title">{{ 'Cài đặt JMS' | t }}</h1><p>{{ 'Quản lý AI hỗ trợ matching, danh mục tuyển dụng và nội dung trợ giúp.' | t }}</p></header>
+  <nav class="settings-sections" [attr.aria-label]="'Nhóm cài đặt' | t">
+    <button type="button" (click)="activeSection = 'ai'" [class.active]="activeSection === 'ai'" [attr.aria-pressed]="activeSection === 'ai'"><i class="bi bi-stars" aria-hidden="true"></i><span>{{ 'Nhà cung cấp AI' | t }}<small>{{ 'Mô hình, khóa và matching' | t }}</small></span></button>
+    <button type="button" (click)="activeSection = 'catalogs'" [class.active]="activeSection === 'catalogs'" [attr.aria-pressed]="activeSection === 'catalogs'"><i class="bi bi-collection" aria-hidden="true"></i><span>{{ 'Danh mục tuyển dụng' | t }}<small>{{ 'Ngành nghề, cấp bậc, hình thức' | t }}</small></span></button>
+    <button type="button" (click)="activeSection = 'help'" [class.active]="activeSection === 'help'" [attr.aria-pressed]="activeSection === 'help'"><i class="bi bi-question-circle" aria-hidden="true"></i><span>{{ 'Nội dung trợ giúp' | t }}<small>{{ 'Câu hỏi và hướng dẫn JMS' | t }}</small></span></button>
+  </nav>
+  <p *ngIf="errorMessage" class="ai-settings__message ai-settings__message--error" role="alert">{{ (errorMessage) | t }}</p><p *ngIf="successMessage" class="ai-settings__message ai-settings__message--success" role="status">{{ (successMessage) | t }}</p>
+  <p *ngIf="isLoading" role="status">{{ 'Đang tải cài đặt…' | t }}</p>
+  <ng-container *ngIf="!isLoading">
+    <section *ngIf="activeSection === 'ai'" [attr.aria-label]="'Cấu hình AI' | t">
+      <p class="ai-settings__notice">{{ 'AI bổ sung giải thích; matching theo quy tắc vẫn là nền tảng. Thay cấu hình chỉ áp dụng cho lần matching tiếp theo và không sửa kết quả lịch sử.' | t }}</p>
+      <div class="ai-settings__grid">
+        <form class="ai-settings__panel" (ngSubmit)="save()" #profileForm="ngForm">
+          <div class="ai-settings__panel-heading"><h2>{{ (editingProfileId ? 'Chỉnh sửa cấu hình' : 'Thêm cấu hình AI') | t }}</h2><button *ngIf="editingProfileId" type="button" (click)="cancelEditing()" [disabled]="isSaving">{{ 'Hủy chỉnh sửa' | t }}</button></div>
+          <label>{{ 'Tên cấu hình' | t }}<input name="displayName" [(ngModel)]="draft.displayName" maxlength="100" required [disabled]="isSaving"></label>
+          <label>{{ 'Nhà cung cấp' | t }}<select name="provider" [(ngModel)]="draft.provider" (change)="onProviderChanged()" required [disabled]="isSaving"><option *ngFor="let provider of providers" [value]="provider">{{ providerName(provider) }}</option></select></label>
+          <label>{{ 'Mô hình' | t }}<select name="modelId" [(ngModel)]="draft.modelId" (change)="onModelChanged()" required [disabled]="isSaving"><option *ngFor="let model of providerModels" [value]="model.modelId">{{ model.label }} · {{(model.tier === 'economic' ? 'Tiết kiệm' : model.tier === 'quality' ? 'Chất lượng' : 'Cấu hình cũ') | t}}</option></select></label>
+          <label>{{ (reasoningLabel) | t }}<select name="reasoningLevel" [(ngModel)]="draft.reasoningLevel" required [disabled]="isSaving"><option *ngFor="let level of selectedModel?.reasoningLevels" [value]="level">{{ (reasoningName(level)) | t }}</option></select><small>{{ 'Lựa chọn theo khả năng của mô hình, không phải một thang chung cho mọi nhà cung cấp.' | t }}</small></label>
+          <label>{{ (editingProfileId ? 'Thay khóa API (không bắt buộc)' : 'Khóa API') | t }}<input name="apiKey" type="password" [(ngModel)]="draft.apiKey" maxlength="500" autocomplete="new-password" [required]="!editingProfileId" [disabled]="isSaving || draft.removeApiKey"><small>{{ 'Khóa được mã hóa và lưu trên máy chủ. Để trống khi chỉnh sửa để giữ khóa hiện tại; thay nhà cung cấp cần khóa mới.' | t }}</small></label>
+          <label *ngIf="editingProfileId" class="ai-settings__toggle"><input type="checkbox" name="removeApiKey" [(ngModel)]="draft.removeApiKey" [disabled]="isSaving"> {{ 'Xóa khóa đang lưu' | t }}</label>
+          <label class="ai-settings__toggle"><input type="checkbox" name="isEnabled" [(ngModel)]="draft.isEnabled" [disabled]="isSaving"> {{ 'Bật cấu hình này' | t }}</label>
+          <label class="ai-settings__toggle"><input type="checkbox" name="isDefaultForMatching" [(ngModel)]="draft.isDefaultForMatching" [disabled]="isSaving || !draft.isEnabled || draft.removeApiKey"> {{ 'Dùng cho matching tiếp theo' | t }}</label>
+          <button type="submit" class="ai-settings__save" [disabled]="isSaving || profileForm.invalid || !selectedModel">{{ (isSaving ? 'Đang lưu…' : 'Lưu cấu hình') | t }}</button>
         </form>
-
-        <ul class="catalog-admin__list">
-          <li *ngFor="let entry of panel.entries">
-            <div><strong>{{ entry.name }}</strong><small *ngIf="entry.description">{{ entry.description }}</small></div>
-            <button type="button" class="ai-settings__text-button" (click)="deleteCatalog(panel, entry)">Archive</button>
-          </li>
-        </ul>
-        <p *ngIf="panel.entries.length === 0" class="ai-settings__empty">No active entries.</p>
-      </section>
-    </div>
-  </section>
+        <section class="ai-settings__panel" aria-labelledby="saved-profiles-title"><div class="ai-settings__panel-heading"><h2 id="saved-profiles-title">{{ 'Cấu hình đã lưu' | t }}</h2><span>{{ profiles.length }} {{ 'cấu hình' | t }}</span></div>
+          <article class="ai-settings__profile" *ngFor="let profile of profiles"><div><h3>{{ profile.displayName }}</h3><p>{{ providerName(profile.provider) }} · {{ profile.modelId }}</p><p class="ai-settings__profile-meta">{{ (reasoningName(profile.reasoningLevel)) | t }} · {{ (profile.hasApiKey ? 'Đã lưu khóa' : 'Chưa có khóa') | t }} · {{ (profile.isEnabled ? 'Đang bật' : 'Đã tắt') | t }}</p></div><div class="ai-settings__profile-actions"><span *ngIf="profile.isDefaultForMatching" class="ai-settings__active">{{ 'Đang dùng cho matching' | t }}</span><button type="button" (click)="testConnection(profile)" [disabled]="testingProfileId !== null || !profile.hasApiKey">{{ (testingProfileId === profile.id ? 'Đang kiểm tra…' : 'Kiểm tra kết nối') | t }}</button><button type="button" (click)="activateForMatching(profile)" [disabled]="actingProfileId !== null || !profile.isEnabled || !profile.hasApiKey || profile.isDefaultForMatching">{{ (actingProfileId === profile.id ? 'Đang kích hoạt…' : 'Dùng cho matching') | t }}</button><button type="button" (click)="beginEditing(profile)" [disabled]="isSaving">{{ 'Chỉnh sửa' | t }}</button></div></article>
+          <p *ngIf="profiles.length === 0" class="ai-settings__empty">{{ 'Chưa có cấu hình AI. Matching theo quy tắc vẫn hoạt động khi AI chưa sẵn sàng.' | t }}</p>
+        </section>
+      </div>
+    </section>
+    <section *ngIf="activeSection === 'help'" class="faq-admin" aria-labelledby="faq-title"><header><h2 id="faq-title">{{ 'Câu hỏi và hướng dẫn JMS' | t }}</h2><p>{{ 'Nội dung thực tế cho tìm kiếm trợ giúp của ứng viên và nhà tuyển dụng.' | t }}</p></header><div class="faq-admin__grid"><form class="ai-settings__panel" (ngSubmit)="saveFaq()" #faqForm="ngForm"><div class="ai-settings__panel-heading"><h3>{{ (faqEditingId ? 'Chỉnh sửa câu hỏi' : 'Thêm câu hỏi') | t }}</h3><button *ngIf="faqEditingId" type="button" (click)="cancelFaqEditing()" [disabled]="faqSaving">{{ 'Hủy chỉnh sửa' | t }}</button></div><label>{{ 'Câu hỏi' | t }}<input name="faqQuestion" [(ngModel)]="faqDraft.question" maxlength="200" required></label><label>{{ 'Trả lời' | t }}<textarea name="faqAnswer" [(ngModel)]="faqDraft.answer" maxlength="4000" rows="7" required></textarea></label><label>{{ 'Câu hỏi tiếng Anh' | t }}<input name="faqQuestionEn" [(ngModel)]="faqDraft.questionEn" maxlength="200"></label><label>{{ 'Câu trả lời tiếng Anh' | t }}<textarea name="faqAnswerEn" [(ngModel)]="faqDraft.answerEn" maxlength="4000" rows="5"></textarea></label><label>{{ 'Từ khóa tìm kiếm' | t }}<input name="faqKeywords" [(ngModel)]="faqDraft.keywords" maxlength="500" [attr.placeholder]="'CV, ứng tuyển, matching' | t"></label><div class="faq-admin__row"><label>{{ 'Nhóm nội dung' | t }}<input name="faqCategory" [(ngModel)]="faqDraft.category" maxlength="80"></label><label>{{ 'Thứ tự' | t }}<input name="faqSortOrder" type="number" [(ngModel)]="faqDraft.sortOrder" min="0" max="999"></label></div><label class="ai-settings__toggle"><input type="checkbox" name="faqPublished" [(ngModel)]="faqDraft.isPublished"> {{ 'Hiển thị trong trợ giúp' | t }}</label><button type="submit" class="ai-settings__save" [disabled]="faqSaving || faqForm.invalid">{{ (faqSaving ? 'Đang lưu…' : 'Lưu câu hỏi') | t }}</button></form><section class="ai-settings__panel" [attr.aria-label]="'Câu hỏi đã lưu' | t"><h3>{{ 'Câu hỏi đã lưu (' | t }}{{ faqEntries.length }})</h3><article class="faq-admin__entry" *ngFor="let entry of faqEntries"><div><h4>{{ entry.question }}</h4><p>{{ entry.category }} · {{ (entry.isPublished === false ? 'Chưa công bố' : 'Đã công bố') | t }}</p></div><div class="faq-admin__actions"><button type="button" (click)="beginFaqEditing(entry)" [disabled]="faqSaving">{{ 'Sửa' | t }}</button><button type="button" (click)="deleteFaq(entry)">{{ 'Xóa' | t }}</button></div></article><p *ngIf="!faqEntries.length" class="ai-settings__empty">{{ 'Chưa có câu hỏi.' | t }}</p></section></div></section>
+    <section *ngIf="activeSection === 'catalogs'" class="catalog-admin" aria-labelledby="catalog-title"><header><h2 id="catalog-title">{{ 'Danh mục dùng cho CV và công việc' | t }}</h2><p>{{ 'Lưu trữ sẽ ẩn danh mục khỏi biểu mẫu mới. Dữ liệu lịch sử vẫn giữ tham chiếu.' | t }}</p></header><div class="catalog-admin__grid"><section class="ai-settings__panel" *ngFor="let panel of catalogPanels"><div><h3>{{ (panel.title) | t }}</h3><p>{{ (panel.description) | t }}</p></div><form class="catalog-admin__form" (ngSubmit)="saveCatalog(panel)" #catalogForm="ngForm"><label>{{ 'Tên' | t }} {{ panel.title | t }}<input [name]="'catalog-name-' + panel.kind" [(ngModel)]="panel.draft.name" maxlength="200" required></label><label *ngIf="panel.kind !== 'employment-types'">{{ 'Mô Tả' | t }}<input [name]="'catalog-description-' + panel.kind" [(ngModel)]="panel.draft.description" maxlength="1000"></label><button type="submit" class="ai-settings__save" [disabled]="catalogSaving !== null || catalogForm.invalid">{{ (catalogSaving === panel.kind ? 'Đang thêm…' : 'Thêm danh mục') | t }}</button></form><ul class="catalog-admin__list"><li *ngFor="let entry of panel.entries"><div><strong>{{ entry.name }}</strong><small *ngIf="entry.description">{{ entry.description }}</small></div><button type="button" (click)="deleteCatalog(panel, entry)">{{ 'Lưu trữ' | t }}</button></li></ul><p *ngIf="!panel.entries.length" class="ai-settings__empty">{{ 'Chưa có danh mục đang dùng.' | t }}</p></section></div></section>
+  </ng-container>
 </main>

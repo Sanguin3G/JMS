@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { inject, Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { ADMIN_TOKEN } from 'src/app/service/constant';
-import { getItem } from 'src/app/service/localstorage';
+import { AuthService } from 'src/app/core/auth/auth.service';
 @Component({
   standalone: false,
   selector: 'app-admin',
@@ -9,11 +9,12 @@ import { getItem } from 'src/app/service/localstorage';
   styleUrls: ['./admin.component.css']
 })
 export class AdminComponent {
+   private readonly auth = inject(AuthService);
 
   constructor(private router: Router) {
   }
 
   isLogin(){
-    return getItem(ADMIN_TOKEN) !== null
+    return this.auth.isRole('admin')
   }
 }

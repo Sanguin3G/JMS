@@ -14,6 +14,12 @@ public sealed class FaqEntry
     [Required, StringLength(4000)]
     public string Answer { get; set; } = string.Empty;
 
+    [StringLength(200)]
+    public string? QuestionEn { get; set; }
+
+    [StringLength(4000)]
+    public string? AnswerEn { get; set; }
+
     [StringLength(500)]
     public string? Keywords { get; set; }
 

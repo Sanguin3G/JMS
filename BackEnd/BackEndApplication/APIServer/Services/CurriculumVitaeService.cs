@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
 using APIServer.IRepositories;
@@ -14,14 +14,16 @@ namespace APIServer.Services
 {
     public class CurriculumVitaeService : ICurriculumVitaeService
     {
+        private readonly JMSDBContext _db;
         private readonly ICurriculumVitaeRepository _CvContext;
         private readonly ICVMatchingRepository _CVApplyContext;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly ICandidateRepository _candidateContext;
 
-        public CurriculumVitaeService(ICurriculumVitaeRepository context, ICVMatchingRepository CVApplyContext, IMapper mapper, IConfiguration configuration, ICandidateRepository candidateRepository)
+        public CurriculumVitaeService(ICurriculumVitaeRepository context, ICVMatchingRepository CVApplyContext, IMapper mapper, IConfiguration configuration, ICandidateRepository candidateRepository, JMSDBContext db)
         {
+            _db = db;
             _CvContext = context;
             _CVApplyContext = CVApplyContext;
             _mapper = mapper;
@@ -43,8 +45,10 @@ namespace APIServer.Services
 
         public int CreateById(CurriculumVitae cv, int candidateId)
         {
+            cv.Id = 0;
             cv.CandidateId = candidateId;
-            if (!Validation.checkStringIsEmpty(cv.Phone, cv.DisplayName, cv.DisplayEmail, cv.CVTitle) &&
+            ResetSectionIds(cv);
+            if (Validation.checkStringIsEmpty(cv.Phone, cv.DisplayName, cv.DisplayEmail, cv.CVTitle) ||
                 !Validation.IsPhoneNumberValid(cv.Phone))
             {
                 throw new ArgumentNullException("cv not finished yet");
@@ -115,12 +119,13 @@ namespace APIServer.Services
             {
                 throw new Exception("Data not valid");
             }
-            if (cv.CandidateId != candidateId)
+            if (cv.CandidateId != candidateId || cv.IsDelete)
             {
                 throw new Exception("Permission denied");
             }
             var cvChange = _mapper.Map<CurriculumVitae>(cvDTO);
-            using (var context = new JMSDBContext())
+            ResetSectionIds(cvChange);
+            var context = _db;
             {
                 var cvOrigin = context.CurriculumVitaes
                     .Include(x => x.Category)
@@ -171,7 +176,7 @@ namespace APIServer.Services
                 cvOrigin.CVTitle = cvChange.CVTitle;
                 cvOrigin.Font = cvChange.Font;
                 cvOrigin.Theme = cvChange.Theme;
-                cvOrigin.GenderId = cvChange.GenderId; 
+                cvOrigin.GenderId = cvChange.GenderId;
 
                 cvOrigin.Educations = cvChange.Educations;
                 cvOrigin.Certificates = cvChange.Certificates;
@@ -184,5 +189,16 @@ namespace APIServer.Services
                 return context.SaveChanges();
             }
         }
+        // Section records are owned by this CV; clients cannot reuse another CV's IDs.
+        private static void ResetSectionIds(CurriculumVitae cv)
+        {
+            foreach (var item in cv.Educations ?? []) { item.Id = 0; item.CurriculumVitaeId = null; item.CurriculumVitae = null; }
+            foreach (var item in cv.Certificates ?? []) { item.Id = 0; item.CurriculumVitaeId = null; item.CurriculumVitae = null; }
+            foreach (var item in cv.Awards ?? []) { item.Id = 0; item.CurriculumVitaeId = null; item.CurriculumVitae = null; }
+            foreach (var item in cv.Skills ?? []) { item.Id = 0; item.CurriculumVitaeId = null; item.CurriculumVitae = null; }
+            foreach (var item in cv.Projects ?? []) { item.Id = 0; item.CurriculumVitaeId = null; item.CurriculumVitae = null; }
+            foreach (var item in cv.JobExperiences ?? []) { item.Id = 0; item.CurriculumVitaeId = null; item.CurriculumVitae = null; }
+        }
+
     }
 }

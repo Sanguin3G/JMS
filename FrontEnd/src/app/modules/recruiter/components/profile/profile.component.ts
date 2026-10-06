@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { inject, Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
-import { getRequest, postFileRequest, postRequest } from 'src/app/service/api-requests';
-import { showError, showInfo, showSuccess } from 'src/app/service/common';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
+import { ApiService } from 'src/app/core/http/api.service';
+
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
-import { getProfile, getToken, saveItem } from 'src/app/service/localstorage';
+import { AuthService } from 'src/app/core/auth/auth.service';
 
 @Component({
   standalone: false,
@@ -13,6 +13,8 @@ import { getProfile, getToken, saveItem } from 'src/app/service/localstorage';
    styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent {
+   private readonly auth = inject(AuthService);
+   private readonly api = inject(ApiService);
 
    profile: any
    company: any
@@ -46,7 +48,6 @@ export class ProfileComponent {
    validateOldPassword(event: any) {
       this.oldPassword = event
 
-      console.log(this.oldPassword);
 
       if (this.oldPassword === "" || this.oldPassword === null) this.invalidOldPassword = true
       else {
@@ -89,8 +90,8 @@ export class ProfileComponent {
    }
 
 
-   constructor(public toastr: ToastrService, private router: Router) {
-      this.profile = getProfile()
+   constructor(public toastr: NotificationService, private router: Router) {
+      this.profile = this.auth.getProfile()
       this.getCompany();
    }
 
@@ -105,7 +106,7 @@ export class ProfileComponent {
       if(this.newPassword === this.conformPassword){
          return true
       }else{
-         showError(this.toastr, "Mật khẩu mới không trùng khớp")
+         this.toastr.error("Mật khẩu mới không trùng khớp")
          return false
       }
    }
@@ -113,32 +114,31 @@ export class ProfileComponent {
    SubmitFormChangePassword() {
       if (this.validAllFiled()) {
 
-         postRequest(`${apiRecruiter.CHANGE_PASSWORD}?recruiterId=${this.profile.id}
-      &oldPassword=${this.encodeText(this.oldPassword)}&newPassword=${this.encodeText(this.newPassword)}&confirmPassword=${this.encodeText(this.conformPassword)}`, AuthorizationMode.BEARER_TOKEN, {})
+         this.api.postRequest(`${apiRecruiter.CHANGE_PASSWORD}?recruiterId=${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, { oldPassword: this.oldPassword, newPassword: this.newPassword, confirmPassword: this.conformPassword })
             .then(res => {
-               console.log(res);
+
                if (res.statusCode == 200) {
-                  showSuccess(this.toastr, "Thay đổi mật khẩu thành công")
+                  this.toastr.success("Thay đổi mật khẩu thành công")
                   this.oldPassword = ""
                   this.newPassword = ""
                   this.conformPassword = ""
                }
                if (res.statusCode == 400) {
-                  if (res?.message == "Old password is not correct") showError(this.toastr, "Mật khẩu cũ không chính xác")
+                  if (res?.message == "Old password is not correct") this.toastr.error("Mật khẩu cũ không chính xác")
                }
             })
             .catch(res => {
-               showError(this.toastr, "Đã có lỗi xảy ra")
+               this.toastr.error("Đã có lỗi xảy ra")
                console.warn(res);
 
             })
       } else {
-         // showInfo(this.toastr, 'Điền các trường ở bên dưới')
+         // this.toastr.info('Điền các trường ở bên dưới')
       }
    }
 
    getCompany() {
-      getRequest(apiRecruiter.GET_COMPANY_BY_ID + "/" + this.profile.companyId, AuthorizationMode.PUBLIC)
+      this.api.getRequest(apiRecruiter.GET_COMPANY_BY_ID + "/" + this.profile.companyId, AuthorizationMode.PUBLIC)
          .then(res => {
             this.company = res?.data
          })
@@ -160,28 +160,27 @@ export class ProfileComponent {
       // this.newProfile.phone = this.validatePhoneNumber(phone.value.trim()) ? phone.value : this.profile.phoneNumber
       // this.newProfile.dob = this.validateDate(dob.value.trim()) ? dob.value : this.profile.doB_Display
       // this.newProfile.gender = gender.value == "" ? this.profile.genderTitle : gender.value
-      console.log(this.newProfile)
 
-      postRequest(apiRecruiter.UPDATE_PROFILE + "?recruiterId=" + this.profile.id + "&fullName=" + this.newProfile.fullname + "&phoneNumber=" + this.newProfile.phone + "&DOB=" + this.newProfile.dob + "&genderId=1&description=" + this.newProfile.desc, AuthorizationMode.BEARER_TOKEN, {})
+      this.api.postRequest(apiRecruiter.UPDATE_PROFILE + "?recruiterId=" + this.profile.id + "&fullName=" + this.newProfile.fullname + "&phoneNumber=" + this.newProfile.phone + "&DOB=" + this.newProfile.dob + "&genderId=1&description=" + this.newProfile.desc, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
-            console.log(res)
+
             if (res.statusCode == 200) {
                this.profile.fullName = this.newProfile.fullname
                this.profile.phoneNumber = this.newProfile.phone
                this.profile.doB_Display = dob.value
                this.profile.genderTitle = this.newProfile.gender
-               console.log(this.profile)
-               saveItem("profile", this.profile);
-               showSuccess(this.toastr, "Cập nhật thông tin thành công!")
+
+               this.auth.updateProfile(this.profile);
+               this.toastr.success("Cập nhật thông tin thành công!")
             }else if(res.message === "DOB have to >= 18 and < 100"){
-               showError(this.toastr, "Ngày sinh không hợp lệ. Yêu cầu phải từ 18 tuổi trở lên.")
+               this.toastr.error("Ngày sinh không hợp lệ. Yêu cầu phải từ 18 tuổi trở lên.")
             } else {
-               showError(this.toastr, "Cập nhật thất bại! Vui lòng thử lại.")
+               this.toastr.error("Cập nhật thất bại! Vui lòng thử lại.")
             }
          })
          .catch(data => {
-            console.log("Update fail", data);
-            showError(this.toastr, "Cập nhật thất bại! Vui lòng thử lại.")
+
+            this.toastr.error("Cập nhật thất bại! Vui lòng thử lại.")
          })
    }
 
@@ -255,13 +254,13 @@ export class ProfileComponent {
    }
 
    getProfile = () => {
-      postRequest(apiRecruiter.GET_PROFILE_RECRUITER, AuthorizationMode.BEARER_TOKEN, {})
+      this.api.postRequest(apiRecruiter.GET_PROFILE_RECRUITER, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
             if (res.statusCode == 200) {
                this.profile = res.data
 
                setTimeout(() => {
-                  saveItem("profile", res.data);
+                  this.auth.updateProfile(res.data);
                }, 1000);
             }
          })
@@ -277,18 +276,18 @@ export class ProfileComponent {
          let formData: FormData = new FormData();
          formData.append('file', file, file.name);
 
-         postFileRequest(`${apiRecruiter.UPDATE_IMAGE_RECRUITER}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, formData)
+         this.api.postFileRequest(`${apiRecruiter.UPDATE_IMAGE_RECRUITER}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, formData)
             .then(res => {
                if (res.statusCode == 200) {
 
                   this.getProfile()
-                  showSuccess(this.toastr, "Chỉnh sửa ảnh thành công")
+                  this.toastr.success("Chỉnh sửa ảnh thành công")
                } else {
-                  showError(this.toastr, "Ảnh không hợp lệ, vui lòng thử lại!")
+                  this.toastr.error("Ảnh không hợp lệ, vui lòng thử lại!")
                }
             })
             .catch(data => {
-               showError(this.toastr, "Tải ảnh mới thất bại, vui lòng thử lại!")
+               this.toastr.error("Tải ảnh mới thất bại, vui lòng thử lại!")
             })
       }
    }

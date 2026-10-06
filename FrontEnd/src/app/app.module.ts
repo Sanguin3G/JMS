@@ -1,13 +1,15 @@
-import { NgModule } from '@angular/core';
+import { TitleStrategy } from '@angular/router';
+import { LocalizedTitleStrategy } from './core/i18n/localized-title.strategy';
+import { I18nModule } from './core/i18n/i18n.module';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { bearerInterceptor } from './core/http/api.service';
+import { NgModule, provideZoneChangeDetection } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
-import { ChartModule } from 'angular-highcharts';
-import { ToastrModule } from 'ngx-toastr';
+import { NotificationsComponent } from './shared/notifications/notifications.component';
 
 @NgModule({
    declarations: [
@@ -16,14 +18,14 @@ import { ToastrModule } from 'ngx-toastr';
    ],
    imports: [
       BrowserModule,
+      I18nModule,
       AppRoutingModule,
-      CKEditorModule,
-      BrowserAnimationsModule,
       FormsModule,
-      ToastrModule.forRoot(),
-      ChartModule,
+      NotificationsComponent,
    ],
-   providers: [],
+   // Legacy NgModule screens still use ordinary fields after async requests.
+   // Keep their change detection coherent while touched state moves to signals.
+   providers: [{provide:TitleStrategy,useClass:LocalizedTitleStrategy}, provideZoneChangeDetection(), provideHttpClient(withInterceptors([bearerInterceptor]))],
    bootstrap: [AppComponent],
 })
 export class AppModule { }

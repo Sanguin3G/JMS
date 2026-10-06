@@ -1,5 +1,9 @@
+declare global {
+  interface Window { JMS_CONFIG?: { apiUrl?: string; ckeditorLicenseKey?: string }; }
+}
+const apiUrl = (window.JMS_CONFIG?.apiUrl ?? "").replace(/\/$/, '');
 export const environment = {
-    production: true,
-    apiUrl: 'http://localhost:4200',
-    Url: 'http://localhost:4200'
+  production: true,
+  apiUrl,
+  Url: '',
 };

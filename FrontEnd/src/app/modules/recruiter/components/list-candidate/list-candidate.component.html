@@ -1,75 +1,11 @@
-<h2 mat-dialog-title [class.hidden]="isHideModal">Danh Sách Ứng Viên Phù Hợp</h2>
-<mat-dialog-content [class.hidden]="isHideModal">
-   <mat-list>
-      <div [class.hidden]="!(data.content == null)" class="text-center pt-3 pb-1">Danh sách trống!</div>
-      <div class="item" *ngFor="let candidate of listDisplay" [class.hidden]="data.content == null">
-         <mat-list-item style="height: fit-content;">
-            <div class="col-md-2 block">
-               <img class=" item-img" *ngIf="candidate.avatarURL" src={{candidate?.avatarURL}}
-                  onerror="this.src='https://icons.iconarchive.com/icons/papirus-team/papirus-status/256/avatar-default-icon.png'"
-                  alt={{candidate.displayName}}>
-               <img class=" item-img" *ngIf="!candidate.avatarURL" src={{avatar}} alt={{candidate.displayName}}>
-            </div>
-            <div class="col-md-8 block">
-               <div class="textHeader">
-                  <span class="candidate-name" (click)="openViewCVModal(candidate)">{{candidate?.displayName}}</span>
-                  <img class="icon-img-tap" *ngIf="candidate.isApplied" title="Ứng viên ứng tuyển"
-                     src="{{URL}}/assets/images/match_finger.png">
-                  <img class="icon-img-gpt" *ngIf="!candidate.isApplied" title="Ứng viên được đề xuất"
-                     src="{{URL}}/assets/images/match_gpt.jpg">           
-                  </div>
-               <div class="row more">
-                  <div class="col-5 textOver">
-                     Ngày Sinh: {{candidate?.dob | date:'yyyy-MM-dd'}}
-                  </div>
-                  <div class="col-3 textOver">
-                     Giới Tính: {{candidate?.genderDisplay}}
-                  </div>
-                  <div class="col-4 textOver">
-                     Phù hợp: {{candidate?.percentMatching | percent:'1.1-2'}}
-                  </div>
-               </div>
-               <div class="row more" *ngIf="data.listType == 2">
-                  <div class="col-6 textOver">
-                     Email: {{candidate?.displayEmail}}
-                  </div>
-                  <div class="col-2"></div>
-                  <div class="col-4 textOver">
-                     SDT: {{candidate?.phone}}
-                  </div>
-                </div>
-               <section class="match-insight" *ngIf="candidate.matchingInsight as insight" aria-label="Match evidence">
-                  <div class="insight-heading">
-                     <span>{{ candidate.matchingEligibilityStatus || insight.eligibilityStatus || 'review' }}</span>
-                     <strong *ngIf="insight.deterministicScore != null">{{ insight.deterministicScore }}/100 rules</strong>
-                  </div>
-                  <p>{{ candidate.matchingExplanation || insight.summary }}</p>
-                  <div class="insight-gap" *ngIf="insight.gaps?.length"><b>Gaps:</b> {{ insight.gaps?.join(' · ') }}</div>
-                  <small>Rules {{ candidate.matchingRulesVersion || insight.rulesVersion }} · {{ candidate.matchingProvider || insight.provider }}</small>
-               </section>
-             </div>
-             <div class="col-md-2 block">
-               <div class="btn-grp float-end">
-                  <button class="pr-2" title="Loại khỏi danh sách" (click)="openConfirmDialog(candidate)"><i
-                        class="bi bi-person-dash h4"></i></button>
-                  <button *ngIf="!candidate?.isSelected" (click)="onClickSelect(candidate)" title="Yêu thích"><i
-                        class="bi bi-star h4"></i></button>
-                  <button *ngIf="candidate?.isSelected" (click)="onClickSelect(candidate)" title="Bỏ yêu thích"><i
-                        class="bi bi-star-fill h4"></i></button>
-               </div>
-            </div>
-         </mat-list-item>
-         <mat-divider></mat-divider>
-      </div>
-   </mat-list>
-</mat-dialog-content>
-<mat-dialog-actions class="float-end col-12" [class.hidden]="isHideModal">
-   <div class="col-3 d-flex align-items-center">
-      <!-- <a *ngIf="data.listType != 2 && data.content != null" class="ml-auto"
-         (click)="openListCandidateLeft()">Nhiều ứng viên hơn</a> -->
-      </div>
-   <mat-paginator class="col-6" *ngIf="data.content != null" [length]="data.content.length" [pageSize]="pageSize"
-      [showFirstLastButtons]="true" [hidePageSize]="true" [pageIndex]="pageIndex"
-      (page)="handlePage($event)"></mat-paginator>
-   <button mat-button mat-dialog-close class="col-1 ml-auto">Close</button>
-</mat-dialog-actions>
+<section class="review-shell" [class.hidden]="isHideModal">
+<header><div><p>{{ 'JMS · Nhà tuyển dụng' | t }}</p><h2>{{ 'Danh Sách Ứng Viên Phù Hợp' | t }}</h2></div><button type="button" class="btn btn-outline-secondary" (click)="dialogRef.close()" [attr.aria-label]="'Đóng danh sách ứng viên' | t"><i class="bi bi-x-lg" aria-hidden="true"></i></button></header>
+<p class="review-note">{{ 'Điểm matching theo quy tắc giúp đối chiếu hồ sơ. AI chỉ bổ sung giải thích; bạn quyết định việc lựa chọn ứng viên.' | t }}</p>
+<div class="review-empty" *ngIf="!data.content?.length"><h3>{{ 'Chưa có hồ sơ' | t }}</h3><p>{{ 'Ứng tuyển hoặc kết quả matching sẽ xuất hiện tại đây.' | t }}</p></div>
+<article class="review-card" *ngFor="let candidate of listDisplay">
+<div class="review-person"><img [src]="candidate.avatarURL || avatar" jmsImageFallback alt="" width="52" height="52"><div><button type="button" class="cv-link" (click)="openViewCVModal(candidate)">{{ (candidate.displayName || 'Ứng viên') | t }}</button><p>{{ (candidate.isApplied ? 'Đã ứng tuyển' : 'Hồ sơ được đối chiếu') | t }}</p></div><strong class="review-score">{{ candidate.percentMatching | percent:'1.0-0' }}<small>{{ 'theo quy tắc' | t }}</small></strong></div>
+<section class="match-insight" *ngIf="candidate.matchingInsight as insight" [attr.aria-label]="'Bằng chứng matching' | t"><p>{{ candidate.matchingExplanation || insight.summary }}</p><div class="evidence-grid"><div *ngIf="insight.strengths?.length"><h3>{{ 'Điểm phù hợp' | t }}</h3><ul><li *ngFor="let strength of insight.strengths">{{ strength }}</li></ul></div><div *ngIf="insight.gaps?.length"><h3>{{ 'Cần bổ sung' | t }}</h3><ul><li *ngFor="let gap of insight.gaps">{{ gap }}</li></ul></div></div><small>{{ candidate.matchingProvider || insight.provider }} · {{ candidate.matchingModel || insight.model }} · {{ candidate.matchingRulesVersion || insight.rulesVersion }}</small><p *ngIf="candidate.matchingFailureReason || insight.failureReason" class="fallback-note">{{ 'AI chưa có giải thích. Kết quả theo quy tắc vẫn được giữ.' | t }}</p></section>
+<div class="review-actions"><button type="button" class="btn btn-outline-primary" (click)="openViewCVModal(candidate)">{{ 'Xem CV' | t }}</button><button type="button" class="btn" [class.btn-primary]="candidate.isSelected" [class.btn-outline-primary]="!candidate.isSelected" (click)="onClickSelect(candidate)" [disabled]="pendingId !== null" [attr.aria-pressed]="!!candidate.isSelected" [attr.aria-label]="(candidate.isSelected ? 'Bỏ yêu thích' : 'Yêu thích') | t"><i [class]="candidate.isSelected ? 'bi bi-star-fill' : 'bi bi-star'" aria-hidden="true"></i> {{ (candidate.isSelected ? 'Đã chọn' : 'Chọn hồ sơ') | t }}</button><button type="button" class="btn btn-outline-danger" (click)="openConfirmDialog(candidate)" [disabled]="pendingId !== null">{{ 'Không chọn' | t }}</button></div>
+</article>
+<app-jms-pagination [total]="data.content?.length || 0" [pageSize]="pageSize" [page]="pageIndex + 1" (pageChange)="handlePage($event)"></app-jms-pagination>
+</section>

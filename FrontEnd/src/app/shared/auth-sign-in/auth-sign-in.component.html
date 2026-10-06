@@ -1,0 +1,26 @@
+<main class="auth-page">
+  <div class="auth-toolbar"><a routerLink="/candidate" class="brand">JMS<span>Job Matching System</span></a><jms-help-trigger></jms-help-trigger><jms-language-switcher></jms-language-switcher><app-theme-toggle></app-theme-toggle></div>
+  <div class="auth-layout">
+    <section class="auth-story">
+      <span class="eyebrow">{{ 'Kết nối đúng cơ hội' | t }}</span>
+      <h1>{{ 'Hồ sơ của bạn.' | t }}<br>{{ 'Cơ hội của ngày mai.' | t }}</h1>
+      <p>{{ 'Khám phá công việc, xây dựng CV và hiểu rõ mức độ phù hợp — cùng JMS.' | t }}</p>
+      <div class="story-card"><i class="bi bi-person-vcard" aria-hidden="true"></i><div><strong>{{ 'Từ CV đến cơ hội' | t }}</strong><p>{{ 'Matching cung cấp bằng chứng. Quyết định tuyển dụng thuộc về con người.' | t }}</p></div></div>
+    </section>
+    <section class="auth-card" aria-labelledby="sign-in-title">
+      <span class="eyebrow">{{ roleLabel }}</span>
+      <h2 id="sign-in-title">{{ 'Chào mừng trở lại' | t }}</h2>
+      <p class="intro">{{ 'Đăng nhập để tiếp tục hành trình của bạn.' | t }}</p>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="field"><label for="username">{{ 'Tên đăng nhập' | t }}</label><input id="username" class="form-control" formControlName="username" autocomplete="username" maxlength="35" [attr.aria-invalid]="form.controls.username.touched && form.controls.username.invalid" />
+          <small *ngIf="form.controls.username.touched && form.controls.username.invalid">{{ 'Vui lòng nhập tên đăng nhập.' | t }}</small></div>
+        <div class="field"><label for="password">{{ 'Mật khẩu' | t }}</label><div class="password-field"><input id="password" class="form-control" formControlName="password" [type]="showPassword ? 'text' : 'password'" autocomplete="current-password" maxlength="72" /><button type="button" (click)="showPassword = !showPassword" [attr.aria-label]="(showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu') | t" [attr.aria-pressed]="showPassword"><i [class]="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'" aria-hidden="true"></i></button></div>
+          <small *ngIf="form.controls.password.touched && form.controls.password.invalid">{{ 'Vui lòng nhập mật khẩu.' | t }}</small></div>
+        <p *ngIf="error" role="alert" class="auth-error">{{ (error) | t }}</p>
+        <button class="btn btn-primary submit" type="submit" [disabled]="submitting" [attr.aria-busy]="submitting">{{ (submitting ? 'Đang đăng nhập…' : 'Đăng nhập') | t }}</button>
+      </form>
+      <p *ngIf="role !== 'admin'" class="auth-footer">{{ 'Chưa có tài khoản?' | t }} <a [routerLink]="['/' + role + '/sign-up']">{{ 'Đăng ký' | t }}</a></p>
+      <nav class="role-links" [attr.aria-label]="'Đăng nhập theo vai trò' | t"><a *ngIf="role !== 'candidate'" routerLink="/candidate/sign-in">{{ 'Ứng viên' | t }}</a><a *ngIf="role !== 'recruiter'" routerLink="/recruiter/sign-in">{{ 'Nhà tuyển dụng' | t }}</a><a *ngIf="role !== 'admin'" routerLink="/admin/sign-in">{{ 'Quản trị viên' | t }}</a></nav>
+    </section>
+  </div>
+</main>

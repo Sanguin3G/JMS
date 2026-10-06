@@ -1,10 +1,3 @@
-<!-- [style.background-image]="'url('+ backgroudSelectedLink + ')'" -->
-<div>
-   <section class="imageHeader">
-      <candidate-header></candidate-header>
-      <candidate-sliders></candidate-sliders>
-   </section>
-
-   <app-list-jobs></app-list-jobs>
-   <app-faq></app-faq>
-</div>
+<candidate-header></candidate-header>
+<section class="candidate-hero"><div class="container hero-layout"><div class="hero-copy"><p class="hero-eyebrow"><i class="bi bi-stars" aria-hidden="true"></i> {{ 'Cơ hội mới · Bước tiến mới' | t }}</p><h1>{{ 'Tìm công việc phù hợp' | t }}<br>{{ 'với' | t }} <span>{{ 'Hồ sơ của bạn.' | t }}</span></h1><p>{{ 'Đem theo thế mạnh của bạn. Tìm một đội ngũ để cùng tạo nên điều đáng tự hào.' | t }}</p><div class="hero-path" [attr.aria-label]="'Hành trình ứng tuyển' | t"><span><i class="bi bi-search" aria-hidden="true"></i> {{ 'Khám phá' | t }}</span><i class="bi bi-arrow-right" aria-hidden="true"></i><span><i class="bi bi-person-vcard" aria-hidden="true"></i> {{ 'CV của bạn' | t }}</span><i class="bi bi-arrow-right" aria-hidden="true"></i><span><i class="bi bi-send" aria-hidden="true"></i> {{ 'Kết nối' | t }}</span></div></div><figure class="hero-photo"><img src="/assets/demo/team-work.jpg" [attr.alt]="'Một nhóm cùng trao đổi và làm việc bên máy tính' | t" width="1200" height="800" fetchpriority="high"><figcaption><i class="bi bi-people" aria-hidden="true"></i><span><strong>{{ 'Công việc mới. Đồng đội mới.' | t }}</strong><small>{{ 'Bắt đầu từ một hồ sơ thật tốt.' | t }}</small></span></figcaption><span class="photo-sticker" aria-hidden="true">{{ 'Bước tiếp theo' | t }}<br>{{ 'là của bạn ↗' | t }}</span></figure></div></section>
+<app-list-jobs></app-list-jobs>

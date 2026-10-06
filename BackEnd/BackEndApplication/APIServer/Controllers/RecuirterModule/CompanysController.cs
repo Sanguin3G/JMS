@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
 using APIServer.IServices;
@@ -36,7 +36,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new PagingResponseBody<List<CompanyDTO>>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -60,7 +60,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new BaseResponseBody<CompanyDTO>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -68,7 +68,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new BaseResponseBody<CompanyDTO>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -87,7 +87,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new PagingResponseBody<List<CompanyDTO>>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -95,7 +95,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new PagingResponseBody<List<CompanyDTO>>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -120,7 +120,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new BaseResponseBody<int>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -128,7 +128,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new BaseResponseBody<int>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -153,7 +153,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new BaseResponseBody<int>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -161,7 +161,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new BaseResponseBody<int>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }

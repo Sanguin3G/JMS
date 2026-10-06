@@ -1,12 +1,12 @@
-import { Component } from '@angular/core';
+import { editorConfig } from 'src/app/shared/rich-text/editor-config';
+import { inject, Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ClassicEditor } from 'ckeditor5';
-import { ToastrService } from 'ngx-toastr';
-import { getRequest, postRequest } from 'src/app/service/api-requests';
-import { showError, showInfo, showSuccess } from 'src/app/service/common';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
+import { ApiService } from 'src/app/core/http/api.service';
+
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
-import { getProfile, signOut } from 'src/app/service/localstorage';
+import { AuthService } from 'src/app/core/auth/auth.service';
 
 @Component({
   standalone: false,
@@ -16,7 +16,8 @@ import { getProfile, signOut } from 'src/app/service/localstorage';
 })
 
 export class CreateJdComponent {
-   public Editor = ClassicEditor;
+   private readonly auth = inject(AuthService);
+   private readonly api = inject(ApiService);
    datas: any[] = [];
    categories: any;
    levels: any;
@@ -24,10 +25,10 @@ export class CreateJdComponent {
    genders: any;
    profile: any;
 
-   constructor(private toastr: ToastrService, private router: Router) {
-      this.profile = getProfile();
+   constructor(private toastr: NotificationService, private router: Router) {
+      this.profile = this.auth.getProfile();
 
-      getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
+      this.api.getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => {
             this.categories = res.data
          })
@@ -35,7 +36,7 @@ export class CreateJdComponent {
             console.warn(apiRecruiter.GET_ALL_CATEGORY, data);
          })
 
-      getRequest(apiRecruiter.GET_ALL_GENDER, AuthorizationMode.PUBLIC, { page: 10 })
+      this.api.getRequest(apiRecruiter.GET_ALL_GENDER, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => {
             this.genders = res.data
          })
@@ -43,7 +44,7 @@ export class CreateJdComponent {
             console.warn(apiRecruiter.GET_ALL_GENDER, data);
          })
 
-      getRequest(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 })
+      this.api.getRequest(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => {
             this.levels = res.data
          })
@@ -51,7 +52,7 @@ export class CreateJdComponent {
             console.warn(apiRecruiter.GET_ALL_LEVEL_TITLE, data);
          })
 
-      getRequest(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 })
+      this.api.getRequest(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => {
             this.employmentTypes = res.data
          })
@@ -60,17 +61,7 @@ export class CreateJdComponent {
          })
    }
 
-   public configDescription = {
-      toolbar: {
-         items: [
-            'undo',
-            'redo',
-            '|',
-            'bulletedList', // Add 'bulletedList' here
-         ],
-      },
-      placeholder: 'Nhập mô tả công việc'
-   }
+   public configDescription = editorConfig("Mô tả công việc");
    public configEducationRequirement = { ...this.configDescription, placeholder: 'Nhập yêu cầu học vấn' }
    public configExperienceRequirement = { ...this.configDescription, placeholder: 'Nhập yêu cầu kinh nghiệm' }
    public configSkillRequirement = { ...this.configDescription, placeholder: 'Nhập yêu kỹ năng' }
@@ -89,7 +80,7 @@ export class CreateJdComponent {
    genderRq = new FormControl('0');
    typeRq = new FormControl('0', [Validators.required, Validators.min(1)]);
    categoryRq = new FormControl('0', [Validators.required, Validators.min(1)]);
-   expiredDateRq = new FormControl({value: this.getNextMonthFullDateStringDisplay(), disabled: true}, [Validators.required]);
+   expiredDateRq = new FormControl(this.getNextMonthFullDateString(), [Validators.required]);
    addressRq = new FormControl(null, [Validators.required]);
    salaryRq = new FormControl(null, [Validators.required, Validators.min(0)]);
    descriptionRq = new FormControl(null, [Validators.required]);
@@ -216,8 +207,11 @@ export class CreateJdComponent {
    checkDes: any = false;
    checkBen: any = false;
 
-   submitButtonClicked() {            
-      if (this.titleRq.valid && this.emailRq.valid && this.addressRq.valid && this.salaryRq.valid && this.descriptionRq.valid && this.educationRq.valid && this.experienceRq.valid && this.skillRq.valid && this.benefitRq.valid && this.numberRequiredRq.valid && this.categoryRq.valid && this.levelRq.valid && this.typeRq.valid) {
+   submitting = false;
+
+   submitButtonClicked() {
+      if (this.submitting) return;
+      if (this.titleRq.valid && this.emailRq.valid && this.addressRq.valid && this.salaryRq.valid && this.descriptionRq.valid && this.educationRq.valid && this.experienceRq.valid && this.skillRq.valid && this.benefitRq.valid && this.numberRequiredRq.valid && this.categoryRq.valid && this.levelRq.valid && this.typeRq.valid && this.expiredDateRq.valid) {
 
          const title = this.titleRq.value;
          const numberRequirement = this.numberRequiredRq.value;
@@ -228,7 +222,7 @@ export class CreateJdComponent {
          const genderRequirement = this.genderRq.value === '0' ? "3" :  this.genderRq.value;
          const employmentTypeName = this.typeRq.value === '0' ? null :  this.typeRq.value;
          const categoryName = this.categoryRq.value === '0' ? null :  this.categoryRq.value;
-         const expiredDate = this.getNextMonthFullDateString();
+         const expiredDate = this.expiredDateRq.value;
          const address = this.addressRq.value;
          const salary = this.salaryRq.value;
          const jobDetail = this.descriptionRq.value;
@@ -270,24 +264,25 @@ export class CreateJdComponent {
             },
          }
 
-         postRequest(`${apiRecruiter.POST_CREATE_JD}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, data)
+         this.submitting = true;
+         this.api.postRequest(`${apiRecruiter.POST_CREATE_JD}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, data)
             .then(res => {
                if(res.statusCode == 201){
-                  showSuccess(this.toastr, "Tạo bài viết thành công")
+                  this.toastr.success("Tạo bài viết thành công")
                   setTimeout(() => this.router.navigate(['/recruiter/list-jds']), 1000);
                }else{
-                  showError(this.toastr, "Tạo bài viết thất bại")
+                  this.toastr.error("Tạo bài viết thất bại")
                }
-               console.log(res);
+
             })
             .catch(data => {
-               showError(this.toastr, "Tạo bài viết thất bại")
-            })
+               this.toastr.error("Tạo bài viết thất bại")
+            }).finally(() => { this.submitting = false; })
 
 
          return
       }
-      
+
       this.checkReq = true;
       this.checkDes = true;
       this.checkBen = true;
@@ -305,39 +300,12 @@ export class CreateJdComponent {
       this.experienceRq.markAllAsTouched();
       this.skillRq.markAllAsTouched();
       this.benefitRq.markAllAsTouched();
-      showInfo(this.toastr, "Vui lòng nhập đủ thông tin yêu cầu!")
+      this.toastr.info("Vui lòng nhập đủ thông tin yêu cầu!")
       return
    }
 
-   getNextMonthFullDateString(): string {      
-      const currentDate = new Date();
-      currentDate.setMonth(currentDate.getMonth() + 1);
-      const nextMonth = currentDate.getMonth() + 1;
-      const year = currentDate.getFullYear();
-      const day = currentDate.getDate();
-      const nextMonthFullDateString = this.formatDate(nextMonth, day, year);
-      console.log(nextMonthFullDateString);
-      
-      return nextMonthFullDateString;
-    }
-
-    getNextMonthFullDateStringDisplay(): string {      
-      const currentDate = new Date();
-      currentDate.setMonth(currentDate.getMonth() + 1);
-      const nextMonth = currentDate.getMonth() + 1;
-      const year = currentDate.getFullYear();
-      const day = currentDate.getDate();
-      const nextMonthFullDateString = this.formatDate(day, nextMonth, year);
-      console.log(nextMonthFullDateString);
-      
-      return nextMonthFullDateString;
-    }
-  
-    private formatDate(day: number, month: number, year: number): string {
-      return `${this.padNumber(day)}/${this.padNumber(month)}/${year}`;
-    }
-  
-    private padNumber(num: number): string {
-      return num < 10 ? `0${num}` : `${num}`;
-    }
+   getNextMonthFullDateString(): string {
+      const date = new Date(); date.setDate(date.getDate() + 30);
+      return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+   }
 }

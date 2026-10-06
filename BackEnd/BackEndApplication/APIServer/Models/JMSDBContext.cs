@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.Models.Entity;
 using Microsoft.EntityFrameworkCore;
@@ -30,23 +30,7 @@ namespace APIServer.Models
         public virtual DbSet<Slider> Sliders { get; set; }
         public virtual DbSet<AiProviderProfile> AiProviderProfiles { get; set; }
         public virtual DbSet<FaqEntry> FaqEntries { get; set; }
-
-        public JMSDBContext()
-        {
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-                var conStr = config.GetConnectionString("JobConstr");
-                if (!optionsBuilder.IsConfigured)
-                {
-                    optionsBuilder.UseSqlite(conStr);
-                }
-            }
-        }
+        public DbSet<SavedJob> SavedJobs { get; set; }
 
         public JMSDBContext(DbContextOptions options) : base(options)
         {
@@ -54,6 +38,11 @@ namespace APIServer.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<SavedJob>().HasKey(saved => new { saved.CandidateId, saved.JobId });
+            modelBuilder.Entity<SavedJob>().HasOne(saved => saved.Candidate).WithMany()
+                .HasForeignKey(saved => saved.CandidateId).OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<SavedJob>().HasOne(saved => saved.Job).WithMany()
+                .HasForeignKey(saved => saved.JobId).OnDelete(DeleteBehavior.Cascade);
             //modelBuilder.Entity<Recuirter>().HasData(new Recuirter
             //{
             //    id = 1,

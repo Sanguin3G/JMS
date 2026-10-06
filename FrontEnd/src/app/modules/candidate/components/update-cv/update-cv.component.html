@@ -1,58 +1,35 @@
 <div class="container-fluid">
    <candidate-header></candidate-header>
 
-   <form (ngSubmit)="submitCV()">
-
-   <div class="container header__container">
-      <div class="flex">
-
-         <div class="header__tool">
-            <!-- <div class="header__preview-cv">
-               <button class="btn-cv btn-cv--success btn-cv--fix-size is-plain">
-                  <i class="mr-8 fa-regular fa-eye"></i><span class="btn-cv__text">Xem trước</span></button>
-            </div> -->
-            <div class="save-cv">
-               <button type="submit" [disabled]="isSaving" class="save-cv save-cv__btn btn-cv btn-cv--success btn-cv--fix-size">
-                  <i class="save-cv__icon fa-solid fa-floppy-disk mr-8"></i>
-                  <span class="btn-cv__text">Chỉnh sửa</span>
-               </button>
-            </div>
-            <div class="confirm-modal">
-               <div class="el-overlay" style="z-index: 2001; display: none;">
-                  <div class="el-overlay-dialog"><!--v-if--></div>
-               </div>
-            </div>
-         </div>
-      </div>
-   </div>
-
-
-
+   <form (ngSubmit)="submitCV()" class="cv-editor-form">
+     <header class="editor-toolbar container"><div><a routerLink="/candidate/your-cvs"><i class="bi bi-arrow-left" aria-hidden="true"></i> {{ 'Thư viện CV' | t }}</a><h1>{{ 'Chỉnh sửa CV' | t }}</h1><p>{{ 'Điền thông tin chính, bổ sung các mục phù hợp và chọn một trong 9 mẫu JMS.' | t }}</p></div><div class="editor-save"><span *ngIf="hasUnsavedChanges()">{{ 'Có thay đổi chưa lưu' | t }}</span><button type="submit" class="btn btn-primary" [disabled]="isSaving || loading || !!loadError"><i class="bi bi-floppy" aria-hidden="true"></i> {{ (isSaving ? 'Đang lưu…' : 'Lưu CV') | t }}</button></div></header>
+     <div class="container"><p *ngIf="loading" class="editor-notice" role="status">{{ 'Đang tải CV…' | t }}</p><div *ngIf="loadError" class="editor-notice" role="alert"><p>{{ (loadError) | t }}</p><button type="button" class="btn btn-outline-primary" (click)="loadCv()">{{ 'Thử lại' | t }}</button></div><p *ngIf="savedMessage && !hasUnsavedChanges()" class="editor-notice" role="status">{{ (savedMessage) | t }}</p><div *ngIf="validationMessages.length" id="cv-validation" tabindex="-1" class="editor-validation" role="alert"><h2>{{ 'Kiểm tra thông tin trước khi lưu' | t }}</h2><ul><li *ngFor="let message of validationMessages">{{ (message) | t }}</li></ul></div></div>
+     <fieldset [disabled]="isSaving" *ngIf="!loading && !loadError">
    <div class="container mb-5" [style.font-family]="fontCV">
       <div class="container Header">
          <div class="header__title">
-            <input type="text" name="cvTitle" [(ngModel)]="form.cvTitle" class="header__input cvTitle" placeholder="Tên CV">
+            <input type="text" name="cvTitle" [(ngModel)]="form.cvTitle" class="header__input cvTitle" [attr.placeholder]="'Tên CV' | t" [attr.aria-label]="'Tên CV' | t">
          </div>
          <div class="header__title">
             <select name="categoryId" class="form-select shadow-none customSelect categoryId" [(ngModel)]="form.categoryId"
-               aria-label="Default select example">
-               <option value="0"> Chọn Lĩnh Vực</option>
+               [attr.aria-label]="'Ngành nghề' | t">
+               <option value="0"> {{ 'Chọn Lĩnh Vực' | t }}</option>
                <option *ngFor="let elm of categories" [value]="elm.id">{{elm.categoryName}}</option>
             </select>
          </div>
 
          <div class="header__title">
             <select name="levelId" class="form-select shadow-none customSelect levelId" [(ngModel)]="form.levelId"
-               aria-label="Default select example">
-               <option value="0">Chọn Cấp Bậc</option>
+               [attr.aria-label]="'Cấp bậc' | t">
+               <option value="0">{{ 'Chọn Cấp Bậc' | t }}</option>
                <option *ngFor="let elm of levels" [value]="elm.id">{{elm.title}}</option>
             </select>
          </div>
 
          <div class="header__title">
             <select name="employmentTypeId" class="form-select shadow-none customSelect employmentTypeId" [(ngModel)]="form.employmentTypeId"
-               aria-label="Default select example">
-               <option value="0">Chọn Loại việc làm</option>
+               [attr.aria-label]="'Hình thức làm việc' | t">
+               <option value="0">{{ 'Chọn loại việc làm' | t }}</option>
                <option *ngFor="let elm of employmentTypes" [value]="elm.id">{{elm.title}}</option>
             </select>
          </div>
@@ -61,7 +38,7 @@
 
          <div class="header__title">
             <select name="fontCV" class="form-select shadow-none customSelect1" [(ngModel)]="fontCV"
-               aria-label="Default select example">
+               [attr.aria-label]="'Phông chữ CV' | t">
                <option value="Sans-serif">Sans-serif</option>
                <option value="Monospace">Monospace</option>
                <option value="Arial">Arial</option>
@@ -75,47 +52,29 @@
          <div class="block-BackGroundCV">
 
             <div style="margin: auto;">
-               <i class="fa-solid fa-image"></i>
-               <span>Hình nền CV</span>
+               <i class="bi bi-image"></i>
+               <span>{{ 'Hình nền CV' | t }}</span>
             </div>
 
             <div class="wrapModel">
                <div class="modelBackground">
-                  <div class="items" (click)="selectTheme(0)">
-                     <img src="{{apiURL}}/assets/images/themeDefault.jpg" alt="">
-                  </div>
+                  <button type="button" class="items" (click)="selectTheme(0)" [attr.aria-pressed]="themeId === 0"><img src="/assets/images/themeDefault.jpg" [attr.alt]="'Mẫu 1' | t"><span class="theme-caption">{{ 'Mẫu 1' | t }}</span></button>
 
-                  <div class="items" (click)="selectTheme(1)">
-                     <img src="{{apiURL}}/assets/images/theme1.jpg" alt="">
-                  </div>
+                  <button type="button" class="items" (click)="selectTheme(1)" [attr.aria-pressed]="themeId === 1"><img src="/assets/images/theme1.jpg" [attr.alt]="'Mẫu 2' | t"><span class="theme-caption">{{ 'Mẫu 2' | t }}</span></button>
 
-                  <div class="items" (click)="selectTheme(2)">
-                     <img src="{{apiURL}}/assets/images/theme2.jpg" alt="">
-                  </div>
+                  <button type="button" class="items" (click)="selectTheme(2)" [attr.aria-pressed]="themeId === 2"><img src="/assets/images/theme2.jpg" [attr.alt]="'Mẫu 3' | t"><span class="theme-caption">{{ 'Mẫu 3' | t }}</span></button>
 
-                  <div class="items" (click)="selectTheme(3)">
-                     <img src="{{apiURL}}/assets/images/theme3.jpg" alt="">
-                  </div>
+                  <button type="button" class="items" (click)="selectTheme(3)" [attr.aria-pressed]="themeId === 3"><img src="/assets/images/theme3.jpg" [attr.alt]="'Mẫu 4' | t"><span class="theme-caption">{{ 'Mẫu 4' | t }}</span></button>
 
-                  <div class="items" (click)="selectTheme(4)">
-                     <img src="{{apiURL}}/assets/images/theme4.jpg" alt="">
-                  </div>
+                  <button type="button" class="items" (click)="selectTheme(4)" [attr.aria-pressed]="themeId === 4"><img src="/assets/images/theme4.jpg" [attr.alt]="'Mẫu 5' | t"><span class="theme-caption">{{ 'Mẫu 5' | t }}</span></button>
 
-                  <div class="items" (click)="selectTheme(5)">
-                     <img src="{{apiURL}}/assets/images/theme5.jpg" alt="">
-                  </div>
+                  <button type="button" class="items" (click)="selectTheme(5)" [attr.aria-pressed]="themeId === 5"><img src="/assets/images/theme5.jpg" [attr.alt]="'Mẫu 6' | t"><span class="theme-caption">{{ 'Mẫu 6' | t }}</span></button>
 
-                  <div class="items" (click)="selectTheme(6)">
-                     <img src="{{apiURL}}/assets/images/theme6.jpg" alt="">
-                  </div>
+                  <button type="button" class="items" (click)="selectTheme(6)" [attr.aria-pressed]="themeId === 6"><img src="/assets/images/theme6.jpg" [attr.alt]="'Mẫu 7' | t"><span class="theme-caption">{{ 'Mẫu 7' | t }}</span></button>
 
-                  <div class="items" (click)="selectTheme(7)">
-                     <img src="{{apiURL}}/assets/images/theme7.jpg" alt="">
-                  </div>
+                  <button type="button" class="items" (click)="selectTheme(7)" [attr.aria-pressed]="themeId === 7"><img src="/assets/images/theme7.jpg" [attr.alt]="'Mẫu 8' | t"><span class="theme-caption">{{ 'Mẫu 8' | t }}</span></button>
 
-                  <div class="items" (click)="selectTheme(8)">
-                     <img src="{{apiURL}}/assets/images/theme8.jpg" alt="">
-                  </div>
+                  <button type="button" class="items" (click)="selectTheme(8)" [attr.aria-pressed]="themeId === 8"><img src="/assets/images/theme8.jpg" [attr.alt]="'Mẫu 9' | t"><span class="theme-caption">{{ 'Mẫu 9' | t }}</span></button>
                </div>
             </div>
          </div>
@@ -126,353 +85,341 @@
             <div class="avatar-candidate">
                <div class="file-upload">
                   <div class="image-upload-wrap" ng-hide="true" [style.display]="hideImage">
-                     <input #avatarInput class="file-upload-input" type='file' id="avatarCv" multiple=false
-                        (change)="getFile($event);" accept="image/*" />
+                     <input #avatarInput class="file-upload-input" type='file' id="avatarCv" [attr.aria-label]="'Ảnh đại diện CV (PNG, JPEG hoặc WebP, tối đa 5 MB)' | t"
+                        (change)="getFile($event);" accept="image/png,image/jpeg,image/webp" />
                      <div class="drag-text">
-                        <h3 [class]="ThemStyle">Kéo thả ảnh hoặc chọn ảnh</h3>
+                        <h3 [class]="ThemStyle">{{ 'Kéo thả ảnh hoặc chọn ảnh' | t }}</h3>
                      </div>
                   </div>
                   <div class="file-upload-content" [style.display]="displayImage">
-                     <img class="file-upload-image" [src]="fileSrc" alt="your image"
-                        onerror="this.src='https://cdn1.iconfinder.com/data/icons/main-ui-elements-with-colour-bg/512/male_avatar-512.png'" />
+                     <img class="file-upload-image" [src]="fileSrc" [attr.alt]="'Ảnh đại diện CV' | t" jmsImageFallback />
                      <div class="btn-Change-Image">
-                        <button type="button" class="fa-solid fa-plus file-upload-btn" (click)="chooseAvatar()"
-                           aria-label="Choose a different profile image"
+                        <button type="button" class="bi bi-plus-lg file-upload-btn" (click)="chooseAvatar()"
+                           [attr.aria-label]="'Chọn ảnh đại diện khác' | t"
                            [style.display]="displayChange"></button>
                      </div>
                   </div>
                </div>
             </div>
-            <!-- Form Infor  -->
+
             <div class="mt-3 form-info form-input-value">
-               <!-- Header  -->
+
                <div>
-                  <input type="text" placeholder="Thông tin cá nhân" value="Thông tin cá nhân" disabled
+                  <input type="text" [attr.placeholder]="'Thông tin cá nhân' | t" value="Thông tin cá nhân" disabled
                      class="form-left--header width100" [style.color]="colorLeftHeader" [class]="ThemStyle">
                </div>
-               <!-- Input Email  -->
+
                <div class="mt-1">
-                  <i class="fa-solid fa-envelope" [style.color]="colorLeftHeader"></i>
+                  <i class="bi bi-envelope" [style.color]="colorLeftHeader"></i>
                   <input type="email" name="displayEmail" [(ngModel)]="form.displayEmail" placeholder="Email"
-                     class="form-info-input inputEmail" [style.color]="colorLeftInput" [class]="ThemStyle">
+                     class="form-info-input inputEmail" [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Email liên hệ' | t">
                </div>
-               <!-- Input Phone  -->
+
                <div class="mt-1">
-                  <i class="fa-solid fa-phone" [style.color]="colorLeftHeader"></i>
-                  <input type="tel" name="phone" [(ngModel)]="form.phone" placeholder="Số điện thoại" class="form-info-input inputPhone"
-                     [style.color]="colorLeftInput" [class]="ThemStyle">
+                  <i class="bi bi-telephone" [style.color]="colorLeftHeader"></i>
+                  <input type="tel" name="phone" [(ngModel)]="form.phone" [attr.placeholder]="'Số điện thoại' | t" class="form-info-input inputPhone"
+                     [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Số điện thoại' | t">
                </div>
-               <!-- Input Dob  -->
+
                <div class="mt-1">
-                  <i class="fa-solid fa-calendar" [style.color]="colorLeftHeader"></i>
+                  <i class="bi bi-calendar" [style.color]="colorLeftHeader"></i>
                   <input type="date" name="dob" [(ngModel)]="form.dob" class="form-info-input inputDob"
-                     [style.color]="colorLeftInput" [class]="ThemStyle">
+                     [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Ngày sinh' | t">
                </div>
-               <!-- Input Gender  -->
+
                <div class="d-flex mt-2">
-                  <i class="fa-solid fa-venus-mars" [style.color]="colorLeftHeader"></i>
+                  <i class="bi bi-gender-ambiguous" [style.color]="colorLeftHeader"></i>
                   <div class="d-flex">
                      <div class="form-check ml-2">
                         <input class="form-check-input shadow-none" [style.color]="colorLeftInput" value="1"
-                           [(ngModel)]="form.gender" type="radio" name="gender" id="nam">
+                           [(ngModel)]="form.gender" type="radio" name="gender" id="nam" [attr.aria-label]="'Giới tính' | t">
                         <label class="form-check-label" for="nam" [style.color]="colorLeftHeader">
-                           Nam
+                           {{ 'Nam' | t }}
                         </label>
                      </div>
                      <div class="form-check  ml-2">
                         <input class="form-check-input shadow-none" [style.color]="colorLeftHeader" value="2"
-                           [(ngModel)]="form.gender" type="radio" name="gender" id="nu">
+                           [(ngModel)]="form.gender" type="radio" name="gender" id="nu" [attr.aria-label]="'Giới tính' | t">
                         <label class="form-check-label" for="nu" [style.color]="colorLeftHeader">
-                           Nữ
+                           {{ 'Nữ' | t }}
                         </label>
                      </div>
                   </div>
                </div>
-               <!-- Input Address  -->
+
                <div class="mt-1 d-flex">
-                  <i class="fa-solid fa-location-dot" [style.color]="colorLeftHeader"></i>
-                  <textarea rows="2" name="address" [(ngModel)]="form.address" maxlength="60" placeholder="Địa chỉ" class="form-info-input inputAddress"
-                     [style.color]="colorLeftInput" [class]="ThemStyle"></textarea>
+                  <i class="bi bi-geo-alt" [style.color]="colorLeftHeader"></i>
+                  <textarea rows="2" name="address" [(ngModel)]="form.address" maxlength="60" [attr.placeholder]="'Địa chỉ' | t" class="form-info-input inputAddress"
+                     [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Địa chỉ' | t"></textarea>
                </div>
             </div>
 
-            <!-- Form Skills  -->
+
             <div class="mt-3 form-skills form-input-value">
-               <!-- Header  -->
+
                <div>
-                  <input type="text" placeholder="Kỹ năng" value="Kỹ năng" disabled class="form-left--header width100"
+                  <input type="text" [attr.placeholder]="'Kỹ năng' | t" value="Kỹ năng" disabled class="form-left--header width100"
                      [style.color]="colorLeftHeader">
                </div>
 
                <div class="skill">
-                  <!-- Input Name Skills  -->
-                  <!-- <div class="mt-1">
-                            <input type="text" placeholder="Tên kỹ năng" class="form-info-input skillTitle"
-                                [style.color]="colorLeftInput" [class]="ThemStyle">
-                        </div> -->
 
-                  <!-- Input Describe Skills  -->
+
+
+
                   <div class="mt-1">
                      <div *ngFor="let sk of skills; let index = index; trackBy: trackByIndex">
-                        <textarea rows="3" [name]="'skill-' + index" [(ngModel)]="sk.skillDescription" maxlength="300" placeholder="Mô tả kỹ năng"
+                        <textarea rows="3" [name]="'skill-' + index" [(ngModel)]="sk.skillDescription" maxlength="300" [attr.placeholder]="'Mô tả kỹ năng' | t"
                            class="form-info-input inputDescripitonSkills skillDescription"
-                           [style.color]="colorLeftInput" [class]="ThemStyle"></textarea>
+                           [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Mô tả kỹ năng' | t"></textarea>
                      </div>
 
                   </div>
                </div>
 
-               <button type="button" class="fa-solid fa-plus skillAdd" (click)="addSkill()" aria-label="Thêm kỹ năng"></button>
-               <button type="button" class="fa-solid fa-minus skillSub" (click)="removeSkill(skills.length - 1)" aria-label="Xóa kỹ năng"></button>
+               <button type="button" class="bi bi-plus-lg skillAdd" (click)="addSkill()" [attr.aria-label]="'Thêm kỹ năng' | t"></button>
+               <button type="button" class="bi bi-dash skillSub" (click)="removeSkill(skills.length - 1)" [attr.aria-label]="'Xóa kỹ năng' | t"></button>
             </div>
 
-            <!-- Form Certificates  -->
+
             <div class="mt-3 form-Certificates form-input-value">
-               <!-- Header  -->
+
                <div>
-                  <input type="text" placeholder="Chứng chỉ" value="Tên chứng chỉ" disabled
+                  <input type="text" [attr.placeholder]="'Chứng chỉ' | t" value="Tên chứng chỉ" disabled
                      class="form-left--header width100" [style.color]="colorLeftHeader" [class]="ThemStyle">
                </div>
 
                <div class="certificates" *ngFor="let ce of certificates; let index = index; trackBy: trackByIndex">
-                  <!-- Input Name Certificates  -->
+
                   <div class="mt-1">
-                     <input type="text" [name]="'certificate-name-' + index" [(ngModel)]="ce.certificateName" placeholder="Tên chứng chỉ"
-                        class="form-info-input certificateName" [style.color]="colorLeftInput" [class]="ThemStyle">
+                     <input type="text" [name]="'certificate-name-' + index" [(ngModel)]="ce.certificateName" [attr.placeholder]="'Tên chứng chỉ' | t"
+                        class="form-info-input certificateName" [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Tên chứng chỉ' | t">
                   </div>
 
-                  <!-- Input Time Certificates  -->
+
                   <div class="mt-1 d-flex">
                      <input type="text" [name]="'certificate-issued-' + index" [(ngModel)]="ce.issuedDate" placeholder="mm/yyyy" class="form-info-input width50 issuedDateCertificate"
-                        [style.color]="colorLeftInput" [class]="ThemStyle">
+                        [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Ngày cấp chứng chỉ' | t">
                      <div>-</div>
                      <input type="text" [name]="'certificate-expired-' + index" [(ngModel)]="ce.expiredDate" placeholder="mm/yyyy" class="form-info-input width50 expiredDateCertificate"
-                        [style.color]="colorLeftInput" [class]="ThemStyle">
+                        [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Ngày hết hạn chứng chỉ' | t">
                   </div>
 
-                  <!-- Input Link Certificates  -->
+
                   <div class="mt-1">
                      <input type="url" [name]="'certificate-url-' + index" [(ngModel)]="ce.credentialURL" placeholder="Link" class="form-info-input width50 credentialURLCertificate"
-                        [style.color]="colorLeftInput" [class]="ThemStyle">
+                        [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Liên kết chứng chỉ' | t">
                   </div>
 
-                  <!-- Input Description Certificates  -->
+
                   <div class="mt-1">
-                     <textarea rows="3" [name]="'certificate-provider-' + index" [(ngModel)]="ce.certificateProvider" maxlength="300" placeholder="Miêu tả"
+                     <textarea rows="3" [name]="'certificate-provider-' + index" [(ngModel)]="ce.certificateProvider" maxlength="300" [attr.placeholder]="'Miêu tả' | t"
                         class="form-info-input certificateProvider" [style.color]="colorLeftInput"
-                        [class]="ThemStyle"></textarea>
+                        [class]="ThemStyle" [attr.aria-label]="'Đơn vị cấp chứng chỉ' | t"></textarea>
                   </div>
                </div>
-               <button type="button" class="fa-solid fa-plus certificatesAdd" (click)="addCertificate()" aria-label="Thêm chứng chỉ"></button>
-               <button type="button" class="fa-solid fa-minus certificatesSub" (click)="removeCertificate(certificates.length - 1)" aria-label="Xóa chứng chỉ"></button>
+               <button type="button" class="bi bi-plus-lg certificatesAdd" (click)="addCertificate()" [attr.aria-label]="'Thêm chứng chỉ' | t"></button>
+               <button type="button" class="bi bi-dash certificatesSub" (click)="removeCertificate(certificates.length - 1)" [attr.aria-label]="'Xóa chứng chỉ' | t"></button>
             </div>
 
-            <!-- Form Award  -->
+
             <div class="mt-3 form-prizes form-input-value">
-               <!-- Header  -->
+
                <div>
-                  <input type="text" placeholder="Giải thưởng" value="Giải thưởng" disabled
+                  <input type="text" [attr.placeholder]="'Giải thưởng' | t" value="Giải thưởng" disabled
                      class="form-left--header width100" [style.color]="colorLeftHeader">
                </div>
 
                <div class="prizes" *ngFor="let aw of awards; let index = index; trackBy: trackByIndex">
-                  <!-- Input Time Award  -->
+
                   <div class="mt-1">
-                     <input type="text" [name]="'award-year-' + index" [(ngModel)]="aw.fromYear" placeholder="Thời gian"
-                        class="form-info-input fromYearAwards" [style.color]="colorLeftInput" [class]="ThemStyle">
+                     <input type="text" [name]="'award-year-' + index" [(ngModel)]="aw.fromYear" [attr.placeholder]="'Thời gian' | t"
+                        class="form-info-input fromYearAwards" [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Thời gian bắt đầu' | t">
                   </div>
 
-                  <!-- Input Name Award  -->
+
                   <div class="mt-1">
-                     <input type="text" [name]="'award-name-' + index" [(ngModel)]="aw.awardName" placeholder="Tên giải thưởng"
-                        class="form-info-input awardName" [style.color]="colorLeftInput" [class]="ThemStyle">
+                     <input type="text" [name]="'award-name-' + index" [(ngModel)]="aw.awardName" [attr.placeholder]="'Tên giải thưởng' | t"
+                        class="form-info-input awardName" [style.color]="colorLeftInput" [class]="ThemStyle" [attr.aria-label]="'Tên giải thưởng' | t">
                   </div>
 
-                  <!-- Input Description Award  -->
+
                   <div class="mt-1">
-                     <textarea rows="3" [name]="'award-description-' + index" [(ngModel)]="aw.description" maxlength="300" placeholder="Miêu tả"
+                     <textarea rows="3" [name]="'award-description-' + index" [(ngModel)]="aw.description" maxlength="300" [attr.placeholder]="'Miêu tả' | t"
                         class="form-info-input awardDescription" [style.color]="colorLeftInput"
-                        [class]="ThemStyle"></textarea>
+                        [class]="ThemStyle" [attr.aria-label]="'Mô Tả' | t"></textarea>
                   </div>
                </div>
-               <button type="button" class="fa-solid fa-plus prizesAdd" (click)="addAward()" aria-label="Thêm giải thưởng"></button>
-               <button type="button" class="fa-solid fa-minus prizesSub" (click)="removeAward(awards.length - 1)" aria-label="Xóa giải thưởng"></button>
+               <button type="button" class="bi bi-plus-lg prizesAdd" (click)="addAward()" [attr.aria-label]="'Thêm giải thưởng' | t"></button>
+               <button type="button" class="bi bi-dash prizesSub" (click)="removeAward(awards.length - 1)" [attr.aria-label]="'Xóa giải thưởng' | t"></button>
             </div>
          </div>
 
          <div class="col-8 p-4 block-right">
 
-            <!-- Name and Position job -->
+
             <div class="form-position form-input-value">
-               <!-- Header  Title-->
+
                <div style="display: flex;">
-                  <div style="line-height: 40px; font-weight: 600; font-size: 21px; white-space: pre;">Họ và tên: 
-                  </div> 
+                  <div style="line-height: 40px; font-weight: 600; font-size: 21px; white-space: pre;">{{ 'Họ và tên:' | t }}
+                  </div>
                   <div>
 
-                     <input type="text" name="displayName" [(ngModel)]="form.displayName" placeholder="Họ và tên"
+                     <input type="text" name="displayName" [(ngModel)]="form.displayName" [attr.placeholder]="'Họ và tên' | t"
                         class="form-right--header mt-2 displayName" [style.color]="colorRightHeader"
-                        [class]="ThemStyle">
+                        [class]="ThemStyle" [attr.aria-label]="'Họ và tên' | t">
                   </div>
                </div>
 
-               <!-- Header -->
-               <!-- <div style="display: flex;">
-                  <div style="line-height: 40px; font-weight: 600; font-size: 21px; white-space: pre;">
-                     vị trí ứng tuyển: 
-                  </div>
-                  <div>
-                     <input type="text" placeholder="Chức danh" value="{{ cv?.levelTitle }}"
-                        class="form-right--header mt-2 positionTitleName" [style.color]="colorRightHeader"
-                        [class]="ThemStyle">
-                  </div>
-               </div> -->
+
+
 
             </div>
 
-            <!-- Form careerGoal  -->
+
             <div class="mt-3 form-target form-input-value">
-               <!-- Header Title -->
+
                <div>
-                  <input type="text" placeholder="Mục tiêu nghề nghiệp" value="Mục tiêu nghề nghiệp" disabled
+                  <input type="text" [attr.placeholder]="'Mục tiêu nghề nghiệp' | t" value="Mục tiêu nghề nghiệp" disabled
                      class="form-right--header mt-2" [style.color]="colorRightHeader" [class]="ThemStyle">
                </div>
 
-               <!-- Input Decribe careerGoal  -->
+
                <div class="mt-1">
                   <textarea rows="3" name="careerGoal" [(ngModel)]="form.careerGoal" maxlength="300"
-                     placeholder="mục tiêu nghề nghiệp của bạn, bao gồm mục tiêu ngắn và dài hạn"
+                     [attr.placeholder]="'mục tiêu nghề nghiệp của bạn, bao gồm mục tiêu ngắn và dài hạn' | t"
                      class="input-side-right mt-2 careerGoal" [style.color]="colorRightHeader"
-                     [class]="ThemStyle"></textarea>
+                     [class]="ThemStyle" [attr.aria-label]="'Mục tiêu nghề nghiệp' | t"></textarea>
                </div>
             </div>
 
-            <!-- Form Experience  -->
+
             <div class="mt-3 form-experience form-input-value">
-               <!-- Header Title -->
+
                <div>
-                  <input type="text" placeholder="Kinh nghiệm việc làm" value="Kinh nghiệm việc làm" disabled
+                  <input type="text" [attr.placeholder]="'Kinh nghiệm việc làm' | t" value="Kinh nghiệm việc làm" disabled
                      class="form-right--header mt-2" [style.color]="colorRightHeader" [class]="ThemStyle">
                </div>
 
                <div class="experience" *ngFor="let ex of experiences; let index = index; trackBy: trackByIndex">
-                  <!-- Header Experience  -->
+
                   <div class="mt-1">
-                     <i class="fa-solid fa-suitcase"></i>
-                     <input type="text" [name]="'experience-position-' + index" [(ngModel)]="ex.position" placeholder="Vị trí công việc"
+                     <i class="bi bi-briefcase"></i>
+                     <input type="text" [name]="'experience-position-' + index" [(ngModel)]="ex.position" [attr.placeholder]="'Vị trí công việc' | t"
                         class="form-info-input-right mt-2 positionOfCompany" [style.color]="colorRightHeader"
-                        [class]="ThemStyle">
+                        [class]="ThemStyle" [attr.aria-label]="'Vị trí làm việc' | t">
                      <span>//</span>
                      <input type="text" [name]="'experience-from-' + index" [(ngModel)]="ex.fromDate" placeholder="mm/yyyy"
-                        class="form-info-input-Right-Date mt-2 fromDateExperience" [class]="ThemStyle">
+                        class="form-info-input-Right-Date mt-2 fromDateExperience" [class]="ThemStyle" [attr.aria-label]="'Tháng bắt đầu (mm/yyyy)' | t">
                      <span>-</span>
                      <input type="text" [name]="'experience-to-' + index" [(ngModel)]="ex.toDate" placeholder="mm/yyyy"
-                        class="form-info-input-Right-Date mt-2 toDateExperience" [class]="ThemStyle">
+                        class="form-info-input-Right-Date mt-2 toDateExperience" [class]="ThemStyle" [attr.aria-label]="'Tháng kết thúc (mm/yyyy)' | t">
                   </div>
 
                   <div>
-                     <input type="text" [name]="'experience-company-' + index" [(ngModel)]="ex.ComapanyName" placeholder="Tên công ty "
-                        class="form-info-input-right mt-2 width100 companyName" [class]="ThemStyle">
+                     <input type="text" [name]="'experience-company-' + index" [(ngModel)]="ex.ComapanyName" [attr.placeholder]="'Tên công ty' | t"
+                        class="form-info-input-right mt-2 width100 companyName" [class]="ThemStyle" [attr.aria-label]="'Tên công ty' | t">
                   </div>
 
                   <div>
-                     <textarea rows="4" [name]="'experience-description-' + index" [(ngModel)]="ex.description" maxlength="600" placeholder="Mô tả kinh nghiệm việc làm của bạn"
+                     <textarea rows="4" [name]="'experience-description-' + index" [(ngModel)]="ex.description" maxlength="600" [attr.placeholder]="'Mô tả kinh nghiệm việc làm của bạn' | t"
                         class="form-info-input-right width100 mt-2 experienceDescription"
-                        [class]="ThemStyle"></textarea>
+                        [class]="ThemStyle" [attr.aria-label]="'Mô Tả' | t"></textarea>
                   </div>
                </div>
-               <button type="button" class="fa-solid fa-plus form-experienceAdd" (click)="addExperience()" aria-label="Thêm kinh nghiệm"></button>
-               <button type="button" class="fa-solid fa-minus form-experienceSub" (click)="removeExperience(experiences.length - 1)" aria-label="Xóa kinh nghiệm"></button>
+               <button type="button" class="bi bi-plus-lg form-experienceAdd" (click)="addExperience()" [attr.aria-label]="'Thêm kinh nghiệm' | t"></button>
+               <button type="button" class="bi bi-dash form-experienceSub" (click)="removeExperience(experiences.length - 1)" [attr.aria-label]="'Xóa kinh nghiệm' | t"></button>
             </div>
 
-            <!-- Form Project  -->
+
             <div class="mt-3 form-project form-input-value">
-               <!-- Header Title -->
+
                <div>
-                  <input type="text" placeholder="Dự án" value="Dự án" disabled class="form-right--header mt-2"
+                  <input type="text" [attr.placeholder]="'Dự án' | t" value="Dự án" disabled class="form-right--header mt-2"
                      [style.color]="colorRightHeader">
                </div>
 
                <div class="project" *ngFor="let pr of projects; let index = index; trackBy: trackByIndex">
-                  <!-- Header Project  -->
+
                   <div class="mt-1">
-                     <i class="fa-solid fa-diagram-project" [style.color]="colorRightHeader"></i>
-                     <input type="text" [name]="'project-name-' + index" [(ngModel)]="pr.projectName" placeholder="Tên dự án"
-                        class="form-info-input-right mt-2 projectName" [class]="ThemStyle">
+                     <i class="bi bi-diagram-3" [style.color]="colorRightHeader"></i>
+                     <input type="text" [name]="'project-name-' + index" [(ngModel)]="pr.projectName" [attr.placeholder]="'Tên dự án' | t"
+                        class="form-info-input-right mt-2 projectName" [class]="ThemStyle" [attr.aria-label]="'Tên dự án' | t">
                      <span>//</span>
                      <input type="text" [name]="'project-from-' + index" [(ngModel)]="pr.fromDate" placeholder="mm/yyyy"
-                        class="form-info-input-Right-Date mt-2 fromDateProject" [class]="ThemStyle">
+                        class="form-info-input-Right-Date mt-2 fromDateProject" [class]="ThemStyle" [attr.aria-label]="'Tháng bắt đầu (mm/yyyy)' | t">
                      <span>-</span>
                      <input type="text" [name]="'project-to-' + index" [(ngModel)]="pr.toDate" placeholder="mm/yyyy"
-                        class="form-info-input-Right-Date mt-2 toDateProject" [class]="ThemStyle">
+                        class="form-info-input-Right-Date mt-2 toDateProject" [class]="ThemStyle" [attr.aria-label]="'Tháng kết thúc (mm/yyyy)' | t">
                   </div>
                   <div>
                      <div class="form-check ">
-                        <input class="form-check-input shadow-none isStillWorking" [name]="'project-current-' + index" [(ngModel)]="pr.isStillWorking" type="checkbox">
+                        <input class="form-check-input shadow-none isStillWorking" [name]="'project-current-' + index" [(ngModel)]="pr.isStillWorking" type="checkbox" [attr.aria-label]="'Đang thực hiện dự án' | t">
                         <label class="form-check-label">
-                           Đang làm việc
+                           {{ 'Đang làm việc' | t }}
                         </label>
                      </div>
                   </div>
                   <div>
-                     <textarea rows="3" [name]="'project-description-' + index" [(ngModel)]="pr.description" maxlength="300" placeholder="Mô tả kinh nghiệm trong dự án của bạn"
+                     <textarea rows="3" [name]="'project-description-' + index" [(ngModel)]="pr.description" maxlength="300" [attr.placeholder]="'Mô tả kinh nghiệm trong dự án của bạn' | t"
                         class="form-info-input-right width100 mt-2 projectDescription"
-                        [class]="ThemStyle"></textarea>
+                        [class]="ThemStyle" [attr.aria-label]="'Mô Tả' | t"></textarea>
                   </div>
                </div>
 
-               <button type="button" class="fa-solid fa-plus form-projectAdd" (click)="addProject()" aria-label="Thêm dự án"></button>
-               <button type="button" class="fa-solid fa-minus form-projectSub" (click)="removeProject(projects.length - 1)" aria-label="Xóa dự án"></button>
+               <button type="button" class="bi bi-plus-lg form-projectAdd" (click)="addProject()" [attr.aria-label]="'Thêm dự án' | t"></button>
+               <button type="button" class="bi bi-dash form-projectSub" (click)="removeProject(projects.length - 1)" [attr.aria-label]="'Xóa dự án' | t"></button>
             </div>
 
-            <!-- Form Educations  -->
+
             <div class="mt-3 form-education form-input-value">
-               <!-- Header Title -->
+
                <div>
-                  <input type="text" placeholder="Học vấn" value="Học vấn" disabled class="form-right--header mt-2"
+                  <input type="text" [attr.placeholder]="'Học vấn' | t" value="Học vấn" disabled class="form-right--header mt-2"
                      [style.color]="colorRightHeader">
                </div>
 
                <div class="education" *ngFor="let ed of educations; let index = index; trackBy: trackByIndex">
-                  <!-- Header Educations  -->
+
                   <div class="mt-1">
-                     <i class="fa-solid fa-school" [style.color]="colorRightHeader"></i>
-                     <input type="text" [name]="'education-major-' + index" [(ngModel)]="ed.majorName" placeholder="Ngành học - môn học "
-                        class="form-info-input-right mt-2 majorName" [class]="ThemStyle">
+                     <i class="bi bi-mortarboard" [style.color]="colorRightHeader"></i>
+                     <input type="text" [name]="'education-major-' + index" [(ngModel)]="ed.majorName" [attr.placeholder]="'Ngành học - môn học ' | t"
+                        class="form-info-input-right mt-2 majorName" [class]="ThemStyle" [attr.aria-label]="'Ngành học' | t">
                      <span>//</span>
                      <input type="text" [name]="'education-from-' + index" [(ngModel)]="ed.fromYear" placeholder="mm/yyyy"
-                        class="form-info-input-Right-Date mt-2 fromYearEducation" [class]="ThemStyle">
+                        class="form-info-input-Right-Date mt-2 fromYearEducation" [class]="ThemStyle" [attr.aria-label]="'Thời gian bắt đầu' | t">
                      <span>-</span>
                      <input type="text" [name]="'education-to-' + index" [(ngModel)]="ed.toYear" placeholder="mm/yyyy"
-                        class="form-info-input-Right-Date mt-2 toYearEducation" [class]="ThemStyle">
+                        class="form-info-input-Right-Date mt-2 toYearEducation" [class]="ThemStyle" [attr.aria-label]="'Thời gian kết thúc' | t">
                   </div>
 
                   <div>
-                     <input type="text" [name]="'education-school-' + index" [(ngModel)]="ed.schoolName" placeholder="Tên trường học"
-                        class="form-info-input-right mt-2 schoolName width100" [class]="ThemStyle">
+                     <input type="text" [name]="'education-school-' + index" [(ngModel)]="ed.schoolName" [attr.placeholder]="'Tên trường học' | t"
+                        class="form-info-input-right mt-2 schoolName width100" [class]="ThemStyle" [attr.aria-label]="'Tên trường' | t">
                   </div>
                   <div>
                      <div class="form-check ">
-                        <input type="checkbox" [name]="'education-current-' + index" [(ngModel)]="ed.stillLearning" class="form-check-input shadow-none stillLearning">
+                        <input type="checkbox" [name]="'education-current-' + index" [(ngModel)]="ed.stillLearning" class="form-check-input shadow-none stillLearning" [attr.aria-label]="'Đang học tập' | t">
                         <label class="form-check-label">
-                           Đang học tập
+                           {{ 'Đang học tập' | t }}
                         </label>
                      </div>
                   </div>
 
                   <div>
-                     <textarea rows="3" [name]="'education-description-' + index" [(ngModel)]="ed.description" maxlength="300" placeholder="Mô tả quá trình học tập hoặc thành tích của bạn"
-                        class="form-info-input-right width100 mt-2 educationDescription" [class]="ThemStyle"></textarea>
+                     <textarea rows="3" [name]="'education-description-' + index" [(ngModel)]="ed.description" maxlength="300" [attr.placeholder]="'Mô tả quá trình học tập hoặc thành tích của bạn' | t"
+                        class="form-info-input-right width100 mt-2 educationDescription" [class]="ThemStyle" [attr.aria-label]="'Mô Tả' | t"></textarea>
                   </div>
                </div>
 
-               <button type="button" class="fa-solid fa-plus form-educationAdd" (click)="addEducation()" aria-label="Thêm học vấn"></button>
-               <button type="button" class="fa-solid fa-minus form-educationSub" (click)="removeEducation(educations.length - 1)" aria-label="Xóa học vấn"></button>
+               <button type="button" class="bi bi-plus-lg form-educationAdd" (click)="addEducation()" [attr.aria-label]="'Thêm học vấn' | t"></button>
+               <button type="button" class="bi bi-dash form-educationSub" (click)="removeEducation(educations.length - 1)" [attr.aria-label]="'Xóa học vấn' | t"></button>
             </div>
          </div>
 
       </div>
 
    </div>
+   </fieldset>
    </form>
 </div>

@@ -1,19 +1,7 @@
-<div class="top-section">
-    <app-top-widgets></app-top-widgets>
-</div>
-<div class="middle-section">
-    <div class="widget left col-6">
-        <app-sales-by-month></app-sales-by-month>
-    </div>
-    <div class="widget right col-6 ">
-        <app-sales-by-category></app-sales-by-category>
-    </div>
-</div>
-<div class="bottom-section">
-    <div class="widget left col-6">
-        <app-last-few-transaction></app-last-few-transaction>
-    </div>
-    <div class="widget right col-6">
-        <app-top-three-products></app-top-three-products>
-    </div>
-</div>
+<section class="admin-dashboard" aria-labelledby="dashboard-heading">
+  <header class="dashboard-header">
+    <div><p class="eyebrow">{{ 'JMS · Quản trị' | t }}</p><h1 id="dashboard-heading">{{ 'Tổng quan tuyển dụng' | t }}</h1><p>{{ 'Theo dõi dữ liệu thực của ứng viên, công ty và hoạt động ứng tuyển.' | t }}</p></div>
+    <a class="btn btn-outline-primary" routerLink="/admin/setting"><i class="bi bi-sliders" aria-hidden="true"></i> {{ 'Cài đặt JMS' | t }}</a>
+  </header>
+  <app-top-widgets></app-top-widgets>
+</section>

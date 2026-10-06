@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
 using APIServer.IServices;
@@ -133,7 +133,7 @@ namespace APIServer.Controllers.CandidateModule
             {
                 return new BaseResponseBody<int>
                 {
-                    message = ex.InnerException.Message,
+                    message = "Unable to update this CV. Check the submitted fields.",
                     statusCode = HttpStatusCode.BadRequest,
                     data = -1,
                 };
@@ -167,11 +167,11 @@ namespace APIServer.Controllers.CandidateModule
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
-            
+
         }
 
         [HttpPost]
@@ -202,7 +202,7 @@ namespace APIServer.Controllers.CandidateModule
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }

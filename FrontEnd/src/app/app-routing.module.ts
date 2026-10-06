@@ -3,7 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { AdminComponent } from './modules/admin/admin.component';
 import { CandidateComponent } from './modules/candidate/candidate.component';
 import { RecruiterComponent } from './modules/recruiter/recruiter.component';
-import { NotFoundComponent } from './components/not-found/not-found.component';
 
 
 const routes: Routes = [

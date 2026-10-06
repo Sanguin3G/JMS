@@ -1,4 +1,4 @@
-﻿using APIServer.IRepositories;
+using APIServer.IRepositories;
 using APIServer.Models;
 using APIServer.Models.Entity;
 using Microsoft.EntityFrameworkCore;
@@ -156,16 +156,9 @@ namespace APIServer.Repositories
             return cVApplyList != null ? cVApplyList : null;
         }
 
-        public CVMatching GetByCVIdAndLastUpdateDate(int CVId, DateTime lastUpdateDate)
-        {
-            CVMatching cVApply = _context.CVMatchings.Include(c => c.Candidate)
-                .Include(p => p.Level).Include(g => g.Gender)
-                .Include(j => j.JobDescription).ThenInclude(c => c.Company)
-                .Include(j => j.JobDescription).ThenInclude(c => c.Category)
-                .Include(j => j.JobDescription).ThenInclude(c => c.Recuirter)
-                .Include(j => j.JobDescription).ThenInclude(e => e.EmploymentType).FirstOrDefault(x => x.CurriculumVitaeId == CVId && x.LastUpdateDate == lastUpdateDate && x.IsReject == false);
-            return cVApply != null ? cVApply : null;
-        }
+        public bool HasApplication(int candidateId, int jobDescriptionId) =>
+            _context.CVMatchings.Any(x => x.CandidateId == candidateId
+                && x.JobDescriptionId == jobDescriptionId && x.IsApplied);
 
         public CVMatching GetById(int id)
         {
@@ -218,6 +211,7 @@ namespace APIServer.Repositories
             if (cVApply != null)
             {
                 cVApply.IsReject = true;
+                cVApply.IsSelected = false;
                 return _context.SaveChanges();
             }
             return 0;

@@ -1,4 +1,4 @@
-﻿using APIServer.Models.Entity;
+using APIServer.Models.Entity;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -25,6 +25,7 @@ namespace APIServer.DTO.EntityDTO
         public int? RoleTitle { get; set; }
         public string? AvatarURL { get; set; }
         public int? CompanyId { get; set; }
+        public string? CompanyName { get; set; }
         public bool IsActive { get; set; }
         public bool IsDelete { get; set; }
     }

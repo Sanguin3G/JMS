@@ -1,4 +1,5 @@
-﻿using APIServer.Common;
+using APIServer.Infrastructure;
+using APIServer.Common;
 using APIServer.DTO;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
@@ -25,6 +26,7 @@ namespace APIServer.Services
 {
     public class RecuirterService : IRecuirterService
     {
+        private readonly JMSDBContext _db;
         private readonly IRecuirterRepository _recRepository;
         private readonly IConfiguration _configuration;
         private readonly ICVMatchingRepository _cVMatchingRepository;
@@ -32,9 +34,11 @@ namespace APIServer.Services
         private readonly IMapper _mapper;
         private readonly IJobRepository _jobContext;
         private readonly IMatchEvaluationService _matchEvaluationService;
+        private readonly LocalImageStorage _imageStorage;
 
-        public RecuirterService(IRecuirterRepository userRepository, IConfiguration configuration, ICVMatchingRepository cVMatchingRepository, ICurriculumVitaeRepository cVRepository, IMapper mapper, IJobRepository jobContext, IMatchEvaluationService matchEvaluationService)
+        public RecuirterService(IRecuirterRepository userRepository, IConfiguration configuration, ICVMatchingRepository cVMatchingRepository, ICurriculumVitaeRepository cVRepository, IMapper mapper, IJobRepository jobContext, IMatchEvaluationService matchEvaluationService, LocalImageStorage imageStorage, JMSDBContext db)
         {
+            _db = db;
             _recRepository = userRepository;
             _configuration = configuration;
             _cVMatchingRepository = cVMatchingRepository;
@@ -42,6 +46,7 @@ namespace APIServer.Services
             _mapper = mapper;
             _jobContext = jobContext;
             _matchEvaluationService = matchEvaluationService;
+            _imageStorage = imageStorage;
         }
 
         public int Create(Recuirter data)
@@ -260,7 +265,7 @@ namespace APIServer.Services
         {
             try
             {
-                using (var context = new JMSDBContext())
+                var context = _db;
                 {
                     List<CVMatching> cVApplyList = context.CVMatchings.Include(c => c.Candidate).Include(p => p.Level)
                     .Include(j => j.JobDescription).ThenInclude(c => c.Company)
@@ -294,7 +299,7 @@ namespace APIServer.Services
                         CVApplied.CategoryName = curriculumVitae.CategoryName;
                         CVApplied.EmploymentTypeId = cv.EmploymentTypeId;
                         CVApplied.DisplayEmail = curriculumVitae.DisplayEmail;
-                        CVApplied.DOB = Convert.ToDateTime(curriculumVitae.DOB);
+                        CVApplied.DOB = cv.DOB;
                         CVApplied.Address = curriculumVitae.Address;
                         CVApplied.Education = JsonConvert.SerializeObject(curriculumVitae.Educations);
                         CVApplied.JobExperience = JsonConvert.SerializeObject(curriculumVitae.JobExperiences);
@@ -320,7 +325,6 @@ namespace APIServer.Services
                         CVApplied.IsReject = false;
                         context.CVMatchings.Add(CVApplied);
                         context.SaveChanges();
-                        await Task.Delay(12000);
                         return CVApplied;
 
                     }
@@ -385,7 +389,7 @@ namespace APIServer.Services
         public List<CVMatching> GetCVMatchedByNumberRequirement(int recruiterId, int jobDescriptionId)
         {
             List<CVMatching> CVMatched = _cVMatchingRepository.GetAllByIsMatchedByNumberRequirement(recruiterId, jobDescriptionId);
-            using (var context = new JMSDBContext())
+            var context = _db;
             {
                 JobDescription? jobDescription = context.JobDescriptions.FirstOrDefault(x => x.RecuirterId == recruiterId && x.JobId == jobDescriptionId);
                 if (jobDescription != null)
@@ -463,34 +467,9 @@ namespace APIServer.Services
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }
 
-        private static void PreserveAvatarSnapshot(string? avatarUrl, CVMatching matching)
+        private void PreserveAvatarSnapshot(string? avatarUrl, CVMatching matching)
         {
-            if (string.IsNullOrWhiteSpace(avatarUrl))
-            {
-                return;
-            }
-
-            // Development seed data uses curated remote URLs. Only copy a local
-            // upload when it actually resolves inside wwwroot; never treat a URL
-            // query string as a filesystem path.
-            matching.AvatarURL = avatarUrl;
-            if (Uri.TryCreate(avatarUrl, UriKind.Absolute, out _))
-            {
-                return;
-            }
-
-            var relativePath = avatarUrl.Replace('\\', '/').TrimStart('/');
-            var sourcePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath);
-            if (!File.Exists(sourcePath))
-            {
-                return;
-            }
-
-            var fileName = Path.GetFileName(relativePath);
-            var destinationDirectory = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images_clone");
-            Directory.CreateDirectory(destinationDirectory);
-            File.Copy(sourcePath, Path.Combine(destinationDirectory, fileName), overwrite: true);
-            matching.AvatarURL = "/images_clone/" + fileName;
+            matching.AvatarURL = _imageStorage.Snapshot(avatarUrl);
         }
     }
 }

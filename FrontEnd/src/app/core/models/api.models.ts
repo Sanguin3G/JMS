@@ -1,4 +1,4 @@
-import { ApiResponse } from 'src/app/service/api-requests';
+import { ApiResponse } from 'src/app/core/http/api.service';
 
 export type ApiEnvelope<T> = ApiResponse<T>;
 
@@ -99,6 +99,7 @@ export interface CurriculumVitaePayload {
 }
 
 export interface CurriculumVitae {
+   isFindingJob?: boolean;
    id: number;
    careerGoal?: string;
    displayEmail?: string;
@@ -241,6 +242,8 @@ export interface FaqEntry {
    id: number;
    question: string;
    answer: string;
+   questionEn?: string | null;
+   answerEn?: string | null;
    keywords?: string | null;
    category: string;
    isPublished?: boolean;
@@ -251,6 +254,8 @@ export interface FaqEntry {
 export interface FaqEntryRequest {
    question: string;
    answer: string;
+   questionEn?: string;
+   answerEn?: string;
    keywords: string;
    category: string;
    isPublished: boolean;

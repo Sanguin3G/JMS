@@ -7,5 +7,5 @@ public interface IAiProviderProfileService
     Task<AiProviderProfileSummary> UpdateAsync(int id, UpsertAiProviderProfileRequest request, CancellationToken cancellationToken = default);
     Task ActivateForMatchingAsync(int id, CancellationToken cancellationToken = default);
     Task<AiConnectionTestResult> TestConnectionAsync(int id, CancellationToken cancellationToken = default);
-    Task<ResolvedGeminiProfile?> GetActiveGeminiMatchingProfileAsync(CancellationToken cancellationToken = default);
+    Task<ResolvedAiProfile?> GetActiveMatchingProfileAsync(CancellationToken cancellationToken = default);
 }
