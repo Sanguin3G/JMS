@@ -1,11 +1,13 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { inject, Component, ElementRef, ViewChild, HostListener, DestroyRef } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { validateImageFile } from 'src/app/core/files/image-file';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
 import { environment } from 'src/environments/environment';
-import { ApiResponse, getRequest, postFileRequest, postRequest } from 'src/app/service/api-requests';
+import { ApiService, ApiResponse } from 'src/app/core/http/api.service';
 import { AuthorizationMode, apiCandidate, apiRecruiter } from 'src/app/service/constant';
-import { getProfile } from 'src/app/service/localstorage';
-import { showError, showSuccess } from 'src/app/service/common';
+import { AuthService } from 'src/app/core/auth/auth.service';
+
 import { themeList } from './constant';
 import { CatalogItem, CurriculumVitaePayload, CvAward, CvCertificate, CvEducation, CvExperience, CvProject, CvSkill, UserProfile } from 'src/app/core/models/api.models';
 
@@ -13,9 +15,18 @@ import { CatalogItem, CurriculumVitaePayload, CvAward, CvCertificate, CvEducatio
   standalone: false,
    selector: 'app-create-cv',
    templateUrl: './create-cv.component.html',
-   styleUrls: ['./create-cv.component.css'],
+   styleUrls: ['../../../../shared/cv-theme-picker.css', './create-cv.component.css'],
 })
 export class CandidateCreateCvComponent {
+   private readonly auth = inject(AuthService);
+   private readonly api = inject(ApiService);
+   private readonly router = inject(Router);
+   private readonly destroyRef = inject(DestroyRef);
+   readonly themes = [0,1,2,3,4,5,6,7,8];
+   validationMessages: string[] = [];
+   catalogError = '';
+   private initialSnapshot = '';
+   private createdCvId: number | null = null;
    categories: CatalogItem[] = [];
    levels: CatalogItem[] = [];
    employmentTypes: CatalogItem[] = [];
@@ -48,39 +59,41 @@ export class CandidateCreateCvComponent {
 
    @ViewChild('avatarInput') private avatarInput?: ElementRef<HTMLInputElement>;
 
-   constructor(private readonly route: ActivatedRoute, private readonly toastr: ToastrService) {
-      this.profile = getProfile();
+   constructor(private readonly route: ActivatedRoute, private readonly toastr: NotificationService) {
+      this.profile = this.auth.getProfile();
       this.form.displayEmail = this.profile?.email ?? '';
       this.form.displayName = this.profile?.fullName ?? '';
-      this.route.params.subscribe(params => this.selectTheme(Number(params['id'])));
+      this.route.params.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => this.selectTheme(Number(params['id'])));
       this.getAllCategory();
       this.getAllTitle();
       this.getAllEmploymentType();
+      this.initialSnapshot = this.snapshot();
    }
 
    getAllCategory() {
-      getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
+      this.api.getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => this.categories = res.data ?? [])
-         .catch(error => console.warn(apiRecruiter.GET_ALL_CATEGORY, error));
+         .catch(() => this.catalogError = 'Không thể tải danh mục. Vui lòng tải lại trước khi lưu CV.');
    }
 
    getAllTitle() {
-      getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 })
+      this.api.getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_LEVEL_TITLE, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => this.levels = res.data ?? [])
-         .catch(error => console.warn(apiRecruiter.GET_ALL_LEVEL_TITLE, error));
+         .catch(() => this.catalogError = 'Không thể tải danh mục. Vui lòng tải lại trước khi lưu CV.');
    }
 
    getAllEmploymentType() {
-      getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 })
+      this.api.getRequest<ApiResponse<CatalogItem[]>>(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => this.employmentTypes = res.data ?? [])
-         .catch(error => console.warn(apiRecruiter.GET_ALL_EMPLOYMENT_TYPE, error));
+         .catch(() => this.catalogError = 'Không thể tải danh mục. Vui lòng tải lại trước khi lưu CV.');
    }
 
    async submitCV() {
-      if (this.isSaving || !this.validateForm()) return;
+      if (this.createdCvId) { await this.router.navigate(['/candidate/update-cv', this.createdCvId]); return; }
+      if (this.isSaving || this.catalogError || !this.validateForm()) return;
       this.isSaving = true;
       const data: CurriculumVitaePayload = {
-         id: 0, candidateId: 1, careerGoal: this.form.careerGoal, employmentTypeName: this.form.employmentTypeId.toString(),
+         id: 0, candidateId: this.profile?.id ?? 0, careerGoal: this.form.careerGoal, employmentTypeName: this.form.employmentTypeId.toString(),
          phone: this.form.phone, displayName: this.form.displayName, genderDisplay: this.form.gender,
          displayEmail: this.form.displayEmail, address: this.form.address, dob: this.form.dob, jobExperiences: this.experiences, skills: this.skills, educations: this.educations,
          projects: this.projects, certificates: this.certificates, awards: this.awards, avatarURL: null, categoryName: '',
@@ -90,27 +103,34 @@ export class CandidateCreateCvComponent {
 
       try {
          if (!this.profile?.id) throw new Error('Candidate profile is unavailable.');
-         const response = await postRequest<ApiResponse<number>>(`${apiCandidate.CREATE_CV_BY_CANDIDATE_ID}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, data);
+         const response = await this.api.postRequest<ApiResponse<number>>(`${apiCandidate.CREATE_CV_BY_CANDIDATE_ID}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, data);
          if (response?.statusCode !== 201) throw new Error('The CV could not be created.');
          if (!response.data) throw new Error('The CV id was not returned.');
+         this.createdCvId = response.data;
+         this.initialSnapshot = this.snapshot();
          if (this.avatarFile) {
             const formData = new FormData();
             formData.append('file', this.avatarFile, this.avatarFile.name);
-            await postFileRequest<ApiResponse<unknown>>(`${apiCandidate.UPDATE_IMAGES_CV}/${this.profile.id}/${response.data}`, AuthorizationMode.BEARER_TOKEN, formData);
+            try {
+               const imageResponse = await this.api.postFileRequest<ApiResponse<unknown>>(`${apiCandidate.UPDATE_IMAGES_CV}/${this.profile.id}/${response.data}`, AuthorizationMode.BEARER_TOKEN, formData);
+               if (imageResponse.statusCode !== 200) throw new Error('Image upload failed');
+            } catch { this.toastr.warning('CV đã được tạo, nhưng ảnh chưa lưu. Bạn có thể tải lại ảnh trong trang chỉnh sửa.'); }
          }
-         showSuccess(this.toastr, 'Tạo hồ sơ thành công');
+         this.toastr.success('Tạo hồ sơ thành công');
+         await this.router.navigate(['/candidate/update-cv', response.data]);
       } catch (error) {
-         console.error(error);
-         showError(this.toastr, 'Đã có lỗi xảy ra, xem lại trường dữ liệu');
+         this.toastr.error('Không thể tạo CV. Kiểm tra thông tin hoặc thử lại.');
       } finally {
          this.isSaving = false;
       }
    }
 
-   getFile(event: Event) {
+   async getFile(event: Event) {
       const input = event.target as HTMLInputElement;
       const [file] = Array.from(input.files ?? []);
       if (!file) return;
+      const error = await validateImageFile(file);
+      if (error) { this.toastr.error(error); input.value = ''; return; }
       this.avatarFile = file;
       this.hideImage = 'none';
       this.displayImage = 'block';
@@ -121,6 +141,7 @@ export class CandidateCreateCvComponent {
    }
 
    chooseAvatar() { this.avatarInput?.nativeElement.click(); }
+   reloadCatalogs(): void { this.catalogError = ''; this.getAllCategory(); this.getAllTitle(); this.getAllEmploymentType(); }
 
    selectTheme(value: number) {
       const theme = themeList[value] ?? themeList[6] ?? themeList[0];
@@ -154,13 +175,17 @@ export class CandidateCreateCvComponent {
       if (!/^\d{9,10}$/.test(this.form.phone)) messages.push('Số điện thoại phải có 9 hoặc 10 chữ số');
       if (!this.hasValidAge(this.form.dob)) messages.push('Ngày sinh không hợp lệ');
       if (!this.form.cvTitle.trim()) messages.push('Tên hồ sơ không được để trống');
+      if (!this.form.displayName.trim()) messages.push('Họ tên không được để trống');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.form.displayEmail)) messages.push('Email chưa hợp lệ');
       if (this.skills.some(skill => !skill.skillDescription.trim())) messages.push('Kỹ năng không thể để trống');
-      if (this.experiences.some(experience => !experience.ComapanyName.trim() || !experience.position.trim() || !experience.description.trim() || !this.isValidMonthYear(experience.fromDate) || !this.isValidMonthYear(experience.toDate))) {
+      if (this.experiences.some(experience => Object.values(experience).some(value => typeof value === 'string' && value.trim() && value !== '1') && (!experience.ComapanyName.trim() || !experience.position.trim() || !this.isValidMonthYear(experience.fromDate) || !this.isValidMonthYear(experience.toDate)))) {
          messages.push('Mỗi kinh nghiệm cần đủ công ty, vị trí, mô tả và thời gian mm/yyyy');
       }
-      if (this.educations.some(education => !education.schoolName.trim() || !education.majorName.trim())) messages.push('Mỗi mục học vấn cần có tên trường và ngành học');
+      if (this.educations.some(education => (education.schoolName.trim() || education.majorName.trim() || education.description.trim()) && (!education.schoolName.trim() || !education.majorName.trim()))) messages.push('Mỗi mục học vấn cần có tên trường và ngành học');
+      this.validationMessages = messages;
       if (messages.length) {
-         showError(this.toastr, messages.map(message => `- ${message}`).join('<br/>'));
+         this.toastr.error('Vui lòng kiểm tra các trường được liệt kê phía trên CV.');
+         document.getElementById('cv-validation')?.focus();
          return false;
       }
       return true;
@@ -176,6 +201,9 @@ export class CandidateCreateCvComponent {
    }
 
    private isValidMonthYear(value: string) { return /^(0?[1-9]|1[0-2])\/\d{4}$/.test(value); }
+   hasUnsavedChanges(): boolean { return !this.createdCvId && this.initialSnapshot !== '' && this.snapshot() !== this.initialSnapshot; }
+   @HostListener('window:beforeunload', ['$event']) onBeforeUnload(event: BeforeUnloadEvent): void { if (this.hasUnsavedChanges()) { event.preventDefault(); event.returnValue = ''; } }
+   private snapshot(): string { return JSON.stringify({ form: this.form, skills: this.skills, certificates: this.certificates, awards: this.awards, experiences: this.experiences, projects: this.projects, educations: this.educations, font: this.fontCV, theme: this.themeId, avatar: this.avatarFile?.name }); }
    private remove<T>(items: T[], index: number) { if (items.length > 1) items.splice(index, 1); }
    private createSkill(): CvSkill { return { title: '', skillDescription: '' }; }
    private createCertificate(): CvCertificate { return { certificateName: '', certificateProvider: '', issuedDate: '', expiredDate: '', credentialURL: '' }; }

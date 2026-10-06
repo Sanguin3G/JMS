@@ -1,7 +1,7 @@
-import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { inject, Component, Inject } from '@angular/core';
+import { DIALOG_DATA, Dialog, DialogRef } from '@angular/cdk/dialog';
 import { Router } from '@angular/router';
-import { getRequest } from 'src/app/service/api-requests';
+import { ApiService } from 'src/app/core/http/api.service';
 import { AuthorizationMode, apiAdmin } from 'src/app/service/constant';
 import { environment } from 'src/environments/environment';
 
@@ -9,28 +9,32 @@ import { environment } from 'src/environments/environment';
   standalone: false,
   selector: 'app-company-view',
   templateUrl: './company-view.component.html',
-  styleUrls: ['./company-view.component.css']
+  styleUrls: ['../../../../shared/company-profile.css']
 })
 export class CompanyViewComponent {
+   private readonly api = inject(ApiService);
   company: any;
+   loading = true;
+   error = '';
   Url = environment.Url;
   linkMap: any;
   htmlContent: any;
 
   constructor(
-    public dialogRef: MatDialogRef<CompanyViewComponent>,
-    public dialog: MatDialog, @Inject(MAT_DIALOG_DATA) public data: any,
+    public dialogRef: DialogRef<unknown, CompanyViewComponent>,
+    public dialog: Dialog, @Inject(DIALOG_DATA) public data: any,
     private router: Router) {
 
-    getRequest(apiAdmin.GET_COMPANY_BY_ID + "/" + data, AuthorizationMode.BEARER_TOKEN)
+    this.api.getRequest(apiAdmin.GET_COMPANY_BY_ID + "/" + data, AuthorizationMode.BEARER_TOKEN)
       .then(res => {
-        this.company = res?.data
+        if (res.statusCode !== 200 || !res.data) throw new Error();
+            this.company = res.data
         this.htmlContent = this.company?.description;
-        console.log(this.company)
+
       })
       .catch(data => {
-        console.warn("Get API fail!" + data);
-      })
+        this.error = 'Không thể tải thông tin công ty. Hãy đóng và thử lại.';
+      }).finally(() => { this.loading = false; });
   }
 
   onClickView(jd: any){

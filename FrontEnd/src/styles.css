@@ -1,4 +1,4 @@
-@import '~ngx-toastr/toastr';
+
 
 :root {
     --gray-0: #fff;
@@ -72,8 +72,7 @@
     padding: 0;
     border: 0;
 }
-@import "../node_modules/@angular/material/prebuilt-themes/indigo-pink.css";
-@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+
 
 /* width and height are optional, but can be useful */
 ::-webkit-scrollbar {
@@ -137,19 +136,22 @@ body{
 }
 
 
-#toast-container > .toast-success {
-    background-color: #03d673;
-    color: white;
-    border-radius: 10px;
-}
-#toast-container > .toast-error {
-    background-color: #df202a;
-    color: white;
-    border-radius: 10px;
-}
+
 
 #toast-container > .toast-info {
     background-color: #3fa8ee;
     color: white;
     border-radius: 10px;
 }
+
+
+.jms-field { margin-bottom: 1rem; }
+.jms-field small { display: block; margin-top: .35rem; }
+.form-control, .form-select { color: var(--text-color); background-color: var(--surface-color); border-color: var(--border-color); }
+.form-control:focus, .form-select:focus { color: var(--text-color); background-color: var(--surface-color); }
+.card { --bs-card-bg:var(--surface-color); --bs-card-color:var(--text-color); --bs-card-border-color:var(--border-color); }
+.form-control:disabled, .form-select:disabled { background-color:var(--surface-muted-color); color:var(--muted-text-color); }
+.jms-popup { padding:.5rem; border:1px solid var(--border-color); border-radius:16px; background:var(--surface-color); color:var(--text-color); box-shadow:0 14px 40px #17274526,0 3px 8px #0001; animation:jms-menu-in .16s ease-out; }
+.popup-eyebrow { display:block; font-size:.65rem; font-weight:750; text-transform:uppercase; letter-spacing:.07em; color:var(--muted-text-color); margin:.45rem .75rem .5rem; }
+@keyframes jms-menu-in { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:translateY(0); } }
+@media(prefers-reduced-motion:reduce) { .jms-popup { animation:none; } }

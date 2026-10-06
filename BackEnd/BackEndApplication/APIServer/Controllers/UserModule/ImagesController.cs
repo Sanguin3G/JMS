@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.ResponseBody;
 using APIServer.IServices;
 using APIServer.Models;
@@ -58,7 +58,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest
                 };
             }
@@ -92,7 +92,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest
                 };
             }
@@ -126,7 +126,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest
                 };
             }
@@ -160,7 +160,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest
                 };
             }
@@ -194,7 +194,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest
                 };
             }
@@ -230,7 +230,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                     data = ex.InnerException.Message
                 };
@@ -255,7 +255,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<int>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                     data = -1
                 };

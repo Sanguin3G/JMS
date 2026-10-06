@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
+import { editorConfig } from 'src/app/shared/rich-text/editor-config';
+import { inject, Component } from '@angular/core';
 import { ClassicEditor } from 'ckeditor5';
 import { FormControl, Validators } from '@angular/forms';
-import { getRequest, postRequest, postFileRequest } from 'src/app/service/api-requests';
+import { ApiService } from 'src/app/core/http/api.service';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
-import { getProfile, signOut } from 'src/app/service/localstorage';
-import { ToastrService } from 'ngx-toastr';
+import { AuthService } from 'src/app/core/auth/auth.service';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
 import { Router } from '@angular/router';
-import { showError, showSuccess } from 'src/app/service/common';
+
 
 @Component({
   standalone: false,
@@ -15,6 +16,8 @@ import { showError, showSuccess } from 'src/app/service/common';
    styleUrls: ['./company-update.component.css']
 })
 export class CompanyUpdateComponent {
+   private readonly auth = inject(AuthService);
+   private readonly api = inject(ApiService);
    //upload img
    displayImageAvatar = "none"
    displayImageBackground = "none"
@@ -22,6 +25,7 @@ export class CompanyUpdateComponent {
    imageBackgroundSrc: any;
    fileSrc: any;
    public Editor = ClassicEditor;
+   readonly config = editorConfig("Company description");
    categories: any;
    sizes = ["1 - 100 người", "101 - 500 người", "Trên 500 người"]
    company: any;
@@ -30,10 +34,10 @@ export class CompanyUpdateComponent {
 
 
 
-   constructor(private toastr: ToastrService, private router: Router) {
-      this.profile = getProfile();
+   constructor(private toastr: NotificationService, private router: Router) {
+      this.profile = this.auth.getProfile();
 
-      getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
+      this.api.getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => {
             this.categories = res?.data
          })
@@ -41,10 +45,9 @@ export class CompanyUpdateComponent {
             console.warn(apiRecruiter.GET_ALL_CATEGORY, data);
          })
 
-      getRequest(`${apiRecruiter.GET_COMPANY_BY_ID}/${this.profile.companyId}`, AuthorizationMode.PUBLIC, { page: 10 })
+      this.api.getRequest(`${apiRecruiter.GET_COMPANY_BY_ID}/${this.profile.companyId}`, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => {
             this.company = res?.data
-            console.log(this.company);
 
             this.nameRq.setValue(this.company?.companyName)
             this.emailRq.setValue(this.company?.email)
@@ -67,7 +70,6 @@ export class CompanyUpdateComponent {
 
          })
          .catch(data => {
-            console.log(data);
 
          })
    }
@@ -138,7 +140,10 @@ export class CompanyUpdateComponent {
 
    checkReq: any = false;
 
+   submitting = false;
+
    submitButtonClicked() {
+      if (this.submitting) return;
 
       if (this.nameRq.valid && this.emailRq.valid && this.taxNumRq.valid
          && this.sizeRq.valid && this.addressRq.valid) {
@@ -171,19 +176,20 @@ export class CompanyUpdateComponent {
             yearOfEstablishment: yearOfEstablishment
          }
 
-         postRequest(apiRecruiter.UPDATE_COMPANY + "/" + recuirterFounder, AuthorizationMode.BEARER_TOKEN, data)
+         this.submitting = true;
+         this.api.postRequest(apiRecruiter.UPDATE_COMPANY + "/" + recuirterFounder, AuthorizationMode.BEARER_TOKEN, data)
             .then(res => {
                if(res.statusCode === 200){
-                  showSuccess(this.toastr, "Cập nhật thành công công ty")
+                  this.toastr.success("Cập nhật thành công công ty")
                   this.router.navigate(['recruiter/view-company'])
                }else{
-                  showError(this.toastr, "Cập nhật thất bại")
+                  this.toastr.error("Cập nhật thất bại")
                }
-               console.log(res);
+
             })
             .catch(data => {
-               showError(this.toastr, "Cập nhật thất bại")
-            })
+               this.toastr.error("Cập nhật thất bại")
+            }).finally(() => { this.submitting = false; })
       }
 
       this.checkReq = true;
@@ -208,17 +214,14 @@ export class CompanyUpdateComponent {
             formData.append('file', file, file.name);
          }
 
-         console.log(formData);
-
-
-         postFileRequest(`${apiRecruiter.UPDATE_IMAGE_COMPANY_AVATAR}/${this.profile.id}/${this.profile.companyId}`, AuthorizationMode.BEARER_TOKEN, formData)
+         this.api.postFileRequest(`${apiRecruiter.UPDATE_IMAGE_COMPANY_AVATAR}/${this.profile.id}/${this.profile.companyId}`, AuthorizationMode.BEARER_TOKEN, formData)
             .then(res => {
-               console.log(res);
-               showSuccess(this.toastr, "Cập nhật logo thành công")
+
+               this.toastr.success("Cập nhật logo thành công")
             })
             .catch(data => {
-               showError(this.toastr, "Cập nhật logo thất bại")
-               console.log(data);
+               this.toastr.error("Cập nhật logo thất bại")
+
             })
 
          this.displayImageAvatar = "block"
@@ -242,14 +245,14 @@ export class CompanyUpdateComponent {
             let file: File = fileList[0];
             formData.append('file', file, file.name);
          }
-         postFileRequest(`${apiRecruiter.UPDATE_IMAGE_COMPANY_BACKGROUND}/${this.profile.id}/${this.profile.companyId}`, AuthorizationMode.BEARER_TOKEN, formData)
+         this.api.postFileRequest(`${apiRecruiter.UPDATE_IMAGE_COMPANY_BACKGROUND}/${this.profile.id}/${this.profile.companyId}`, AuthorizationMode.BEARER_TOKEN, formData)
             .then(res => {
-               showSuccess(this.toastr, "Cập nhật ảnh nền thành công")
-               console.log(res);
+               this.toastr.success("Cập nhật ảnh nền thành công")
+
             })
             .catch(data => {
-               showError(this.toastr, "Cập nhật ảnh nền thất bại")
-               console.log(data);
+               this.toastr.error("Cập nhật ảnh nền thất bại")
+
             })
 
 
@@ -268,10 +271,10 @@ export class CompanyUpdateComponent {
    isYearValid(inputYearString: string): boolean {
       // Chuyển đổi chuỗi năm thành số nguyên
       const inputYear = parseInt(inputYearString, 10);
-  
+
       // Lấy năm hiện tại
       const currentYear = new Date().getFullYear();
-  
+
       // So sánh năm
       return inputYear <= currentYear;
     }

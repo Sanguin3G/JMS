@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
 using APIServer.IServices;
@@ -77,7 +77,7 @@ namespace APIServer.Controllers.UserModule
                 {
                     statusCode = HttpStatusCode.Unauthorized,
                     data = null,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -103,7 +103,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.Unauthorized,
                 };
             }
@@ -169,7 +169,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<RecuirterDTO>()
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.Unauthorized,
                 };
             }
@@ -193,7 +193,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<AdminDTO>()
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.Unauthorized,
                 };
             }

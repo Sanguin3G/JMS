@@ -41,7 +41,7 @@ public sealed class FaqService(JMSDBContext dbContext) : IFaqService
         var match = matches.FirstOrDefault();
         return match is null
             ? new FaqChatResponse(
-                "I could not find that in the JMS help notes. Try asking about jobs, CVs, matching, or AI settings.",
+                "Chưa tìm thấy câu trả lời trong trợ giúp JMS. Hãy thử hỏi về việc làm, CV, matching hoặc cài đặt AI.",
                 "curated-faq-fallback",
                 false,
                 null)

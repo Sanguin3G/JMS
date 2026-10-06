@@ -1,4 +1,4 @@
-﻿using APIServer.Models.Entity;
+using APIServer.Models.Entity;
 
 namespace APIServer.IRepositories
 {
@@ -9,7 +9,7 @@ namespace APIServer.IRepositories
         public CVMatching GetByCandidateIdAndCVAppliedId(int candidateId, int CVAppliedId);
         public CVMatching GetByRecruiterIdAndCVAppliedId(int recruiterId, int jobDescriptionId, int CVMatchingId);
         public List<CVMatching> GetByCVIdAndJobDescriptionId(int CVId, int jobDescriptionId);
-        public CVMatching GetByCVIdAndLastUpdateDate(int CVId, DateTime lastUpdateDate);
+        public bool HasApplication(int candidateId, int jobDescriptionId);
         public List<CVMatching> GetAllByIsApplied(int candidateId);
         public List<CVMatching> GetAllByIsSelected(int recruiterId, int jobDescriptionId);
         public List<CVMatching> GetAllByIsMatchedByNumberRequirement(int recruiterId, int jobDescriptionId);

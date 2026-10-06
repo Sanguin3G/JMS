@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
 using APIServer.IServices;
@@ -23,22 +23,22 @@ namespace APIServer.Controllers.UserModule
 
         [HttpPost]
         [Route("register-for-candidate")]
-        public BaseResponseBody<string> CreateCandidateAccount(string email, string fullName, string username, string password, string confirmPassword)
+        public BaseResponseBody<string> CreateCandidateAccount([FromBody] RegisterRequest request)
         {
             try
             {
-                string registerMess = _registerService.RegisterForCandidate(email,fullName,username,password,confirmPassword);
+                string registerMess = _registerService.RegisterForCandidate(request.Email, request.FullName, request.Username, request.Password, request.ConfirmPassword);
                 return new BaseResponseBody<string>
                 {
                     message = registerMess,
                     statusCode = HttpStatusCode.OK,
                 };
             }
-            catch(Exception ex) 
+            catch(Exception ex)
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -46,11 +46,11 @@ namespace APIServer.Controllers.UserModule
 
         [HttpPost]
         [Route("register-for-recuirter")]
-        public BaseResponseBody<string> CreateRecuirterAccount(string email, string fullName, string username, string password, string confirmPassword)
+        public BaseResponseBody<string> CreateRecuirterAccount([FromBody] RegisterRequest request)
         {
             try
             {
-                string registerMess = _registerService.RegisterForRecruiter(email, fullName, username, password, confirmPassword);
+                string registerMess = _registerService.RegisterForRecruiter(request.Email, request.FullName, request.Username, request.Password, request.ConfirmPassword);
                 return new BaseResponseBody<string>
                 {
                     message = registerMess,
@@ -61,7 +61,7 @@ namespace APIServer.Controllers.UserModule
             {
                 return new BaseResponseBody<string>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }

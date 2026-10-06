@@ -9,8 +9,6 @@
 	<ItemGroup>
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
 		<PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
-		<PackageReference Include="Google.GenAI" Version="1.17.0" />
-		<PackageReference Include="MailKit" Version="4.17.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.10" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10">
 			<PrivateAssets>all</PrivateAssets>
@@ -21,14 +19,14 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="MimeKit" Version="4.17.0" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.1" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
 		<PackageReference Include="X.PagedList" Version="8.4.7" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Migrations\*.cs" />
+
 
 	  <None Update="Properties\launchSettings.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

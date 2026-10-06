@@ -5,263 +5,263 @@
          <div class="col-12 col-lg-8">
             <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
                <div class="card-body p-4 p-md-5">
-                  <h3 class="mb-4 pb-2 pb-md-0 mb-md-5 link-danger">CẬP NHẬT THÔNG TIN TUYỂN DỤNG</h3>
-                  <form>
-                     <!-- row 1 -->
+                  <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">CẬP NHẬT THÔNG TIN TUYỂN DỤNG</h3>
+                  <p *ngIf="loading" role="status">Đang tải tin tuyển dụng…</p><p *ngIf="loadError" role="alert">{{ loadError }}</p><form *ngIf="!loading && !loadError" (ngSubmit)="submitButtonClicked()">
+
                      <div class="row ">
                         <div class="col-md-12 mb-2">
                            <label class="form-label" for="title">Tiêu Đề Tuyển Dụng</label><span class="link-danger">
                               *</span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="text" id="title" style="color: black;"
+                           <div class="jms-field">
+                              <input class="form-control" type="text" id="title"
                                  placeholder="VD: Tuyển dụng nhân viên Marketing, tuyển dụng designer, ..." required
                                  [formControl]="titleRq" />
-                              <mat-error *ngIf="titleRq.invalid">{{getErrorMessageTitle()}}</mat-error>
-                           </mat-form-field>
+                              <small class="text-danger" role="alert" *ngIf="titleRq.invalid && (titleRq.touched || checkReq)">{{getErrorMessageTitle()}}</small>
+                           </div>
                         </div>
                      </div>
-                     <!-- row 2 -->
+
                      <div class="row">
                         <div class="col-md-6 mb-2">
                            <label class="form-label" for="numberRequired">Số lượng tuyển dụng</label><span
                               class="link-danger"> </span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="number" id="numberRequired" placeholder="100"
-                                 style="color: black;" [formControl]="numberRequiredRq" />
-                              <mat-error
-                                 *ngIf="numberRequiredRq.invalid">{{getErrorMessageNumberRequired()}}</mat-error>
-                           </mat-form-field>
+                           <div class="jms-field">
+                              <input class="form-control" type="number" id="numberRequired" placeholder="100"
+                                  [formControl]="numberRequiredRq" />
+                              <small class="text-danger" role="alert"
+                                 *ngIf="numberRequiredRq.invalid && (numberRequiredRq.touched || checkReq)">{{getErrorMessageNumberRequired()}}</small>
+                           </div>
                         </div>
                         <div class="col-md-6 mb-2">
                            <label class="form-label" for="email">Email</label><span class="link-danger"> *
                            </span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="email" id="email" placeholder="abc@gmail.com" required
+                           <div class="jms-field">
+                              <input class="form-control" type="email" id="email" placeholder="abc@gmail.com" required
                                  [formControl]="emailRq" />
-                              <mat-error *ngIf="emailRq.invalid">{{getErrorMessageEmail()}}</mat-error>
-                           </mat-form-field>
+                              <small class="text-danger" role="alert" *ngIf="emailRq.invalid && (emailRq.touched || checkReq)">{{getErrorMessageEmail()}}</small>
+                           </div>
                         </div>
                      </div>
-                     <!-- row 3 -->
+
                      <div class="row">
                         <div class="col-md-6 mb-2">
                            <label class="form-label" for="position">Chức danh</label><span class="link-danger">
                               </span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="text" id="position" placeholder="VD: Senior .NET core"
-                                 style="color: black;" [formControl]="positionRq" />
-                              <mat-error *ngIf="positionRq.invalid">{{getErrorMessagePosition()}}</mat-error>
-                           </mat-form-field>
+                           <div class="jms-field">
+                              <input class="form-control" type="text" id="position" placeholder="VD: Senior .NET core"
+                                  [formControl]="positionRq" />
+                              <small class="text-danger" role="alert" *ngIf="positionRq.invalid && (positionRq.touched || checkReq)">{{getErrorMessagePosition()}}</small>
+                           </div>
                         </div>
                         <div class="col-md-6 mb-2">
                            <label class="form-label select-label">Cấp bậc</label><span class="link-danger"> *
                               </span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <mat-select [formControl]="levelRq" style="color: black;">
-                                 <mat-option value="0" disabled selected>Chọn chức danh</mat-option>
-                                 <mat-option *ngFor="let elm of levels; index as i"
-                                    value={{elm.id}}>{{elm.title}}</mat-option>
-                              </mat-select>
-                              <mat-error *ngIf="levelRq.invalid">{{getErrorMessageLevel()}}</mat-error>
-                           </mat-form-field>
+                           <div class="jms-field">
+                              <select class="form-select" [formControl]="levelRq"  id="levelRq" aria-label="Cấp bậc">
+                                 <option value="0" disabled selected>Chọn chức danh</option>
+                                 <option *ngFor="let elm of levels; index as i"
+                                    value={{elm.id}}>{{elm.title}}</option>
+                              </select>
+                              <small class="text-danger" role="alert" *ngIf="levelRq.invalid && (levelRq.touched || checkReq)">{{getErrorMessageLevel()}}</small>
+                           </div>
                         </div>
                      </div>
 
-                     <!-- row 4 -->
+
                      <div class="row">
                         <div class="col-md-6 mb-2">
                            <label class="form-label" for="ageRequired">Yêu cầu tuổi</label>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="text" id="ageRequired" placeholder="VD: 20 - 35 tuổi"
-                                 style="color: black;" [formControl]="ageRequiredRq"
+                           <div class="jms-field">
+                              <input class="form-control" type="text" id="ageRequired" placeholder="VD: 20 - 35 tuổi"
+                                  [formControl]="ageRequiredRq"
                                  [value]="jdDetail?.ageRequirement" />
-                           </mat-form-field>
+                           </div>
                         </div>
                         <div class="col-md-6 mb-2">
                            <label class="form-label select-label" for="genderRq">Giới tính</label><span
                               class="link-danger">
                               </span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <mat-select [formControl]="genderRq" style="color: black;">
-                                 <mat-option value="0" disabled selected>Yêu cầu giới tính</mat-option>
-                                 <mat-option *ngFor="let elm of genders; index as i"
-                                    value={{elm.genderId}}>{{elm.title}}</mat-option>
-                              </mat-select>
-                              <mat-error *ngIf="genderRq.invalid">{{getErrorMessageGender()}}</mat-error>
-                           </mat-form-field>
+                           <div class="jms-field">
+                              <select class="form-select" [formControl]="genderRq"  id="genderRq" aria-label="genderRq">
+                                 <option value="0" disabled selected>Yêu cầu giới tính</option>
+                                 <option *ngFor="let elm of genders; index as i"
+                                    value={{elm.genderId}}>{{elm.title}}</option>
+                              </select>
+                              <small class="text-danger" role="alert" *ngIf="genderRq.invalid && (genderRq.touched || checkReq)">{{getErrorMessageGender()}}</small>
+                           </div>
                         </div>
                      </div>
 
-                     <!-- row 5 -->
+
                      <div class="row">
                         <div class="col-md-6 mb-2">
                            <label class="form-label select-label" for="typeRq">Loại Việc Làm</label><span
                               class="link-danger"> *
                               </span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <mat-select [formControl]="typeRq" style="color: black;">
-                                 <mat-option value="0" disabled selected>Chọn loại việc làm</mat-option>
-                                 <mat-option *ngFor="let elm of employmentTypes; index as i"
-                                    value={{elm.id}}>{{elm.title}}</mat-option>
-                              </mat-select>
-                              <mat-error *ngIf="typeRq.invalid">{{getErrorMessageType()}}</mat-error>
-                           </mat-form-field>
+                           <div class="jms-field">
+                              <select class="form-select" [formControl]="typeRq"  id="typeRq" aria-label="typeRq">
+                                 <option value="0" disabled selected>Chọn loại việc làm</option>
+                                 <option *ngFor="let elm of employmentTypes; index as i"
+                                    value={{elm.id}}>{{elm.title}}</option>
+                              </select>
+                              <small class="text-danger" role="alert" *ngIf="typeRq.invalid && (typeRq.touched || checkReq)">{{getErrorMessageType()}}</small>
+                           </div>
                         </div>
                         <div class="col-md-6 mb-2">
                            <label class="form-label select-label" for="categoryRq">Lĩnh Vực</label><span
                               class="link-danger"> *</span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <mat-select [formControl]="categoryRq" style="color: black;">
-                                 <mat-option value="0" disabled selected>Chọn lĩnh vực</mat-option>
-                                 <mat-option *ngFor="let elm of categories; index as i"
-                                    value={{elm.id}}>{{elm.categoryName}}</mat-option>
-                              </mat-select>
-                              <mat-error *ngIf="categoryRq.invalid">{{getErrorMessageCategory()}}</mat-error>
-                           </mat-form-field>
+                           <div class="jms-field">
+                              <select class="form-select" [formControl]="categoryRq"  id="categoryRq" aria-label="Ngành nghề">
+                                 <option value="0" disabled selected>Chọn lĩnh vực</option>
+                                 <option *ngFor="let elm of categories; index as i"
+                                    value={{elm.id}}>{{elm.categoryName}}</option>
+                              </select>
+                              <small class="text-danger" role="alert" *ngIf="categoryRq.invalid && (categoryRq.touched || checkReq)">{{getErrorMessageCategory()}}</small>
+                           </div>
                         </div>
                      </div>
-                     <!-- row 6 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-2">
                            <label for="createAt" class="form-label">Ngày Tạo</label>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput id="createAt"  [formControl]="CreateAtRq"
+                           <div class="jms-field">
+                              <input class="form-control" id="createAt"  [formControl]="CreateAtRq"
                                  [value]="startDate" readonly />
-                           </mat-form-field>
+                           </div>
                         </div>
                      </div>
-                     <!-- row 6 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-2">
                            <label for="expiredDate" class="form-label">Ngày Hết Hạn</label><span class="link-danger">
                               </span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput id="expiredDate"
-                                 [formControl]="expiredDateRq" [value]="endDate" readonly/>
-                              <mat-error *ngIf="expiredDateRq.invalid">{{getErrorMessageExpiredDateRq()}}</mat-error>
-                           </mat-form-field>
+                           <div class="jms-field">
+                              <input class="form-control" type="date" id="expiredDate"
+                                 [formControl]="expiredDateRq"/>
+                              <small class="text-danger" role="alert" *ngIf="expiredDateRq.invalid && (expiredDateRq.touched || checkReq)">{{getErrorMessageExpiredDateRq()}}</small>
+                           </div>
                         </div>
                      </div>
-                     <!-- row 7 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-2">
                            <label for="address" class="form-label">Địa Chỉ</label><span class="link-danger">
                               *</span>
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="text" style="color: black;" id="address"
+                           <div class="jms-field">
+                              <input class="form-control" type="text"  id="address"
                                  placeholder="Nhập địa chỉ làm việc" required [formControl]="addressRq"
                                  [value]="jdDetail?.address" />
-                              <mat-error *ngIf="addressRq.invalid">{{getErrorMessageAddress()}}</mat-error>
-                           </mat-form-field>
+                              <small class="text-danger" role="alert" *ngIf="addressRq.invalid && (addressRq.touched || checkReq)">{{getErrorMessageAddress()}}</small>
+                           </div>
                         </div>
                      </div>
-                     <!-- row 8 -->
+
                      <div class="row">
-                        <label for="salary" class="form-label" for="salary">Mức Lương<span class="link-danger">
+                        <label for="salary" class="form-label">Mức Lương<span class="link-danger">
                               *</span></label>
                         <div class="col-md-12 mb-2">
-                           <mat-form-field appearance="outline" class="col-12 p-0">
-                              <input matInput type="text" style="color: black;" id="salary"
+                           <div class="jms-field">
+                              <input class="form-control" type="text"  id="salary"
                                  placeholder="Từ 10 - 15 triệu" required [formControl]="salaryRq"
                                  [value]="jdDetail?.salary" />
-                              <mat-error *ngIf="salaryRq.invalid">{{getErrorMessageMinSalary()}}</mat-error>
-                           </mat-form-field>
+                              <small class="text-danger" role="alert" *ngIf="salaryRq.invalid && (salaryRq.touched || checkReq)">{{getErrorMessageMinSalary()}}</small>
+                           </div>
                         </div>
                      </div>
-                     <!-- row 9 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-4">
                            <label for="description" class="form-label">Mô Tả Công Việc</label><span class="link-danger">
-                              *</span><span>&nbsp;</span><button matTooltip="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
+                              *</span><span>&nbsp;</span><button type="button" title="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
                            <ckeditor id="description" [config]="configDescription" [editor]="Editor"
                               [data]="jdDetail?.jobDetail" required [formControl]="descriptionRq"></ckeditor>
-                           <mat-error
-                              *ngIf="descriptionRq.invalid && checkDes">{{getErrorMessageDescription()}}</mat-error>
+                           <small class="text-danger" role="alert"
+                              *ngIf="descriptionRq.invalid && checkDes">{{getErrorMessageDescription()}}</small>
                         </div>
                      </div>
-                     <!-- row 10 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-4">
                            <label for="education" class="form-label">Yêu Cầu Học Vấn</label><span class="link-danger">
-                              *</span><span>&nbsp;</span><button matTooltip="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
+                              *</span><span>&nbsp;</span><button type="button" title="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
                            <ckeditor id="education" [config]="configEducationRequirement" [editor]="Editor" data=""
                               required [formControl]="educationRq">
                            </ckeditor>
-                           <mat-error class="ts-6" *ngIf="educationRq.invalid && checkDes">Yêu cầu học vấn không được để
-                              trống!</mat-error>
+                           <small class="text-danger" role="alert" class="ts-6" *ngIf="educationRq.invalid && checkDes">Yêu cầu học vấn không được để
+                              trống!</small>
                         </div>
                      </div>
-                     <!-- row 10 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-4">
                            <label for="experience" class="form-label">Yêu Cầu Kinh nghiệm</label><span
                               class="link-danger">
-                              *</span><span>&nbsp;</span><button matTooltip="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
+                              *</span><span>&nbsp;</span><button type="button" title="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
                            <ckeditor id="experience" [config]="configExperienceRequirement" [editor]="Editor"
                               [data]="jdDetail?.experienceRequirement" required [formControl]="experienceRq">
                            </ckeditor>
-                           <mat-error
-                              *ngIf="experienceRq.invalid && checkReq">{{getErrorMessageExperienceRequirement()}}</mat-error>
+                           <small class="text-danger" role="alert"
+                              *ngIf="experienceRq.invalid && checkReq">{{getErrorMessageExperienceRequirement()}}</small>
                         </div>
                      </div>
 
-                     <!-- row 11 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-4">
                            <label for="skill" class="form-label">Yêu Cầu Kỹ năng</label><span class="link-danger">
-                              *</span><span>&nbsp;</span><button matTooltip="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
+                              *</span><span>&nbsp;</span><button type="button" title="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
                            <ckeditor id="skill" [config]="configSkillRequirement" [editor]="Editor"
                               [data]="jdDetail?.skillRequirement" required [formControl]="skillRq">
                            </ckeditor>
-                           <mat-error
-                              *ngIf="skillRq.invalid && checkReq">{{getErrorMessageSkillRequirement()}}</mat-error>
+                           <small class="text-danger" role="alert"
+                              *ngIf="skillRq.invalid && checkReq">{{getErrorMessageSkillRequirement()}}</small>
                         </div>
                      </div>
 
-                     <!-- row 12 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-4">
-                           <label for="certificate" class="form-label">Yêu Cầu Chứng Chỉ</label><span>&nbsp;</span><button matTooltip="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
+                           <label for="certificate" class="form-label">Yêu Cầu Chứng Chỉ</label><span>&nbsp;</span><button type="button" title="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
                            <ckeditor id="certificate" [config]="configCertificateRequirement" [editor]="Editor"
                               [data]="jdDetail?.certificateRequirement" [formControl]="certificateRq">
                            </ckeditor>
                         </div>
                      </div>
 
-                     <!-- row 13 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-4">
-                           <label for="project" class="form-label">Yêu Cầu Dự Án</label><span>&nbsp;</span><button matTooltip="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
+                           <label for="project" class="form-label">Yêu Cầu Dự Án</label><span>&nbsp;</span><button type="button" title="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
                            <ckeditor id="project" [config]="configProjectRequirement" [editor]="Editor"
                               [data]="jdDetail?.projectRequirement" [formControl]="projectRq">
                            </ckeditor>
                         </div>
                      </div>
-                     <!-- row 14 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-2">
                            <label for="benefit" class="form-label">Quyền Lợi</label><span class="link-danger">
-                              *</span><span>&nbsp;</span><button matTooltip="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
+                              *</span><span>&nbsp;</span><button type="button" title="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
                            <ckeditor id="benefit" [config]="configBenefitRequirement" [editor]="Editor" data="" required
                               [formControl]="benefitRq">
                            </ckeditor>
-                           <mat-error *ngIf="benefitRq.invalid && checkReq">Quyền lợi không được để trống</mat-error>
+                           <small class="text-danger" role="alert" *ngIf="benefitRq.invalid && checkReq">Quyền lợi không được để trống</small>
                         </div>
                      </div>
 
-                     <!-- row 15 -->
+
                      <div class="row">
                         <div class="col-md-12 mb-2">
-                           <label for="otherRequired" class="form-label">Yêu Cầu Khác</label><span>&nbsp;</span><button matTooltip="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
+                           <label for="otherRequired" class="form-label">Yêu Cầu Khác</label><span>&nbsp;</span><button type="button" title="Phân chia các ý theo dạng danh sách để tìm kiếm hiệu quả hơn!"><i class="bi bi-info-square-fill"></i></button>
                            <ckeditor id="otherRequired" [config]="configOtherRequirement" [editor]="Editor"
                               [data]="jdDetail?.otherInformation" [formControl]="otherRequired">
                            </ckeditor>
                         </div>
                      </div>
 
-                     <!-- button submit -->
+
                      <div class="mt-4 pt-2">
-                        <button mat-stroked-button (click)="submitButtonClicked()"
+                        <button type="submit" [disabled]="submitting" [attr.aria-busy]="submitting"
                            class="btn btn-xl col-3 btnBlueLight">Chỉnh sửa</button>
                      </div>
                   </form>

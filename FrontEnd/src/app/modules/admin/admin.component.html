@@ -1,15 +1,3 @@
-<div class="container-fluid h-100" *ngIf="isLogin()">
-    <div class="header">
-        <app-header></app-header>
-    </div>
-    <div class="main-container">
-        <div class="side-nav col-2">
-            <app-side-nav></app-side-nav>
-        </div>
-        <div class="main col-10">
-            <!-- <app-main></app-main>s -->
-            <router-outlet></router-outlet>
-        </div>
-    </div>
-</div>
-<router-outlet *ngIf="!isLogin()"></router-outlet>
+<div class="admin-shell" *ngIf="isLogin()">
+<app-header></app-header><div class="admin-layout"><aside><app-side-nav></app-side-nav></aside><div class="admin-content"><router-outlet></router-outlet></div></div>
+</div><router-outlet *ngIf="!isLogin()"></router-outlet>

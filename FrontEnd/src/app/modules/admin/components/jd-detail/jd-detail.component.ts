@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { getRequest, postRequest } from 'src/app/service/api-requests';
+import { inject, Component } from '@angular/core';
+import { Dialog } from '@angular/cdk/dialog';
+import { ApiService } from 'src/app/core/http/api.service';
 import { AuthorizationMode, apiAdmin, apiRecruiter } from 'src/app/service/constant';
 import { ActivatedRoute } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -13,6 +13,7 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./jd-detail.component.css']
 })
 export class JdDetailComponent {
+   private readonly api = inject(ApiService);
   jdDetail: any
   id: any
   listCandidate: any
@@ -30,22 +31,19 @@ export class JdDetailComponent {
   Url = environment.Url;
 
   showTokenExpiration() {
-    this.toastr.info('Phiên đăng nhập hết hạn', 'Thông báo', {
-       progressBar: true,
-       timeOut: 3000,
-    });
+    this.toastr.info('Phiên đăng nhập hết hạn');
  }
 
-  constructor(public dialog: MatDialog, private route: ActivatedRoute, private toastr: ToastrService) {
+  constructor(public dialog: Dialog, private route: ActivatedRoute, private toastr: NotificationService) {
     this.route.params.subscribe(params => {
       this.id = params['id'];
     });
 
     //get jd detail
-    getRequest(apiAdmin.GET_JD_BY_ID + "/" + this.id, AuthorizationMode.BEARER_TOKEN)
+    this.api.getRequest(apiAdmin.GET_JD_BY_ID + "/" + this.id, AuthorizationMode.BEARER_TOKEN)
       .then(res => {
         this.jdDetail = res.data
-        console.log(res);
+
         this.handleData();
       })
       .catch(data => {

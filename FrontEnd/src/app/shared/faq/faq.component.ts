@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
-import { ApiResponse, getRequest, postRequest } from 'src/app/service/api-requests';
+import { inject, ChangeDetectorRef, Component } from '@angular/core';
+import { ApiService, ApiResponse } from 'src/app/core/http/api.service';
 import { apiPublic, AuthorizationMode } from 'src/app/service/constant';
 import { FaqChatResponse, FaqEntry } from 'src/app/core/models/api.models';
 
@@ -10,6 +10,7 @@ import { FaqChatResponse, FaqEntry } from 'src/app/core/models/api.models';
    styleUrls: ['./faq.component.css']
 })
 export class FaqComponent {
+   private readonly api = inject(ApiService);
    query = '';
    question = '';
    entries: FaqEntry[] = [];
@@ -24,7 +25,7 @@ export class FaqComponent {
 
    search(): void {
       this.isLoading = true;
-      getRequest<ApiResponse<FaqEntry[]>>(apiPublic.FAQ, AuthorizationMode.PUBLIC, { query: this.query.trim() })
+      this.api.getRequest<ApiResponse<FaqEntry[]>>(apiPublic.FAQ, AuthorizationMode.PUBLIC, { query: this.query.trim() })
          .then(response => {
             this.entries = response.data ?? [];
          })
@@ -41,14 +42,14 @@ export class FaqComponent {
       const message = this.question.trim();
       if (!message || this.isAsking) return;
       this.isAsking = true;
-      postRequest<ApiResponse<FaqChatResponse>>(apiPublic.FAQ_CHAT, AuthorizationMode.PUBLIC, { message })
+      this.api.postRequest<ApiResponse<FaqChatResponse>>(apiPublic.FAQ_CHAT, AuthorizationMode.PUBLIC, { message })
          .then(response => {
-            this.answer = response.data?.answer ?? 'The JMS help notes did not return an answer.';
-            this.answerSource = response.data?.aiAvailable ? 'Gemini assistant' : 'Curated JMS help';
+            this.answer = response.data?.answer ?? 'Chưa tìm thấy hướng dẫn phù hợp.';
+            this.answerSource = response.data?.aiAvailable ? 'Trợ giúp JMS' : 'Hướng dẫn JMS';
          })
          .catch(() => {
-            this.answer = 'The help service is unavailable right now. Browse the curated questions below.';
-            this.answerSource = 'Offline fallback';
+            this.answer = 'Chưa thể tìm câu trả lời. Xem các hướng dẫn bên dưới.';
+            this.answerSource = 'Hướng dẫn ngoại tuyến';
          })
          .finally(() => {
             this.isAsking = false;

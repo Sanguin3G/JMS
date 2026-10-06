@@ -1,0 +1,8 @@
+<button type="button" class="account-trigger" [cdkMenuTriggerFor]="accountMenu" aria-label="Menu tài khoản"><img [src]="avatar || '/assets/images/avatar.svg'" jmsImageFallback alt="" width="34" height="34"><span>{{ name || 'Tài khoản' }}</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+<ng-template #accountMenu><div cdkMenu class="account-popup jms-popup" aria-label="Tài khoản">
+  <header><span class="popup-eyebrow">{{ roleName }}</span><strong>{{ name || 'Tài khoản JMS' }}</strong></header>
+  <a cdkMenuItem [routerLink]="['/', userRole, 'profile']"><i class="bi bi-person-circle" aria-hidden="true"></i> Thông tin cá nhân</a>
+  <a *ngIf="userRole === 'candidate'" cdkMenuItem routerLink="/candidate/change-password"><i class="bi bi-shield-lock" aria-hidden="true"></i> Thay đổi mật khẩu</a>
+  <a *ngIf="userRole === 'admin'" cdkMenuItem routerLink="/admin/setting"><i class="bi bi-sliders2" aria-hidden="true"></i> Cài đặt JMS</a>
+  <button type="button" cdkMenuItem (cdkMenuItemTriggered)="signedOut.emit()" class="sign-out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i> Đăng xuất</button>
+</div></ng-template>

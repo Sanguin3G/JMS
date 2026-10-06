@@ -1,4 +1,5 @@
-﻿using APIServer.IRepositories;
+using APIServer.Infrastructure;
+using APIServer.IRepositories;
 using APIServer.IServices;
 using APIServer.Models.Entity;
 using AutoMapper;
@@ -14,12 +15,13 @@ namespace APIServer.Services
         private readonly ICandidateRepository candidateRepo;
         private readonly ICurriculumVitaeRepository cvRepo;
         private readonly string host;
+        private readonly LocalImageStorage storage;
         private readonly IBaseRepository<Slider> sliderRepo;
 
         public ImageService(IMapper mapper, IConfiguration configuration,
             IRecuirterRepository recuirterRepository, IBaseRepository<Company> companyRepo,
             ICandidateRepository candidateRepo, ICurriculumVitaeRepository cvRepo,
-            IBaseRepository<Slider> sliderRepo)
+            IBaseRepository<Slider> sliderRepo, LocalImageStorage storage)
         {
             this.mapper = mapper;
             this.configuration = configuration;
@@ -29,6 +31,7 @@ namespace APIServer.Services
             this.cvRepo = cvRepo;
             host = ResolvePublicHost();
             this.sliderRepo = sliderRepo;
+            this.storage = storage;
         }
 
         public string updateImageAvtCompany(int companyId, int recuirterId, IFormFile file)
@@ -48,7 +51,7 @@ namespace APIServer.Services
                 var previousImagePath = com.AvatarURL;
                 string uniqueFileName = BuildSafeImageFileName(file, "Company_avt");
                 uploadImg(file, uniqueFileName);
-                var imagePath = Path.Combine("\\images\\", uniqueFileName);
+                var imagePath = "/images/" + uniqueFileName;
                 com.AvatarURL = imagePath;
                 if (companyRepo.Update(com) > 0)
                 {
@@ -83,7 +86,7 @@ namespace APIServer.Services
                 var previousImagePath = com.BackGroundURL;
                 string uniqueFileName = BuildSafeImageFileName(file, "Company_bgr");
                 uploadImg(file, uniqueFileName);
-                var imagePath = Path.Combine("\\images\\", uniqueFileName);
+                var imagePath = "/images/" + uniqueFileName;
                 com.BackGroundURL = imagePath;
                 if (companyRepo.Update(com) > 0)
                 {
@@ -117,7 +120,7 @@ namespace APIServer.Services
                 var previousImagePath = can.AvatarURL;
                 string uniqueFileName = BuildSafeImageFileName(file, "CV");
                 uploadImg(file, uniqueFileName);
-                var imagePath = Path.Combine("\\images\\", uniqueFileName);
+                var imagePath = "/images/" + uniqueFileName;
                 can.AvatarURL = imagePath;
                 if (candidateRepo.Update(can) > 0)
                 {
@@ -149,7 +152,7 @@ namespace APIServer.Services
                 var previousImagePath = cv.AvatarURL;
                 string uniqueFileName = BuildSafeImageFileName(file, "CV");
                 uploadImg(file, uniqueFileName);
-                var imagePath = Path.Combine("\\images\\", uniqueFileName);
+                var imagePath = "/images/" + uniqueFileName;
                 cv.AvatarURL = imagePath;
                 if (cvRepo.Update(cv) > 0)
                 {
@@ -179,7 +182,7 @@ namespace APIServer.Services
                 var previousImagePath = rec.AvatarURL;
                 string uniqueFileName = BuildSafeImageFileName(file, "Recuirter");
                 uploadImg(file, uniqueFileName);
-                var imagePath = Path.Combine("\\images\\", uniqueFileName);
+                var imagePath = "/images/" + uniqueFileName;
                 rec.AvatarURL = imagePath;
                 if (recuirterRepository.Update(rec) > 0)
                 {
@@ -207,8 +210,7 @@ namespace APIServer.Services
                 {
                     throw new Exception("Only allow img size under 5mb");
                 }
-                var absoluthPath = Directory.GetCurrentDirectory();
-                var imageDirectory = Path.Combine(absoluthPath, "wwwroot", "images");
+                var imageDirectory = Path.Combine(storage.Root, "images");
                 Directory.CreateDirectory(imageDirectory);
                 var imagePath = Path.Combine(imageDirectory, fileName);
                 using (var stream = new FileStream(imagePath, FileMode.Create))
@@ -237,6 +239,13 @@ namespace APIServer.Services
             if (!IsImageFileExtension(extension))
                 throw new Exception("Only allow img file");
 
+            using var input = file.OpenReadStream();
+            Span<byte> signature = stackalloc byte[8];
+            var read = input.Read(signature);
+            var valid = extension == ".png"
+                ? read == 8 && signature.SequenceEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 })
+                : read >= 3 && signature[0] == 255 && signature[1] == 216 && signature[2] == 255;
+            if (!valid) throw new Exception("The file contents do not match a supported image.");
             return $"{Guid.NewGuid():N}_{prefix}{extension}";
         }
 
@@ -253,14 +262,7 @@ namespace APIServer.Services
 
         private void deleteOldImg(string? url)
         {
-            var dir = Directory.GetCurrentDirectory();
-            var path = dir + "\\wwwroot\\" + url;
-            if (File.Exists(path))
-                File.Delete(path);
-            else
-            {
-                Console.WriteLine("Path not exist: " + path);
-            }
+            storage.Delete(url);
         }
 
         private void DeleteReplacedImage(string? imagePath)
@@ -281,8 +283,7 @@ namespace APIServer.Services
                 {
                     throw new Exception("Only allow img size under 25mb");
                 }
-                var absoluthPath = Directory.GetCurrentDirectory();
-                var sliderDirectory = Path.Combine(absoluthPath, "wwwroot", "slider");
+                var sliderDirectory = Path.Combine(storage.Root, "slider");
                 Directory.CreateDirectory(sliderDirectory);
                 var folderPath = Path.Combine(sliderDirectory, uniqueFileName);
                 using (var stream = new FileStream(folderPath, FileMode.Create))
@@ -295,7 +296,7 @@ namespace APIServer.Services
                 throw;
             }
 
-            var imagePath = Path.Combine("\\slider\\", uniqueFileName);
+            var imagePath = "/slider/" + uniqueFileName;
             slider.URL = imagePath;
             var rs = sliderRepo.Create(slider);
             if (rs > 0)

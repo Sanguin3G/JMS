@@ -1,14 +1,15 @@
-import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
-import { PageEvent } from '@angular/material/paginator';
-import { ToastrService } from 'ngx-toastr';
+import { parseMatchingExplanation } from 'src/app/core/jobs/matching-explanation';
+import { ApiService, ApiResponse } from 'src/app/core/http/api.service';
+import { inject, Component, Inject } from '@angular/core';
+import { DialogRef, DIALOG_DATA, Dialog } from '@angular/cdk/dialog';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
 import { ConfirmDialogComponent } from 'src/app/components/confirm-dialog/confirm-dialog.component';
-import { ViewCvComponent } from 'src/app/modules/candidate/components/view-cv/view-cv.component';
-import { getRequest, postRequest } from 'src/app/service/api-requests';
-import { showError, showSuccess } from 'src/app/service/common';
+import { ViewCvComponent } from 'src/app/shared/cv-viewer/view-cv.component';
+
+
 import { AVATAR_DEFAULT_URL, AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
 import { environment } from 'src/environments/environment';
-import { ApiResponse } from 'src/app/service/api-requests';
+
 import { MatchingExplanation, MatchingRecord, RecruiterCandidateDialogData } from 'src/app/core/models/api.models';
 @Component({
   standalone: false,
@@ -17,6 +18,7 @@ import { MatchingExplanation, MatchingRecord, RecruiterCandidateDialogData } fro
    styleUrls: ['./list-candidate.component.css'],
 })
 export class ListCandidateComponent {
+   private readonly api = inject(ApiService);
    avatar: any = AVATAR_DEFAULT_URL
    pageIndex: any = 0
    pageSize: any = 10
@@ -26,11 +28,10 @@ export class ListCandidateComponent {
    URL: any = environment.Url
 
    constructor(
-      public dialogRef: MatDialogRef<ListCandidateComponent>,
-      public dialogCvRef: MatDialogRef<ViewCvComponent>,
-      public dialog: MatDialog,
-      private toastr: ToastrService,
-      @Inject(MAT_DIALOG_DATA) public data: RecruiterCandidateDialogData) {
+      public dialogRef: DialogRef<unknown, ListCandidateComponent>,
+      public dialog: Dialog,
+      private toastr: NotificationService,
+      @Inject(DIALOG_DATA) public data: RecruiterCandidateDialogData) {
       if (data.content?.length == 0) {
          data.content = null
       }
@@ -40,24 +41,28 @@ export class ListCandidateComponent {
       this.getPageRange()
    }
 
+   pendingId: number | null = null;
+
    onClickSelect(item: MatchingRecord) {
+      if (this.pendingId !== null) return;
+      this.pendingId = item.id;
       //call api update cv selected status
-      postRequest(apiRecruiter.UPDATE_CV_SELECTED_STATUS + "?recruiterId=" + this.data.recruiterId + "&jobDescriptionId=" + item.jobDescriptionId + "&CVMatchingId=" + item.id, AuthorizationMode.BEARER_TOKEN, {})
+      this.api.postRequest(apiRecruiter.UPDATE_CV_SELECTED_STATUS + "?recruiterId=" + this.data.recruiterId + "&jobDescriptionId=" + item.jobDescriptionId + "&CVMatchingId=" + item.id, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
             if (res.statusCode == 200) {
                item.isSelected = !Boolean(item.isSelected)
             }
-            console.log(res);
+
          })
          .catch(data => {
-            console.log(data);
-         })
+            this.toastr.error("Không thể cập nhật trạng thái hồ sơ.");
+         }).finally(() => { this.pendingId = null; })
    }
 
    async openListCandidateLeft(): Promise<void> {
       if (this.isShowLeftMatched == true) return;
 
-      await getRequest<ApiResponse<MatchingRecord[]>>(apiRecruiter.GET_CV_MATCHED_LEFT, AuthorizationMode.BEARER_TOKEN, { recruiterId: this.data.recruiterId, jobDescriptionId: this.data.jdId })
+      await this.api.getRequest<ApiResponse<MatchingRecord[]>>(apiRecruiter.GET_CV_MATCHED_LEFT, AuthorizationMode.BEARER_TOKEN, { recruiterId: this.data.recruiterId, jobDescriptionId: this.data.jdId })
          .then(res => {
             if (res.statusCode === 200 && res.data != null) {
                this.data.content = res.data
@@ -75,19 +80,18 @@ export class ListCandidateComponent {
       const normalized = this.normalizeMatchingRecord(jd);
 
       const dialogRef = this.dialog.open(ViewCvComponent, {
-         width: '50%',
+         width: '900px', maxWidth: '96vw', maxHeight: '95vh',
          height: '100%',
          data: { jd: normalized, recruiterId: this.data.recruiterId }
       });
 
-      dialogRef.afterClosed().subscribe(() => {
+      dialogRef.closed.subscribe(() => {
          this.isHideModal = false
       });
    }
 
-   handlePage(e: PageEvent) {
-      this.pageSize = e.pageSize;
-      this.pageIndex = e.pageIndex;
+   handlePage(page: number) {
+      this.pageIndex = page - 1;
       this.getPageRange();
    }
 
@@ -99,31 +103,31 @@ export class ListCandidateComponent {
    }
 
    onClickRejectCv(cv: MatchingRecord) {
-      //API handle delete JD
-      postRequest(`${apiRecruiter.REJECT_CV}?recruiterId=${this.data.recruiterId}&jobDescriptionId=${this.data.jdId}&CVMatchingId=${cv.id}`, AuthorizationMode.BEARER_TOKEN, {})
+      if (this.pendingId !== null) return;
+      this.pendingId = cv.id;
+      this.api.postRequest(`${apiRecruiter.REJECT_CV}?recruiterId=${this.data.recruiterId}&jobDescriptionId=${this.data.jdId}&CVMatchingId=${cv.id}`, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
             if (res.statusCode == 200) {
-               showSuccess(this.toastr, "Xoá thành công hồ sơ")
-               const index = this.listDisplay.indexOf(cv);
-               if (index !== -1) {
-                  this.listDisplay.splice(index, 1);
-               }
+               this.toastr.success("Đã từ chối hồ sơ");
+               this.data.content = (this.data.content ?? []).filter(item => item.id !== cv.id);
+               this.pageIndex = Math.min(this.pageIndex, Math.max(0, Math.ceil(this.data.content.length / this.pageSize) - 1));
+               this.getPageRange();
             } else {
-               showError(this.toastr, "Xoá thất bại hồ sơ <br/> Vui lòng thử lại sau")
+               this.toastr.error("Không thể từ chối hồ sơ. Vui lòng thử lại.")
             }
          })
          .catch(data => {
-            showError(this.toastr, "Xoá thất bại hồ sơ <br/> Vui lòng thử lại sau")
-         })
+            this.toastr.error("Không thể từ chối hồ sơ. Vui lòng thử lại.")
+         }).finally(() => { this.pendingId = null; })
    }
 
    openConfirmDialog(jd: MatchingRecord): void {
-      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      const dialogRef = this.dialog.open<boolean>(ConfirmDialogComponent, { ariaLabelledBy: "confirm-title", ariaDescribedBy: "confirm-message",
          width: '350px',
-         data: { title: 'Xác nhận', content: 'Bạn có xác nhận xóa CV khỏi danh sách không?' }
+         data: { title: 'Từ chối hồ sơ', content: 'Xác nhận từ chối hồ sơ này? Ứng viên sẽ thấy trạng thái từ chối.' }
       });
 
-      dialogRef.afterClosed().subscribe((result: boolean) => {
+      dialogRef.closed.subscribe((result) => {
          if (result === true) {
             this.onClickRejectCv(jd);
          }
@@ -131,7 +135,7 @@ export class ListCandidateComponent {
    }
 
    private normalizeMatchingRecord(record: MatchingRecord): MatchingRecord {
-      const matchingInsight = this.parseExplanation(record.jsonMatching);
+      const matchingInsight = parseMatchingExplanation(record.jsonMatching);
       return {
          ...record,
          award: this.parseArray(record.award),
@@ -156,14 +160,4 @@ export class ListCandidateComponent {
       }
    }
 
-   private parseExplanation(value: unknown): MatchingExplanation | null {
-      if (value && typeof value === 'object') return value as MatchingExplanation;
-      if (typeof value !== 'string' || value.trim().length === 0) return null;
-      try {
-         const parsed: unknown = JSON.parse(value);
-         return parsed && typeof parsed === 'object' ? parsed as MatchingExplanation : null;
-      } catch {
-         return null;
-      }
-   }
 }

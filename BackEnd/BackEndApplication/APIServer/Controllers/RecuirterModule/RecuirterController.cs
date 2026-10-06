@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
 using APIServer.IServices;
@@ -40,6 +40,7 @@ namespace APIServer.Controllers.RecuirterModule
 
         [HttpGet]
         [Route("get-all")]
+        [Authorize(Roles = GlobalStrings.ROLE_ADMIN)]
         public BaseResponseBody<List<RecuirterDTO>> getAllRec()
         {
             try
@@ -124,11 +125,11 @@ namespace APIServer.Controllers.RecuirterModule
                 return new BaseResponseBody<List<CVMatchingDTO>>
                 {
                     statusCode = HttpStatusCode.InternalServerError,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     data = null
                 };
             }
-            
+
         }
 
         [HttpPost]
@@ -206,7 +207,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new BaseResponseBody<CVMatchingDTO>
                 {
-                    message = ex.Message.ToString(),
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext).ToString(),
                 };
             }
         }
@@ -236,7 +237,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new BaseResponseBody<CVMatchingDTO>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }
@@ -275,11 +276,11 @@ namespace APIServer.Controllers.RecuirterModule
         [HttpPost("change-password")]
         [Authorize(Roles = GlobalStrings.ROLE_RECUIRTER)]
         [UserIdMatchesClaim("recruiterId")]
-        public BaseResponseBody<int> ChangePassword(int recruiterId, string oldPassword, string newPassword, string confirmPassword)
+        public BaseResponseBody<int> ChangePassword(int recruiterId, [FromBody] ChangePasswordRequest request)
         {
             try
             {
-                int n = _recuirterService.UpdatePassword(recruiterId, oldPassword, newPassword, confirmPassword);
+                int n = _recuirterService.UpdatePassword(recruiterId, request.OldPassword, request.NewPassword, request.ConfirmPassword);
                 if (n > 0)
                     return new BaseResponseBody<int>
                     {
@@ -314,7 +315,7 @@ namespace APIServer.Controllers.RecuirterModule
             {
                 return new BaseResponseBody<int>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }

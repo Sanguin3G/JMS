@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.IRepositories;
 using APIServer.IServices;
@@ -16,12 +16,14 @@ namespace APIServer.Services
     public class AdminService : IAdminService
     {
 
+        private readonly JMSDBContext _db;
         private readonly IAdminRepository _adminContext;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
 
-        public AdminService(IAdminRepository adminContext, IMapper mapper, IConfiguration configuration)
+        public AdminService(IAdminRepository adminContext, IMapper mapper, IConfiguration configuration, JMSDBContext db)
         {
+            _db = db;
             _adminContext = adminContext;
             _mapper = mapper;
             _configuration = configuration;
@@ -200,16 +202,22 @@ namespace APIServer.Services
 
         public StatisticDTO GetStatisticDTO()
         {
-            using (var context = new JMSDBContext())
+            var context = _db;
             {
                 return new StatisticDTO()
                 {
-                    TotalCompany = context.Companies.Count(),
-                    TotalCV = context.CurriculumVitaes
-                    .Where(x => !x.IsDelete && x.IsFindingJob == true).Count(),
-                    TotalJDs = context.JobDescriptions
-                    .Where(x => !x.IsDelete && x.ExpiredDate > DateTime.Now).Count(),
+                    TotalCompany = context.Companies.Count(x => !x.IsDelete),
+                    TotalCandidates = context.Candidates.Count(x => !x.IsDelete),
+                    TotalRecruiters = context.Recuirters.Count(x => !x.IsDelete),
+                    TotalCV = context.CurriculumVitaes.Count(x => !x.IsDelete),
+                    ActiveCVs = context.CurriculumVitaes.Count(x => !x.IsDelete && x.IsFindingJob == true),
+                    TotalJDs = context.JobDescriptions.Count(x => !x.IsDelete),
+                    ActiveJobs = context.JobDescriptions.Count(x => !x.IsDelete && x.ExpiredDate > DateTime.Now),
+                    ExpiredJobs = context.JobDescriptions.Count(x => !x.IsDelete && x.ExpiredDate <= DateTime.Now),
                     TotalMatching = context.CVMatchings.Count(),
+                    Applications = context.CVMatchings.Count(x => x.IsApplied),
+                    SelectedApplications = context.CVMatchings.Count(x => x.IsApplied && x.IsSelected && x.IsReject != true),
+                    RejectedApplications = context.CVMatchings.Count(x => x.IsApplied && x.IsReject == true),
                 };
             }
         }

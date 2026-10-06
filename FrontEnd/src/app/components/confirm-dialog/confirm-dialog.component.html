@@ -1,9 +1,8 @@
-<div class="content" mat-dialog-content>
-	<p>
-		{{data.content}}
-    </p>
-</div>
-<div class="d-flex justify-content-center" mat-dialog-actions>
-	<button class="prm-btn" mat-raised-button (click)="onConfirmClick()" tabindex="1">OK</button>
-	<button class="snd-btn" mat-raised-button (click)="onCancelClick()" mat-dialog-close tabindex="-1">Cancel</button>
-</div>
+<section class="jms-confirm" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+  <h2 id="confirm-title">{{ data.title || 'Xác nhận thao tác' }}</h2>
+  <p id="confirm-message">{{ data.content }}</p>
+  <div class="d-flex justify-content-end gap-2">
+    <button class="btn btn-outline-secondary" type="button" (click)="onCancelClick()">Hủy</button>
+    <button class="btn btn-primary" type="button" (click)="onConfirmClick()">Xác nhận</button>
+  </div>
+</section>

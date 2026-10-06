@@ -1,47 +1,13 @@
-.widget-container {
-    display: flex;
-    align-items: space-between;
-    width: 95%;
-    .widget {
-      height: 175px;
-      background-color: #fff;
-      color: #fff;
-      border-radius: 5px;
-      margin: 10px;
-      box-shadow: 5px 5px 5px #939393;
-      display: flex;
-      align-items: center;
-      padding: 20px;
-      &.green {
-        background-color: #59CE8F;
-        /* background: linear-gradient(109.6deg, rgb(13, 107, 76) 11.2%, rgb(44, 51, 59) 91.3%); */
-      }
-      &.yellow {
-        background-color: #F8485E;
-        /* background: linear-gradient(109.6deg, rgb(199, 140, 72) 11.2%, rgb(255, 176, 17) 91.3%); */
-      }
-      &.red {
-        background-color: #FFC947;
-        /* background: linear-gradient(109.6deg, rgb(193, 34, 68) 11.2%, rgb(143, 10, 10) 91.3%); */
-      }
-      &.blue {
-        background-color: #3AB0FF;
-        /* background: linear-gradient(109.6deg, rgb(98, 122, 200) 11.2%, rgb(51, 5, 178) 91.3%); */
-      }
-      
-      .icon {
-        font-size: 60px;
-        text-align: center;
-      }
-      .value {
-        text-align: center;
-        .top {
-          font-size: 30px;
-        }
-        .bottom {
-          font-size: 20px;
-          margin-top: 10px;
-        }
-      }
-    }
-  }
+.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.metric-card { display: flex; flex-direction: column; gap: .5rem; min-width: 0; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 1rem; background: var(--surface-color); color: var(--text-color); text-decoration: none; }
+a.metric-card:hover { border-color: var(--accent-color); background: var(--surface-muted-color); }
+a.metric-card:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+.metric-card i { color: var(--accent-color); font-size: 1.5rem; }
+.metric-card strong { font-size: 2rem; line-height: 1.2; }
+.metric-card small, .muted { color: var(--muted-text-color); }
+.review-summary, .dashboard-state { margin-top: 1.5rem; padding: 1.25rem; border: 1px solid var(--border-color); border-radius: 1rem; background: var(--surface-color); color: var(--text-color); }
+.review-summary h2 { font-size: 1.15rem; margin-bottom: .75rem; }
+.review-summary p { margin-bottom: .5rem; }
+@media (max-width: 480px) { .metric-grid { grid-template-columns: 1fr; } }
+
+.metric-card{position:relative;overflow:hidden;background:linear-gradient(145deg,var(--accent-soft),var(--surface-color) 55%);box-shadow:0 5px 18px #142b600c}.metric-card:before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,#1789ea,#7750df)}.metric-card i{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--surface-color);box-shadow:0 3px 9px #142b6010}.review-summary{box-shadow:0 5px 18px #142b6008}

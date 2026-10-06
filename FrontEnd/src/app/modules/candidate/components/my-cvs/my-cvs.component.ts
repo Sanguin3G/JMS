@@ -1,140 +1,41 @@
-import { Component, ElementRef, ViewChild } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { getRequest, postRequest } from 'src/app/service/api-requests';
+import { Component, OnInit, inject } from '@angular/core';
+import { Dialog } from '@angular/cdk/dialog';
+import { firstValueFrom } from 'rxjs';
+import { ApiService, ApiResponse } from 'src/app/core/http/api.service';
 import { AuthorizationMode, apiCandidate } from 'src/app/service/constant';
-import { getProfile, isLogin, signOut } from 'src/app/service/localstorage';
-import { environment } from 'src/environments/environment';
-import { ViewCvComponent } from '../view-cv/view-cv.component';
-import { Router } from '@angular/router';
+import { AuthService } from 'src/app/core/auth/auth.service';
 import { ConfirmDialogComponent } from 'src/app/components/confirm-dialog/confirm-dialog.component';
-import { ToastrService } from 'ngx-toastr';
-import { showError, showSuccess } from 'src/app/service/common';
-
-@Component({
-  standalone: false,
-   selector: 'app-my-cvs',
-   templateUrl: './my-cvs.component.html',
-   styleUrls: ['./my-cvs.component.css']
-})
-
-export class CandidateMyCvsComponent {
-   Url = environment.Url;
-   list = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-   listCVs: any;
-   profile: any
-   listJds: any
-
-   @ViewChild('templateScroller') private templateScroller?: ElementRef<HTMLUListElement>;
-
-   scrollTemplates(direction: 1 | -1) {
-      this.templateScroller?.nativeElement.scrollBy({
-         left: direction * 250,
-         behavior: 'smooth'
-      });
-   }
-
-   convertDate(date: string){
-      var d = date.split("/")
-      if(d){
-         return `${d[1]}/${d[0]}/${d[2]}`
-      }  
-      return ''
-   }
-
-   constructor(public dialog: MatDialog, private router: Router, private toastr: ToastrService) {
-
-      this.profile = getProfile();
-
-      getRequest(`${apiCandidate.GET_ALL_CV_BY_ID}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, {})
-         .then(res => {
-            this.listCVs = res?.data
-
-            this.listCVs.map((item:any, index: any) =>  this.listCVs[index].lastUpdateDateDisplay = this.convertDate(item.lastUpdateDateDisplay))
-            console.log(this.listCVs);
-         })
-         .catch(data => {
-         })
-
-
-      getRequest(apiCandidate.GET_ALL_JDS_PAGING + "/" + 1, AuthorizationMode.BEARER_TOKEN)
-         .then(res => {
-            if (res?.statusCode == 200) {
-               this.listJds = res?.data
-            }
-         })
-         .catch(data => {
-         })
-   }
-
-   onClickJD(jd: any) {
-      this.router.navigate(['/candidate/jd-detail/', jd?.jobId]);
-   }
-
-   gotoEditCV(id: number) {
-      this.router.navigate([`/candidate/update-cv/`]);
-   }
-
-
-   onClickDelete(id: number) {
-      postRequest(`${apiCandidate.DELETE_CV_BY_ID}?candidateId=${this.profile.id}&cvId=${id}`, AuthorizationMode.BEARER_TOKEN, {})
-         .then(res => {
-            if (res?.statusCode) {
-               showSuccess(this.toastr, "Xoá hồ sơ thành công")
-
-               getRequest(`${apiCandidate.GET_ALL_CV_BY_ID}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, {})
-                  .then(res => {
-                     this.listCVs = res?.data
-                     this.listCVs.map((item:any, index: any) =>  this.listCVs[index].lastUpdateDateDisplay = this.convertDate(item.lastUpdateDateDisplay))
-                  })
-                  .catch(data => {
-                     console.warn(apiCandidate.GET_ALL_CV_BY_ID, data);
-                  })
-            }
-         })
-         .catch(data => {
-            showError(this.toastr, "Xoá hồ sơ thất bại")
-         })
-
-   }
-
-   gotoDeleteCV(id: number) {
-
-      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-         width: '350px',
-         data: { title: 'Xác nhận', content: 'Bạn có xác nhận xóa hồ sơ không?' }
-      });
-
-      dialogRef.afterClosed().subscribe((result: boolean) => {
-         if (result === true) {
-            this.onClickDelete(id);
-         } else if (result === false) {
-         } else {
-         }
-      });
-   }
-
-   gotoUpdateCurrentCv(id: number) {
-
-      postRequest(`${apiCandidate.CHANGE_FINDING_JOB_STATUS}?candidateId=${this.profile.id}&cvId=${id}`, AuthorizationMode.BEARER_TOKEN, {})
-         .then(res => {
-            if (res?.statusCode == 200) {
-               getRequest(`${apiCandidate.GET_ALL_CV_BY_ID}/${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, {})
-                  .then(res => {
-                     this.listCVs = res?.data
-                     this.listCVs.map((item:any, index: any) =>  this.listCVs[index].lastUpdateDateDisplay = this.convertDate(item.lastUpdateDateDisplay))
-                     console.log(this.listCVs);
-                  })
-                  .catch(data => {
-                  })
-
-            } else {
-               showError(this.toastr, "Thay đổi trạng thái thất bại, vui lòng thử lại sau")
-            }
-         })
-         .catch(data => {
-            showError(this.toastr, "Thay đổi trạng thái thất bại, vui lòng thử lại sau")
-            console.error(apiCandidate.CHANGE_FINDING_JOB_STATUS);
-         })
-
-   }
+import { NotificationService } from 'src/app/core/notifications/notification.service';
+import { CurriculumVitae } from 'src/app/core/models/api.models';
+interface LibraryCv extends CurriculumVitae { isFindingJob?: boolean; lastUpdateDateDisplay?: string; }
+@Component({ standalone: false, selector: 'app-my-cvs', templateUrl: './my-cvs.component.html', styleUrls: ['./my-cvs.component.css'] })
+export class CandidateMyCvsComponent implements OnInit {
+  private readonly auth = inject(AuthService); private readonly api = inject(ApiService); private readonly dialog = inject(Dialog); private readonly notifications = inject(NotificationService);
+  readonly themes = [0,1,2,3,4,5,6,7,8]; listCVs: LibraryCv[] = []; loading = true; error = ''; pendingId: number | null = null;
+  ngOnInit(): void { void this.load(); }
+  async load(): Promise<void> {
+    const userId = this.auth.currentUser()?.id; if (!userId) return;
+    this.loading = true; this.error = '';
+    try { const response = await this.api.getRequest<ApiResponse<LibraryCv[]>>(`${apiCandidate.GET_ALL_CV_BY_ID}/${userId}`, AuthorizationMode.BEARER_TOKEN); if (response.statusCode !== 200) throw new Error('CV unavailable'); this.listCVs = response.data ?? []; }
+    catch { this.error = 'Không thể tải thư viện CV. Vui lòng thử lại.'; }
+    finally { this.loading = false; }
+  }
+  async deleteCv(cv: LibraryCv): Promise<void> {
+    if (this.pendingId !== null) return;
+    const confirmed = await firstValueFrom(this.dialog.open<boolean>(ConfirmDialogComponent, { ariaLabelledBy: "confirm-title", ariaDescribedBy: "confirm-message", width: '420px', maxWidth: '95vw', data: { title: 'Xóa CV?', content: `Xóa “${cv.cvTitle || 'CV'}” khỏi thư viện? Hồ sơ đã gửi ứng tuyển vẫn được giữ lại.` } }).closed);
+    if (!confirmed) return;
+    const userId = this.auth.currentUser()?.id; if (!userId) return;
+    this.pendingId = cv.id;
+    try { const response = await this.api.postRequest(`${apiCandidate.DELETE_CV_BY_ID}?candidateId=${userId}&cvId=${cv.id}`, AuthorizationMode.BEARER_TOKEN, {}); if (response.statusCode !== 200) throw new Error('Delete failed'); this.listCVs = this.listCVs.filter(item => item.id !== cv.id); this.notifications.success('Đã xóa CV.'); }
+    catch { this.notifications.error('Không thể xóa CV. Vui lòng thử lại.'); }
+    finally { this.pendingId = null; }
+  }
+  async setFindingJob(cv: LibraryCv): Promise<void> {
+    const userId = this.auth.currentUser()?.id; if (this.pendingId !== null || !userId) return;
+    this.pendingId = cv.id;
+    try { const response = await this.api.postRequest(`${apiCandidate.CHANGE_FINDING_JOB_STATUS}?candidateId=${userId}&cvId=${cv.id}`, AuthorizationMode.BEARER_TOKEN, {}); if (response.statusCode !== 200) throw new Error('Update failed'); await this.load(); this.notifications.success('Đã cập nhật hồ sơ tìm việc.'); }
+    catch { this.notifications.error('Không thể cập nhật trạng thái CV.'); }
+    finally { this.pendingId = null; }
+  }
+  themeIndex(cv: LibraryCv): number { return Math.max(0, Math.min(8, cv.theme ?? 6)); }
 }

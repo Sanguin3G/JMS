@@ -1,41 +1,12 @@
-<div class="container">
-   <h4>Danh sách công việc</h4>
-
-   <div class="row d-flex listJob">
-      <div *ngIf="isLoading" style="height: 500px;">
-         <app-view-loading></app-view-loading>
-      </div>
-
-      <div *ngIf="!isLoading && listJds.length === 0" style="height: 500px;">
-         <app-view-null></app-view-null>
-      </div>
-
-      <div class="itemJob" *ngFor="let jd of listJds | paginate: 
-      {
-         itemsPerPage: itemsPerPage,
-         currentPage: page,
-         totalItems: totalItems
-       }" (click)="onClick(jd)">
-         <div style="display: flex;">
-            <div class="imgJob">
-               <img src="{{ jd?.companyDTO?.avatarURL }}" alt="...">
-            </div>
-            <div class="detailJob">
-               <div class="textOver fontBold">{{jd?.title}}</div>
-               <div class="textOver">{{jd?.companyName}}</div>
-               <div class="textOver colorOrange">{{jd?.salary}}</div>
-               <div class="textOver">{{jd?.address}}</div>
-            </div>
-         </div>
-      </div>
-   </div>
-
-   <div *ngIf="!isLoading && listJds.length > 0">
-      <nav aria-label="Page navigation example">
-         <ul class="pagination justify-content-center">
-            <pagination-controls class="pagi" previousLabel="" nextLabel=""
-               (pageChange)="pageChanged((page = $event))"></pagination-controls>
-         </ul>
-      </nav>
-   </div>
-</div>
+<section class="job-discovery container" aria-labelledby="jobs-heading">
+  <form class="job-search" (ngSubmit)="search()">
+    <div class="search-main"><label>Từ khóa<input name="query" [(ngModel)]="filters.query" placeholder="Vị trí, kỹ năng hoặc công ty" maxlength="200"></label><label>Địa điểm<input name="location" [(ngModel)]="filters.location" placeholder="Thành phố hoặc khu vực" maxlength="200"></label><button type="submit" class="btn btn-primary" [disabled]="isLoading"><i class="bi bi-search" aria-hidden="true"></i> Tìm việc</button></div>
+    <div class="search-filters"><label>Ngành nghề<select name="categoryId" [(ngModel)]="filters.categoryId"><option [ngValue]="null">Tất cả ngành nghề</option><option *ngFor="let category of categories" [ngValue]="category.id">{{ catalogName(category) }}</option></select></label><label>Hình thức<select name="employmentTypeId" [(ngModel)]="filters.employmentTypeId"><option [ngValue]="null">Tất cả hình thức</option><option *ngFor="let type of employmentTypes" [ngValue]="type.id">{{ catalogName(type) }}</option></select></label><label>Sắp xếp<select name="sort" [(ngModel)]="filters.sort"><option value="newest">Mới nhất</option><option value="oldest">Cũ nhất</option></select></label><button type="button" class="clear-search" (click)="clearFilters()">Xóa bộ lọc</button></div>
+  </form>
+  <div class="results-heading"><h2 id="jobs-heading">Việc làm đang tuyển</h2><span *ngIf="!isLoading && !errorMessage">{{ totalItems | number }} công việc</span></div>
+  <div *ngIf="isLoading" class="jobs-state" role="status" aria-live="polite">Đang tìm việc làm phù hợp…</div>
+  <div *ngIf="errorMessage" class="jobs-state" role="alert"><p>{{ errorMessage }}</p><button type="button" class="btn btn-outline-primary" (click)="loadJobs()">Thử lại</button></div>
+  <div *ngIf="!isLoading && !errorMessage && !listJds.length" class="jobs-state"><i class="bi bi-search" aria-hidden="true"></i><h3>Chưa có việc làm phù hợp</h3><p>Thử từ khóa khác hoặc giảm bớt bộ lọc.</p><button type="button" class="btn btn-outline-primary" (click)="clearFilters()">Xem tất cả việc làm</button></div>
+  <div *ngIf="!isLoading && !errorMessage" class="job-grid"><app-job-card *ngFor="let jd of listJds" [job]="jd" [canSave]="auth.isRole('candidate')" [saved]="savedJobs.savedIds().has(jd.jobId)" [saving]="savedJobs.pendingIds().has(jd.jobId)" (saveToggle)="toggleSave($event)"></app-job-card></div>
+  <app-jms-pagination [page]="filters.page" [pageSize]="filters.pageSize" [total]="totalItems" [loading]="isLoading" (pageChange)="search($event)"></app-jms-pagination>
+</section>

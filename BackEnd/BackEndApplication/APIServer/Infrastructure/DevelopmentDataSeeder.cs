@@ -1,3 +1,7 @@
+using APIServer.Features.Matching;
+using APIServer.Features.Matching.Contracts;
+using Newtonsoft.Json;
+using APIServer.DTO.EntityDTO;
 using APIServer.Common;
 using APIServer.Models;
 using APIServer.Models.Entity;
@@ -13,12 +17,12 @@ public static class DevelopmentDataSeeder
 {
     private const string DemoPassword = "JmsDemo!2026";
 
-    private const string TeamPhoto = "https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?auto=format&fit=crop&w=1600&q=80";
-    private const string StudioPhoto = "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1600&q=80";
-    private const string MeetingPhoto = "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1600&q=80";
-    private const string PortraitOne = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80";
-    private const string PortraitTwo = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80";
-    private const string PortraitThree = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80";
+    private const string TeamPhoto = "/defaults/northstar.svg";
+    private const string StudioPhoto = "/defaults/workspace.jpg";
+    private const string MeetingPhoto = "/defaults/paperkite.svg";
+    private const string PortraitOne = "/defaults/avatar.svg";
+    private const string PortraitTwo = "/defaults/avatar.svg";
+    private const string PortraitThree = "/defaults/avatar.svg";
 
     public static async Task SeedAsync(JMSDBContext dbContext, ILogger logger, CancellationToken cancellationToken = default)
     {
@@ -27,8 +31,8 @@ public static class DevelopmentDataSeeder
             dbContext.FaqEntries.AddRange(
                 new FaqEntry
                 {
-                    Question = "What is JMS matching?",
-                    Answer = "JMS compares a CV with a job using deterministic category eligibility and requirement-token scoring. Optional Gemini output adds an explanation; it does not make a hiring decision.",
+                    Question = "JMS đánh giá độ phù hợp như thế nào?",
+                    Answer = "JMS so sánh CV với công việc theo ngành nghề và các tiêu chí xác định. AI có thể bổ sung giải thích và bằng chứng; quyết định tuyển dụng thuộc về nhà tuyển dụng.",
                     Keywords = "matching score eligibility explanation",
                     Category = "Matching",
                     SortOrder = 1,
@@ -37,8 +41,8 @@ public static class DevelopmentDataSeeder
                 },
                 new FaqEntry
                 {
-                    Question = "How do I improve a CV match?",
-                    Answer = "Keep the CV current, describe concrete work in each section, and use truthful skills and experience that relate to the job requirements. The match explanation shows evidence and gaps when available.",
+                    Question = "Làm thế nào để cải thiện CV?",
+                    Answer = "Cập nhật CV, mô tả cụ thể công việc đã làm và trình bày trung thực kỹ năng, kinh nghiệm liên quan. Phần đánh giá giúp bạn hiểu bằng chứng phù hợp và những điểm còn thiếu.",
                     Keywords = "CV resume improve gaps skills experience",
                     Category = "Candidates",
                     SortOrder = 2,
@@ -47,9 +51,9 @@ public static class DevelopmentDataSeeder
                 },
                 new FaqEntry
                 {
-                    Question = "What happens when Gemini is unavailable?",
-                    Answer = "The deterministic match score and eligibility result still work. JMS labels the explanation as unavailable or failed and does not expose provider secrets to the browser.",
-                    Keywords = "Gemini AI unavailable fallback key",
+                    Question = "Điều gì xảy ra khi AI không khả dụng?",
+                    Answer = "Điểm số và kết quả đánh giá theo quy tắc vẫn hoạt động. JMS thông báo khi phần giải thích AI không khả dụng và luôn giữ khóa API trên máy chủ.",
+                    Keywords = "AI unavailable fallback key không khả dụng",
                     Category = "AI safety",
                     SortOrder = 3,
                     CreatedAt = new DateTime(2026, 8, 20, 9, 0, 0, DateTimeKind.Utc),
@@ -66,15 +70,16 @@ public static class DevelopmentDataSeeder
             return;
         }
 
-        var now = new DateTime(2026, 8, 20, 9, 0, 0, DateTimeKind.Utc);
+        // Stable relative dates keep freshly initialized demos useful over time.
+        var now = DateTime.UtcNow.Date.AddHours(9);
         var recruiterRole = new Role { Name = GlobalStrings.ROLE_RECUIRTER, IsDelete = false };
         var employerRole = new Role { Name = "Hiring manager", IsDelete = false };
 
-        var productCategory = new Category { CategoryName = "Product & Technology", Description = "Product, engineering, design, and data roles.", CreatedAt = now, IsDelete = false };
-        var peopleCategory = new Category { CategoryName = "People & Operations", Description = "People operations, business support, and talent roles.", CreatedAt = now, IsDelete = false };
-        var creativeCategory = new Category { CategoryName = "Creative & Marketing", Description = "Brand, content, and visual communication roles.", CreatedAt = now, IsDelete = false };
-        var fullTime = new EmploymentType { Title = "Full time", IsDelete = false };
-        var hybrid = new EmploymentType { Title = "Hybrid", IsDelete = false };
+        var productCategory = new Category { CategoryName = "Công nghệ & Sản phẩm", Description = "Phát triển phần mềm, dữ liệu và sản phẩm số.", CreatedAt = now, IsDelete = false };
+        var peopleCategory = new Category { CategoryName = "Nhân sự & Vận hành", Description = "Nhân sự, vận hành và hỗ trợ doanh nghiệp.", CreatedAt = now, IsDelete = false };
+        var creativeCategory = new Category { CategoryName = "Sáng tạo & Marketing", Description = "Thiết kế, thương hiệu và truyền thông.", CreatedAt = now, IsDelete = false };
+        var fullTime = new EmploymentType { Title = "Toàn thời gian", IsDelete = false };
+        var hybrid = new EmploymentType { Title = "Linh hoạt tại văn phòng", IsDelete = false };
         var junior = new Level { Title = "Junior", Description = "Early-career professional", IsDelete = false };
         var mid = new Level { Title = "Mid-level", Description = "Independent contributor", IsDelete = false };
         var senior = new Level { Title = "Senior", Description = "Experienced specialist or technical lead", IsDelete = false };
@@ -94,7 +99,7 @@ public static class DevelopmentDataSeeder
 
         var recruiterOne = new Recuirter
         {
-            FullName = "Minh Tran",
+            FullName = "Trần Minh",
             UserName = "minh.northstar",
             Email = "minh@northstar-labs.example",
             Password = BCrypt.Net.BCrypt.HashPassword(DemoPassword),
@@ -103,7 +108,7 @@ public static class DevelopmentDataSeeder
             DOB = new DateTime(1991, 3, 11),
             CreatedDate = now.AddDays(-90),
             LastUpdate = now.AddDays(-2),
-            Description = "Talent partner for product and engineering teams.",
+            Description = "Kết nối đội ngũ sản phẩm với kỹ sư thích làm ra những công cụ hữu ích.",
             Role = recruiterRole,
             IsActive = true,
             IsDelete = false,
@@ -111,7 +116,7 @@ public static class DevelopmentDataSeeder
         };
         var recruiterTwo = new Recuirter
         {
-            FullName = "Linh Nguyen",
+            FullName = "Nguyễn Linh",
             UserName = "linh.paperkite",
             Email = "linh@paperkite.example",
             Password = BCrypt.Net.BCrypt.HashPassword(DemoPassword),
@@ -120,7 +125,7 @@ public static class DevelopmentDataSeeder
             DOB = new DateTime(1992, 11, 22),
             CreatedDate = now.AddDays(-65),
             LastUpdate = now.AddDays(-1),
-            Description = "Building thoughtful teams for creative technology work.",
+            Description = "Tìm đồng đội yêu thiết kế, biết đặt câu hỏi và sẵn sàng thử nghiệm.",
             Role = employerRole,
             IsActive = true,
             IsDelete = false,
@@ -132,8 +137,8 @@ public static class DevelopmentDataSeeder
             CompanyName = "Northstar Labs",
             Email = "hello@northstar-labs.example",
             Phone = "0280000101",
-            Address = "District 1, Ho Chi Minh City",
-            Description = "A fictional product studio making practical tools for ambitious teams.",
+            Address = "Quận 1, TP. Hồ Chí Minh",
+            Description = "Northstar Labs là công ty mẫu của JMS: một nhóm xây dựng sản phẩm số cho doanh nghiệp nhỏ. Chúng tôi thích những công cụ gọn gàng, giải quyết được việc thật — từ bảng điều phối giao hàng đến trải nghiệm tìm việc. Nhóm sản phẩm làm việc cùng kỹ sư, thử nghiệm sớm và dành thời gian cho chất lượng.",
             DateCreated = now.AddDays(-90),
             Category = productCategory,
             Recuirter = recruiterOne,
@@ -149,8 +154,8 @@ public static class DevelopmentDataSeeder
             CompanyName = "Paper Kite Studio",
             Email = "hello@paperkite.example",
             Phone = "0280000102",
-            Address = "Binh Thanh, Ho Chi Minh City",
-            Description = "A fictional design and brand studio for products people enjoy using.",
+            Address = "Bình Thạnh, TP. Hồ Chí Minh",
+            Description = "Paper Kite Studio là studio mẫu của JMS, kết hợp thiết kế sản phẩm và kể chuyện thương hiệu. Nhóm nhỏ, trao đổi trực tiếp và chú ý từng chi tiết: một luồng đăng ký dễ hiểu, một bộ chữ có cá tính hay một nguyên mẫu đủ tốt để kiểm chứng ý tưởng. Hồ sơ có quá trình suy nghĩ rõ ràng luôn được chào đón.",
             DateCreated = now.AddDays(-65),
             Category = creativeCategory,
             Recuirter = recruiterTwo,
@@ -159,7 +164,7 @@ public static class DevelopmentDataSeeder
             IsDelete = false,
             Size = "11-50",
             AvatarURL = MeetingPhoto,
-            BackGroundURL = TeamPhoto
+            BackGroundURL = "/defaults/team-work.jpg"
         };
 
         var jobOne = new JobDescription
@@ -172,13 +177,13 @@ public static class DevelopmentDataSeeder
             Level = mid,
             EmploymentType = fullTime,
             GenderId = 1,
-            AgeRequirement = "Open to all eligible applicants",
-            EducationRequirement = "Practical experience or relevant portfolio",
-            ExperienceRequirement = "2+ years building production Angular applications",
+            AgeRequirement = "Không giới hạn độ tuổi",
+            EducationRequirement = "Kinh nghiệm thực tế hoặc portfolio phù hợp",
+            ExperienceRequirement = "Từ 2 năm phát triển ứng dụng Angular thực tế",
             SkillRequirement = "Angular, TypeScript, accessible HTML/CSS, REST APIs",
-            JobDetail = "Own polished candidate-facing workflows and collaborate closely with backend and product peers.",
-            CandidateBenefit = "Learning budget, flexible hybrid schedule, and a small team that reviews work carefully.",
-            Salary = "35,000,000–48,000,000 VND",
+            JobDetail = "<p>Tham gia nhóm xây dựng công cụ tìm việc và quản lý hồ sơ. Bạn phụ trách trải nghiệm từ tìm kiếm đến biểu mẫu ứng tuyển, phối hợp cùng backend và thiết kế.</p><ul><li>Xây dựng giao diện Angular và API typed bằng TypeScript.</li><li>Cải thiện khả năng truy cập, xử lý trạng thái tải và lỗi.</li><li>Review code, chia sẻ cách làm và đo hiệu quả của thay đổi.</li></ul>",
+            CandidateBenefit = "<ul><li>Ngân sách học tập và thời gian chia sẻ kỹ thuật mỗi tháng.</li><li>Làm việc linh hoạt 2 ngày từ xa mỗi tuần.</li><li>Review code có trao đổi, không chạy theo số lượng ticket.</li></ul>",
+            Salary = "35–48 triệu đồng",
             ContactEmail = "minh@northstar-labs.example",
             Address = northstar.Address,
             CreatedAt = now.AddDays(-8),
@@ -197,11 +202,11 @@ public static class DevelopmentDataSeeder
             Level = junior,
             EmploymentType = hybrid,
             GenderId = 1,
-            ExperienceRequirement = "A portfolio showing product-thinking and visual craft.",
+            ExperienceRequirement = "Portfolio thể hiện tư duy sản phẩm và khả năng hoàn thiện giao diện.",
             SkillRequirement = "Figma, user flows, prototyping, visual systems, clear writing",
-            JobDetail = "Shape experiments from rough problem framing through usable interface detail.",
-            CandidateBenefit = "A small studio, direct client exposure, and room to make the work unmistakably yours.",
-            Salary = "22,000,000–32,000,000 VND",
+            JobDetail = "<p>Thiết kế trải nghiệm cho sản phẩm mới của khách hàng: từ xác định vấn đề, phác thảo luồng đến prototype có thể kiểm thử.</p><ul><li>Trao đổi cùng người dùng và nhóm phát triển.</li><li>Xây dựng hệ thống giao diện bằng Figma.</li><li>Ghi lại quyết định thiết kế và điều học được sau mỗi thử nghiệm.</li></ul>",
+            CandidateBenefit = "<p>Studio nhỏ, được tham gia trao đổi với khách hàng, có người hướng dẫn và thời gian phát triển portfolio. Làm việc linh hoạt tại văn phòng 3 ngày mỗi tuần.</p>",
+            Salary = "22–32 triệu đồng",
             ContactEmail = "linh@paperkite.example",
             Address = paperkite.Address,
             CreatedAt = now.AddDays(-5),
@@ -214,7 +219,7 @@ public static class DevelopmentDataSeeder
         var candidateOne = new Candidate
         {
             UserName = "an.le",
-            FullName = "An Le",
+            FullName = "Lê An",
             Email = "an.le@example.test",
             Password = BCrypt.Net.BCrypt.HashPassword(DemoPassword),
             GenderId = 3,
@@ -229,7 +234,7 @@ public static class DevelopmentDataSeeder
         var candidateTwo = new Candidate
         {
             UserName = "duc.pham",
-            FullName = "Duc Pham",
+            FullName = "Phạm Đức",
             Email = "duc.pham@example.test",
             Password = BCrypt.Net.BCrypt.HashPassword(DemoPassword),
             GenderId = 2,
@@ -245,7 +250,7 @@ public static class DevelopmentDataSeeder
         var anCv = new CurriculumVitae
         {
             Candidate = candidateOne,
-            CareerGoal = "Build recruitment and career products that feel calm, useful, and surprisingly human.",
+            CareerGoal = "Phát triển sản phẩm tuyển dụng dễ sử dụng, chú ý khả năng truy cập và chất lượng biểu mẫu. Mong muốn đồng hành cùng nhóm nhỏ có trao đổi kỹ thuật cởi mở.",
             EmploymentType = fullTime,
             Phone = candidateOne.PhoneNumber,
             DisplayName = candidateOne.FullName,
@@ -268,7 +273,7 @@ public static class DevelopmentDataSeeder
         var ducCv = new CurriculumVitae
         {
             Candidate = candidateTwo,
-            CareerGoal = "Help teams turn ambiguous problems into honest, legible interfaces.",
+            CareerGoal = "Giúp nhóm sản phẩm chuyển những vấn đề chưa rõ thành giao diện dễ hiểu. Tập trung vào nghiên cứu, luồng sử dụng và hệ thống thiết kế nhất quán.",
             EmploymentType = hybrid,
             Phone = candidateTwo.PhoneNumber,
             DisplayName = candidateTwo.FullName,
@@ -294,16 +299,16 @@ public static class DevelopmentDataSeeder
             admin, recruiterOne, recruiterTwo, northstar, paperkite, jobOne, jobTwo, candidateOne, candidateTwo, anCv, ducCv,
             new EmployeeInCompany { Recuirter = recruiterOne, Company = northstar, StartDate = now.AddDays(-90), IsWorking = true },
             new EmployeeInCompany { Recuirter = recruiterTwo, Company = paperkite, StartDate = now.AddDays(-65), IsWorking = true },
-            new Skill { CurriculumVitae = anCv, Title = "Angular", SkillDescription = "Maintains modular Angular applications with attention to accessibility and useful interaction details." },
-            new Skill { CurriculumVitae = anCv, Title = "TypeScript", SkillDescription = "Comfortable improving typed API boundaries and untangling legacy UI state." },
-            new JobExperience { CurriculumVitae = anCv, ComapanyName = "Lantern Works", Position = "Frontend Developer", FromDate = "06/2023", ToDate = "Present", Description = "Delivered internal workflow tools and public-facing forms.", EmploymentType = fullTime },
+            new Skill { CurriculumVitae = anCv, Title = "Angular", SkillDescription = "Phát triển Angular theo tính năng, xử lý trạng thái tải và lỗi, tối ưu thao tác bàn phím." },
+            new Skill { CurriculumVitae = anCv, Title = "TypeScript", SkillDescription = "Thiết kế kiểu dữ liệu API rõ ràng, cải thiện biểu mẫu và trạng thái giao diện cũ." },
+            new JobExperience { CurriculumVitae = anCv, ComapanyName = "Lantern Works", Position = "Frontend Developer", FromDate = "06/2023", ToDate = "Present", Description = "Xây dựng công cụ điều phối đơn hàng, biểu mẫu đăng ký và bộ thành phần dùng chung. Phối hợp cùng backend để giảm lỗi nhập liệu.", EmploymentType = fullTime },
             new Education { CurriculumVitae = anCv, SchoolName = "Fictional University of Technology", MajorName = "Software Engineering", FromYear = "09/2016", ToYear = "06/2020", Description = "Capstone focus: matching systems and usable forms.", StillLearning = false },
-            new Project { CurriculumVitae = anCv, ProjectName = "JMS Fork", FromDate = "07/2026", ToDate = "Present", Description = "Modernization of a graduation job-matching platform.", IsStillWorking = true },
+            new Project { CurriculumVitae = anCv, ProjectName = "JMS Fork", FromDate = "07/2026", ToDate = "Present", Description = "Hoàn thiện nền tảng matching đồ án: tìm kiếm việc làm, quản lý CV và giải thích kết quả đối chiếu.", IsStillWorking = true },
             new Certificate { CurriculumVitae = anCv, CertificateName = "Web Accessibility Foundations", CertificateProvider = "Independent study", IssuedDate = "03/2025" },
             new Award { CurriculumVitae = anCv, AwardName = "Best capstone interface", FromYear = "2020", Description = "Fictional development seed achievement." },
-            new Skill { CurriculumVitae = ducCv, Title = "Product design", SkillDescription = "Turns research notes and awkward edge cases into focused interface systems." },
-            new Skill { CurriculumVitae = ducCv, Title = "Prototyping", SkillDescription = "Uses prototypes to resolve interaction questions before visual polish." },
-            new JobExperience { CurriculumVitae = ducCv, ComapanyName = "Small Signals", Position = "Junior Product Designer", FromDate = "01/2025", ToDate = "Present", Description = "Worked on onboarding, design-system cleanup, and usability testing.", EmploymentType = hybrid },
+            new Skill { CurriculumVitae = ducCv, Title = "Product design", SkillDescription = "Chuyển ghi chú phỏng vấn và tình huống khó thành luồng sử dụng rõ ràng, có cơ sở." },
+            new Skill { CurriculumVitae = ducCv, Title = "Prototyping", SkillDescription = "Dùng Figma prototype để kiểm chứng thao tác trước khi hoàn thiện hình ảnh." },
+            new JobExperience { CurriculumVitae = ducCv, ComapanyName = "Small Signals", Position = "Junior Product Designer", FromDate = "01/2025", ToDate = "Present", Description = "Thiết kế luồng onboarding, chuẩn hóa thành phần giao diện và tổ chức thử nghiệm với người dùng.", EmploymentType = hybrid },
             new Education { CurriculumVitae = ducCv, SchoolName = "Fictional School of Art and Design", MajorName = "Interaction Design", FromYear = "09/2018", ToYear = "06/2022", Description = "Focused on systems, typography, and interface critique.", StillLearning = false },
             new Project { CurriculumVitae = ducCv, ProjectName = "Night Shift Notes", FromDate = "02/2026", ToDate = "05/2026", Description = "A fictional case study for a shared-team planning tool.", IsStillWorking = false },
             new CVMatching
@@ -312,11 +317,9 @@ public static class DevelopmentDataSeeder
                 CareerGoal = anCv.CareerGoal, Phone = anCv.Phone, DisplayName = anCv.DisplayName, DisplayEmail = anCv.DisplayEmail,
                 GenderId = anCv.GenderId, DOB = anCv.DOB, Address = anCv.Address, Level = mid, EmploymentType = fullTime,
                 CategoryName = productCategory.CategoryName, ApplyDate = now.AddDays(-2), CreatedDate = now.AddDays(-2), LastUpdateDate = now.AddDays(-2),
-                PercentMatching = 84, IsMatched = true, IsApplied = true, IsSelected = false, IsReject = false, Theme = anCv.Theme, Font = anCv.Font,
+                IsMatched = true, IsApplied = true, IsSelected = false, IsReject = false, Theme = anCv.Theme, Font = anCv.Font,
                 AvatarURL = PortraitOne, Skill = "Angular; TypeScript", JobExperience = "Frontend Developer", Education = "Software Engineering",
-                Project = "JMS Fork", JSONMatching = "{\"summary\":\"Development seed: strong frontend and product fit.\",\"source\":\"seed\"}",
-                MatchingRulesVersion = "deterministic-v1", MatchingProvider = "development-seed", MatchingModel = "fixture",
-                MatchingStatus = "complete", MatchingEligibilityStatus = "eligible", MatchingExplanation = "Development seed: strong frontend and product fit.", MatchingEvaluatedAtUtc = now.AddDays(-2)
+                Project = "JMS Fork"
             },
             new CVMatching
             {
@@ -324,13 +327,72 @@ public static class DevelopmentDataSeeder
                 CareerGoal = ducCv.CareerGoal, Phone = ducCv.Phone, DisplayName = ducCv.DisplayName, DisplayEmail = ducCv.DisplayEmail,
                 GenderId = ducCv.GenderId, DOB = ducCv.DOB, Address = ducCv.Address, Level = junior, EmploymentType = hybrid,
                 CategoryName = creativeCategory.CategoryName, ApplyDate = now.AddDays(-1), CreatedDate = now.AddDays(-1), LastUpdateDate = now.AddDays(-1),
-                PercentMatching = 88, IsMatched = true, IsApplied = false, IsSelected = true, IsReject = false, Theme = ducCv.Theme, Font = ducCv.Font,
+                IsMatched = true, IsApplied = false, IsSelected = true, IsReject = false, Theme = ducCv.Theme, Font = ducCv.Font,
                 AvatarURL = PortraitThree, Skill = "Product design; Prototyping", JobExperience = "Junior Product Designer", Education = "Interaction Design",
-                Project = "Night Shift Notes", JSONMatching = "{\"summary\":\"Development seed: strong portfolio and craft fit.\",\"source\":\"seed\"}",
-                MatchingRulesVersion = "deterministic-v1", MatchingProvider = "development-seed", MatchingModel = "fixture",
-                MatchingStatus = "complete", MatchingEligibilityStatus = "eligible", MatchingExplanation = "Development seed: strong portfolio and craft fit.", MatchingEvaluatedAtUtc = now.AddDays(-1)
+                Project = "Night Shift Notes"
             });
 
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        JobDescription DemoJob(Company company, Recuirter recruiter, string title, Category category,
+            Level level, EmploymentType employmentType, string location, string salary, string skills,
+            string detail, int daysOld, int daysRemaining) => new()
+        {
+            Company = company, Recuirter = recruiter, Title = title, PositionTitle = title,
+            Category = category, Level = level, EmploymentType = employmentType, GenderId = 1,
+            Address = location, Salary = salary, SkillRequirement = skills,
+            ExperienceRequirement = level == junior ? "Portfolio hoặc kinh nghiệm dự án phù hợp" : "Từ 2 năm kinh nghiệm ở vị trí tương đương",
+            JobDetail = detail,
+            CandidateBenefit = "<p>Nhóm nhỏ, phản hồi trực tiếp, ngân sách học tập và lịch làm việc linh hoạt. Quyền lợi chi tiết được trao đổi khi phỏng vấn.</p>",
+            ContactEmail = recruiter.Email, CreatedAt = now.AddDays(-daysOld),
+            ExpiredDate = now.AddDays(daysRemaining), IsDelete = false,
+            NumberRequirement = 1, MatchingNumberRequirement = 6
+        };
+        dbContext.AddRange(
+            DemoJob(northstar, recruiterOne, "Backend Developer — .NET", productCategory, mid, fullTime,
+                "Quận 1, TP. Hồ Chí Minh", "32–45 triệu đồng", "C#, ASP.NET Core, SQL, REST APIs, testing",
+                "<p>Xây dựng API cho công cụ vận hành doanh nghiệp nhỏ. Ưu tiên tính đúng đắn, phân quyền rõ ràng và khả năng bảo trì.</p><ul><li>Phát triển ASP.NET Core và EF Core.</li><li>Kiểm tra quyền sở hữu dữ liệu, tối ưu truy vấn.</li><li>Viết test cho nghiệp vụ quan trọng.</li></ul>", 3, 24),
+            DemoJob(northstar, recruiterOne, "QA Engineer — Web & API", productCategory, junior, hybrid,
+                "Thủ Đức, TP. Hồ Chí Minh", "18–26 triệu đồng", "API testing, exploratory testing, Playwright, SQL",
+                "<p>Đồng hành cùng kỹ sư để phát hiện những tình huống người dùng dễ gặp: biểu mẫu bị lỗi, dữ liệu thiếu hoặc thao tác lặp.</p><ul><li>Kiểm thử web trên desktop và mobile.</li><li>Xây dựng các hành trình tự động quan trọng.</li><li>Viết báo cáo lỗi có bước tái hiện rõ ràng.</li></ul>", 1, 28),
+            DemoJob(northstar, recruiterOne, "People Operations Specialist", peopleCategory, mid, fullTime,
+                "Quận 1, TP. Hồ Chí Minh", "20–28 triệu đồng", "Onboarding, communication, Excel, documentation",
+                "<p>Chăm sóc trải nghiệm gia nhập nhóm, duy trì tài liệu nội bộ và phối hợp tuyển dụng. Vị trí dành cho người thích tổ chức công việc và giao tiếp rõ ràng.</p>", 6, 21),
+            DemoJob(paperkite, recruiterTwo, "Brand & Visual Designer", creativeCategory, mid, hybrid,
+                "Bình Thạnh, TP. Hồ Chí Minh", "24–34 triệu đồng", "Typography, Illustrator, Figma, brand systems",
+                "<p>Thiết kế nhận diện cho các sản phẩm đang hình thành: nghiên cứu câu chuyện thương hiệu, phát triển ngôn ngữ hình ảnh và áp dụng lên giao diện số.</p>", 2, 30),
+            DemoJob(paperkite, recruiterTwo, "Content Strategist — Sản phẩm số", creativeCategory, junior, hybrid,
+                "Đà Nẵng · làm việc linh hoạt", "16–23 triệu đồng", "UX writing, content planning, Vietnamese writing, research",
+                "<p>Viết nội dung giúp người dùng hiểu và sử dụng sản phẩm: nhãn thao tác, hướng dẫn, thông báo lỗi và câu chuyện giới thiệu. Làm việc cùng designer từ giai đoạn phác thảo.</p>", 4, 25),
+            DemoJob(northstar, recruiterOne, "Data Analyst — Product Insights", productCategory, mid, fullTime,
+                "Quận 1, TP. Hồ Chí Minh", "28–38 triệu đồng", "SQL, data analysis, dashboards, product metrics",
+                "<p>Phân tích hành vi sử dụng để trả lời câu hỏi sản phẩm cụ thể. Đợt tuyển dụng mẫu này đã kết thúc; được giữ lại để minh họa quản lý bài hết hạn.</p>", 40, -3));
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        // Seed snapshots use the same presentation contract and real rule scores
+        // as applications. No fabricated AI evaluation or inflated percentage.
+        foreach (var matching in await dbContext.CVMatchings.Include(item => item.CurriculumVitae).ThenInclude(cv => cv!.Skills)
+            .Include(item => item.CurriculumVitae).ThenInclude(cv => cv!.Educations)
+            .Include(item => item.CurriculumVitae).ThenInclude(cv => cv!.JobExperiences)
+            .Include(item => item.CurriculumVitae).ThenInclude(cv => cv!.Projects)
+            .Include(item => item.CurriculumVitae).ThenInclude(cv => cv!.Certificates)
+            .Include(item => item.CurriculumVitae).ThenInclude(cv => cv!.Awards).Include(item => item.JobDescription).ToListAsync(cancellationToken))
+        {
+            var cv = matching.CurriculumVitae!;
+            matching.Skill = JsonConvert.SerializeObject(cv.Skills!.Select(item => new { item.Title, item.SkillDescription }));
+            matching.Education = JsonConvert.SerializeObject(cv.Educations!.Select(item => new { item.SchoolName, item.MajorName, item.FromYear, item.ToYear, item.Description, item.StillLearning }));
+            matching.JobExperience = JsonConvert.SerializeObject(cv.JobExperiences!.Select(item => new { item.ComapanyName, item.Position, item.FromDate, item.ToDate, item.Description, EmploymentTypeName = item.EmploymentType?.Title }));
+            matching.Project = JsonConvert.SerializeObject(cv.Projects!.Select(item => new { item.ProjectName, item.FromDate, item.ToDate, item.Description, item.IsStillWorking }));
+            matching.Certificate = JsonConvert.SerializeObject(cv.Certificates!.Select(item => new { item.CertificateName, item.CertificateProvider, item.IssuedDate, item.ExpiredDate, item.credentialURL }));
+            matching.Award = JsonConvert.SerializeObject(cv.Awards!.Select(item => new { item.AwardName, item.FromYear, item.Description }));
+            var rules = DeterministicMatchScorer.Evaluate(matching.JobDescription!, cv);
+            MatchEvaluationPersistence.Apply(matching, new MatchEvaluation("none", "none", "not-configured", null, null, null, null,
+                "Đánh giá theo quy tắc; chưa cấu hình nhà cung cấp AI.", [], [], "Chưa cấu hình khóa API.",
+                DeterministicScore: rules.Score, DeterministicSkillScore: rules.SkillScore,
+                DeterministicExperienceScore: rules.ExperienceScore, DeterministicEducationScore: rules.EducationScore,
+                DeterministicProjectAndCertificateScore: rules.ProjectAndCertificateScore,
+                EligibilityStatus: rules.EligibilityStatus, EligibilityReason: rules.EligibilityReason));
+        }
         await dbContext.SaveChangesAsync(cancellationToken);
         logger.LogInformation("Seeded the empty JMS development database with fictional portfolio data.");
     }

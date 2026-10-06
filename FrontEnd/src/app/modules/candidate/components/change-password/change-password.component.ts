@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
-import { ToastrService } from 'ngx-toastr';
-import { postRequest } from 'src/app/service/api-requests';
-import { showError, showSuccess } from 'src/app/service/common';
+import { inject, Component } from '@angular/core';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
+import { ApiService } from 'src/app/core/http/api.service';
+
 import { AuthorizationMode, apiCandidate } from 'src/app/service/constant';
-import { getProfile } from 'src/app/service/localstorage';
+import { AuthService } from 'src/app/core/auth/auth.service';
 
 @Component({
   standalone: false,
@@ -12,6 +12,8 @@ import { getProfile } from 'src/app/service/localstorage';
    styleUrls: ['./change-password.component.css']
 })
 export class ChangePasswordComponent {
+   private readonly auth = inject(AuthService);
+   private readonly api = inject(ApiService);
 
    profile: any;
 
@@ -33,8 +35,6 @@ export class ChangePasswordComponent {
 
    validateOldPassword(event: any) {
       this.oldPassword = event
-
-      console.log(this.oldPassword);
 
       if (this.oldPassword === "" || this.oldPassword === null) this.invalidOldPassword = true
       else {
@@ -76,16 +76,13 @@ export class ChangePasswordComponent {
       this.typeConformPassword = this.typeConformPassword == "password" ? "text" : "password"
    }
 
-   constructor(private toastr: ToastrService) {
-      this.profile = getProfile()
+   constructor(private toastr: NotificationService) {
+      this.profile = this.auth.getProfile()
    }
 
 
    showInfoInput() {
-      this.toastr.info('Điền các trường ở bên dưới', 'Thông báo', {
-         progressBar: true,
-         timeOut: 3000,
-      });
+      this.toastr.info('Điền các trường ở bên dưới');
    }
 
 
@@ -101,31 +98,30 @@ export class ChangePasswordComponent {
       if(this.newPassword === this.conformPassword){
          return true
       }else{
-         showError(this.toastr, "Mật khẩu mới không trùng khớp")
+         this.toastr.error("Mật khẩu mới không trùng khớp")
          return false
       }
    }
 
 
-   SubmitForm() {    
+   SubmitForm() {
       if (this.validAllFiled()) {
-         postRequest(`${apiCandidate.CHANGE_PASSWORD_CANDIDATE}?candidateId=${this.profile.id}
-      &oldPassword=${this.encodeText(this.oldPassword)}&newPassword=${this.encodeText(this.newPassword)}&confirmPassword=${this.encodeText(this.conformPassword)}`, AuthorizationMode.BEARER_TOKEN, {})
+         this.api.postRequest(`${apiCandidate.CHANGE_PASSWORD_CANDIDATE}?candidateId=${this.profile.id}`, AuthorizationMode.BEARER_TOKEN, { oldPassword: this.oldPassword, newPassword: this.newPassword, confirmPassword: this.conformPassword })
             .then(res => {
-               console.log(res);
+
                if (res.statusCode == 200) {
-                  showSuccess(this.toastr, "Thay đổi mật khẩu thành công")
+                  this.toastr.success("Thay đổi mật khẩu thành công")
                   this.oldPassword = ""
                   this.newPassword = ""
                   this.conformPassword = ""
                }else if (res.statusCode == 400) {
-                  if (res?.message == "Old password is not correct") showError(this.toastr, "Mật khẩu cũ không chính xác")
+                  if (res?.message == "Old password is not correct") this.toastr.error("Mật khẩu cũ không chính xác")
                }else {
-                  showError(this.toastr, "Đã có lỗi xảy ra, vui lòng thử lại sau")
+                  this.toastr.error("Đã có lỗi xảy ra, vui lòng thử lại sau")
                }
             })
             .catch(res => {
-               showError(this.toastr, "Đã có lỗi xảy ra, vui lòng thử lại sau")
+               this.toastr.error("Đã có lỗi xảy ra, vui lòng thử lại sau")
                console.warn(res);
             })
       } else {

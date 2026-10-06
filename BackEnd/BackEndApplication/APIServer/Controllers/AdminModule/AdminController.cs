@@ -1,4 +1,4 @@
-﻿using APIServer.Common;
+using APIServer.Common;
 using APIServer.DTO.EntityDTO;
 using APIServer.DTO.ResponseBody;
 using APIServer.IServices;
@@ -45,7 +45,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -54,7 +54,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
 
@@ -79,7 +79,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -88,7 +88,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -112,7 +112,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -121,7 +121,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -145,7 +145,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -154,7 +154,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -178,7 +178,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -187,7 +187,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -212,7 +212,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -221,7 +221,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -245,7 +245,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -254,7 +254,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -278,7 +278,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -287,7 +287,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -311,7 +311,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -320,7 +320,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -344,7 +344,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -353,7 +353,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -385,7 +385,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -394,7 +394,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -418,7 +418,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
             catch (Exception ex)
@@ -427,7 +427,7 @@ namespace APIServer.Controllers.AdminModule
                 {
                     data = null,
                     statusCode = HttpStatusCode.BadRequest,
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                 };
             }
         }
@@ -446,11 +446,11 @@ namespace APIServer.Controllers.AdminModule
 
         [HttpPost("change-password")]
         [UserIdMatchesClaim("adminId")]
-        public BaseResponseBody<int> ChangePassword(int adminId, string oldPassword, string newPassword, string confirmPassword)
+        public BaseResponseBody<int> ChangePassword(int adminId, [FromBody] ChangePasswordRequest request)
         {
             try
             {
-                int n = _adminService.UpdatePassword(adminId, oldPassword, newPassword, confirmPassword);
+                int n = _adminService.UpdatePassword(adminId, request.OldPassword, request.NewPassword, request.ConfirmPassword);
                 if (n > 0)
                     return new BaseResponseBody<int>
                     {
@@ -485,7 +485,7 @@ namespace APIServer.Controllers.AdminModule
             {
                 return new BaseResponseBody<int>
                 {
-                    message = ex.Message,
+                    message = APIServer.Common.ApiErrorMessage.For(ex, HttpContext),
                     statusCode = HttpStatusCode.BadRequest,
                 };
             }

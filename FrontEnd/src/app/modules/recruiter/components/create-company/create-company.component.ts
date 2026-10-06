@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
+import { editorConfig } from 'src/app/shared/rich-text/editor-config';
+import { inject, Component } from '@angular/core';
 import { ClassicEditor } from 'ckeditor5';
 import { FormControl, Validators } from '@angular/forms';
-import { getRequest, postRequest } from 'src/app/service/api-requests';
+import { ApiService } from 'src/app/core/http/api.service';
 import { AuthorizationMode, RECRUITER_TOKEN, apiRecruiter } from 'src/app/service/constant';
-import { getItem, getProfile, isLogin, saveItem, signOut } from 'src/app/service/localstorage';
+import { AuthService } from 'src/app/core/auth/auth.service';
 import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
-import { showError, showSuccess } from 'src/app/service/common';
+import { NotificationService } from 'src/app/core/notifications/notification.service';
+
 
 @Component({
   standalone: false,
@@ -15,15 +16,18 @@ import { showError, showSuccess } from 'src/app/service/common';
    styleUrls: ['./create-company.component.css']
 })
 export class CreateCompanyComponent {
+   private readonly auth = inject(AuthService);
+   private readonly api = inject(ApiService);
    //upload img
    displayImage = "none"
    fileSrc: any;
    public Editor = ClassicEditor;
+   readonly config = editorConfig("Company description");
    categories: any;
 
 
-   constructor(private router: Router, private toastr: ToastrService) {
-      getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
+   constructor(private router: Router, private toastr: NotificationService) {
+      this.api.getRequest(apiRecruiter.GET_ALL_CATEGORY, AuthorizationMode.PUBLIC, { page: 10 })
          .then(res => {
             this.categories = res?.data
          })
@@ -108,7 +112,10 @@ export class CreateCompanyComponent {
 
    checkReq: any = false;
 
+   submitting = false;
+
    submitButtonClicked() {
+      if (this.submitting) return;
 
       if (this.nameRq.valid && this.emailRq.valid && this.taxNumRq.valid
          && this.sizeRq.valid && this.addressRq.valid
@@ -124,7 +131,7 @@ export class CreateCompanyComponent {
          const size = this.sizeRq.value;
          const yearOfEstablishment = this.yearOfEstablishmentRq.value === "" ? null : this.yearOfEstablishmentRq.value;
 
-         const profile = getProfile();
+         const profile = this.auth.getProfile();
 
          const data = {
             companyName: companyName,
@@ -136,24 +143,25 @@ export class CreateCompanyComponent {
             tax: tax,
             categoryName: categoryName,
             size: size,
-            recuirterFounder: profile.id.toString(),
+            recuirterFounder: profile!.id.toString(),
             recuirtersInCompany: [],
             jDs: [],
             yearOfEstablishment: yearOfEstablishment
          }
 
-         postRequest(apiRecruiter.CREATE_COMPANY_BY_ID + "/" + profile.id, AuthorizationMode.BEARER_TOKEN, data)
+         this.submitting = true;
+         this.api.postRequest(apiRecruiter.CREATE_COMPANY_BY_ID + "/" + profile!.id, AuthorizationMode.BEARER_TOKEN, data)
             .then(res => {
                if (res.statusCode === 201) {
-                  showSuccess(this.toastr, "Đăng ký công ty thành công")
+                  this.toastr.success("Đăng ký công ty thành công")
                   this.updateAccount();
                } else {
-                  showError(this.toastr, "Tạo công ty thất bại, vui lòng thử lại")
+                  this.toastr.error("Tạo công ty thất bại, vui lòng thử lại")
                }
             })
             .catch(data => {
-               showError(this.toastr, "Tạo công ty thất bại, vui lòng thử lại")
-            })
+               this.toastr.error("Tạo công ty thất bại, vui lòng thử lại")
+            }).finally(() => { this.submitting = false; })
       }
 
       this.checkReq = true;
@@ -184,11 +192,11 @@ export class CreateCompanyComponent {
    }
 
    updateAccount() {
-      postRequest(apiRecruiter.GET_PROFILE_RECRUITER, AuthorizationMode.BEARER_TOKEN, {})
+      this.api.postRequest(apiRecruiter.GET_PROFILE_RECRUITER, AuthorizationMode.BEARER_TOKEN, {})
          .then(res => {
             if (res.statusCode == 200) {
                setTimeout(() => {
-                  saveItem("profile", res.data);
+                  this.auth.updateProfile(res.data);
                }, 1000);
 
                setTimeout(() => {
@@ -203,7 +211,7 @@ export class CreateCompanyComponent {
             }
          })
          .catch(data => {
-            console.log(data);
+
          })
    }
 }

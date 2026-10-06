@@ -1,0 +1,19 @@
+/* Editor assets load from the recruiter template, where rich text is used. */
+
+[data-theme='dark'] .ck {
+  --ck-color-base-background: #202738;
+  --ck-color-base-foreground: #202738;
+  --ck-color-base-border: #48536a;
+  --ck-color-text: #edf0f7;
+  --ck-content-font-color: #edf0f7;
+  --ck-color-toolbar-background: #202738;
+  --ck-color-button-default-hover-background: #35415b;
+  --ck-color-button-on-background: #35415b;
+  --ck-color-button-on-color: #c4bbff;
+  --ck-color-list-background: #202738;
+  --ck-color-input-background: #202738;
+}
+
+[data-theme='dark'] .ck-content { color:#edf0f7; }
+app-recruiter .formJđetail, app-recruiter .formCompanyRegister { padding-top:1rem; }
+app-recruiter .card-registration button[type='submit'] { width:auto; min-width:9rem; }

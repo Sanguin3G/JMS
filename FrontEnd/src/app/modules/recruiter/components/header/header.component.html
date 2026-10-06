@@ -1,46 +1,5 @@
-<header class="p-3 mb-3 border-bottom header">
-   <div class="container">
-      <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
-         <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 link-body-emphasis text-decoration-none"
-            previewlistener="true">
-            <!-- <img src="https://i.postimg.cc/XqdV5QNT/JOB-MATCHING-1-removebg-preview.png" alt="mdo" width="52" height="52" class="rounded-circle bg"> -->
-         </a>
-
-         <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 header-title">
-            <li *ngIf="hasCompany" [class.tabSelect]="headerTitle[0].value"><a [routerLink]="['/recruiter/list-jds']"
-                  class="nav-link px-2 link-body-emphasis text-white">Bài Đăng</a></li>
-            <li *ngIf="hasCompany" [class.tabSelect]="headerTitle[3].value"><a [routerLink]="['/recruiter/create-jd']"
-                  class="nav-link px-2 link-body-emphasis text-white">Đăng Tuyển Dụng</a></li>
-            <li *ngIf="!hasCompany" [class.tabSelect]="headerTitle[2].value"><a
-                  [routerLink]="['/recruiter/create-company']" class="nav-link px-2 link-body-emphasis text-white">Tạo
-                  Công Ty</a></li>
-            <li *ngIf="hasCompany" [class.tabSelect]="headerTitle[1].value"><a
-                  [routerLink]="['/recruiter/view-company']" class="nav-link px-2 link-body-emphasis text-white">Công
-                  Ty</a></li>
-         </ul>
-
-         <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" role="search">
-            <!-- <input type="search" class="form-control" placeholder="Search..." aria-label="Search"> -->
-         </form>
-
-         <app-theme-toggle class="me-3"></app-theme-toggle>
-
-         <div class="dropdown text-end">
-            <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle"
-               data-bs-toggle="dropdown" aria-expanded="false">
-               <img src={{profile?.avatarURL}} alt="mdo" width="32" height="32"
-                  onerror="this.src='https://icons.iconarchive.com/icons/papirus-team/papirus-status/256/avatar-default-icon.png'"
-                  class="rounded-circle" style="margin-right: 8px;"> {{profile?.fullName}}
-            </a>
-            <ul class="dropdown-menu text-small">
-               <li><a class="dropdown-item" [routerLink]="['/recruiter/profile']">Thông tin cá nhân</a></li>
-               <!-- <li><a class="dropdown-item" href="">Cài đặt</a></li> -->
-               <li>
-                  <hr class="dropdown-divider">
-               </li>
-               <li><a class="dropdown-item" (click)="signOut()">Đăng xuất</a></li>
-            </ul>
-         </div>
-      </div>
-   </div>
-</header>
+<header class="jms-nav"><div class="nav-inner">
+  <a class="nav-brand" routerLink="/recruiter/dashboard" aria-label="JMS · Tổng quan tuyển dụng"><span class="brand-mark">JMS</span><span class="brand-copy"><strong>Tìm đúng người</strong><small>Nhà tuyển dụng</small></span></a>
+  <nav id="recruiter-navigation" class="nav-main" [class.open]="menuOpen" aria-label="Điều hướng nhà tuyển dụng" (click)="menuOpen = false"><div class="nav-group"><span class="nav-group-label">Không gian tuyển dụng</span><a class="nav-link" routerLink="/recruiter/dashboard" routerLinkActive="active" ariaCurrentWhenActive="page"><i class="bi bi-grid-1x2" aria-hidden="true"></i> Tổng quan</a><a class="nav-link" routerLink="/recruiter/list-jds" routerLinkActive="active" ariaCurrentWhenActive="page"><i class="bi bi-briefcase" aria-hidden="true"></i> Tin tuyển dụng</a><a *ngIf="hasCompany" class="nav-link" routerLink="/recruiter/view-company" routerLinkActive="active" ariaCurrentWhenActive="page"><i class="bi bi-building" aria-hidden="true"></i> Công ty</a></div></nav>
+  <div class="nav-tools"><a class="nav-cta" [routerLink]="hasCompany ? '/recruiter/create-jd' : '/recruiter/create-company'" [attr.aria-label]="hasCompany ? 'Đăng tin tuyển dụng' : 'Tạo công ty'"><i class="bi bi-plus-lg" aria-hidden="true"></i><span>{{ hasCompany ? 'Đăng tin' : 'Tạo công ty' }}</span></a><app-theme-toggle></app-theme-toggle><jms-account-menu [name]="profile()?.fullName || ''" [avatar]="profile()?.avatarURL" userRole="recruiter" (signedOut)="signOut()"></jms-account-menu><button type="button" class="nav-menu-toggle" (click)="menuOpen = !menuOpen" aria-controls="recruiter-navigation" [attr.aria-expanded]="menuOpen" aria-label="Mở điều hướng"><i class="bi" [class.bi-list]="!menuOpen" [class.bi-x-lg]="menuOpen" aria-hidden="true"></i></button></div>
+</div></header>

@@ -1,42 +1,22 @@
-<div class="d-flex" style="justify-content: flex-end;">
-  <a class="btn btn-primary mr-3" href="https://platform.openai.com/usage" target="_blank">Kiểm tra chi phí</a>
-  <a class="btn btn-primary" href="https://status.openai.com/" target="_blank">Kiểm tra trạng thái GPT</a>
+<div *ngIf="isLoading" class="dashboard-state" role="status" aria-live="polite">Đang tải thống kê JMS…</div>
+<div *ngIf="errorMessage" class="dashboard-state" role="alert">
+  <p>{{ errorMessage }}</p>
+  <button type="button" class="btn btn-outline-primary" (click)="loadStatistics()" [disabled]="isLoading">Thử lại</button>
 </div>
-<div class="widget-container">
-  <div class="widget green col-3">
-    <div class="icon col-6">
-      <i class="bi bi-building-fill"></i>
-    </div>
-    <div class="value">
-      <div class="top">{{company}}</div>
-      <div class="bottom float-center">Công Ty</div>
-    </div>
+<ng-container *ngIf="statistics as stats">
+  <div class="metric-grid" aria-label="Thống kê JMS">
+    <a class="metric-card" routerLink="/admin/candidate-page"><i class="bi bi-people" aria-hidden="true"></i><span>Ứng viên</span><strong>{{ stats.totalCandidates | number }}</strong><small>Tài khoản hiện có</small></a>
+    <a class="metric-card" routerLink="/admin/recruiter-page"><i class="bi bi-person-badge" aria-hidden="true"></i><span>Nhà tuyển dụng</span><strong>{{ stats.totalRecruiters | number }}</strong><small>Tài khoản hiện có</small></a>
+    <a class="metric-card" routerLink="/admin/company-page"><i class="bi bi-buildings" aria-hidden="true"></i><span>Công ty</span><strong>{{ stats.totalCompany | number }}</strong><small>Hồ sơ công ty hiện có</small></a>
+    <div class="metric-card"><i class="bi bi-briefcase" aria-hidden="true"></i><span>Bài tuyển dụng</span><strong>{{ stats.totalJDs | number }}</strong><small>{{ stats.activeJobs | number }} đang tuyển · {{ stats.expiredJobs | number }} hết hạn</small></div>
+    <div class="metric-card"><i class="bi bi-file-earmark-person" aria-hidden="true"></i><span>Hồ sơ CV</span><strong>{{ stats.totalCV | number }}</strong><small>{{ stats.activeCVs | number }} đang tìm việc</small></div>
+    <div class="metric-card"><i class="bi bi-send" aria-hidden="true"></i><span>Lượt ứng tuyển</span><strong>{{ stats.applications | number }}</strong><small>Ứng viên đã gửi hồ sơ</small></div>
+    <div class="metric-card"><i class="bi bi-intersect" aria-hidden="true"></i><span>Kết quả matching</span><strong>{{ stats.totalMatching | number }}</strong><small>Bao gồm matching và ứng tuyển</small></div>
+    <div class="metric-card"><i class="bi bi-check2-circle" aria-hidden="true"></i><span>Ứng tuyển được chọn</span><strong>{{ stats.selectedApplications | number }}</strong><small>Do nhà tuyển dụng lựa chọn</small></div>
   </div>
-  <div class="widget yellow col-3">
-    <div class="icon col-5">
-      <i class="bi bi-layout-text-window-reverse"></i>
-    </div>
-    <div class="value">
-      <div class="top">{{jd}}</div>
-      <div class="bottom">Bài Tuyển Dụng</div>
-    </div>
-  </div>
-  <div class="widget red col-3">
-    <div class="icon col-5">
-      <i class="bi bi-file-earmark-person-fill"></i>
-    </div>
-    <div class="value">
-      <div class="top">{{cv}}</div>
-      <div class="bottom">CV Hoạt Động</div>
-    </div>
-  </div>
-  <div class="widget blue col-3">
-    <div class="icon col-5">
-      <img width="72" height="72" src="https://img.icons8.com/material-rounded/192/chatgpt.png" alt="chatgpt" />
-    </div>
-    <div class="value">
-      <div class="top">{{matching}}</div>
-      <div class="bottom">Lượt Matching</div>
-    </div>
-  </div>
-</div>
+  <section class="review-summary" aria-labelledby="review-heading">
+    <h2 id="review-heading">Kết quả xem xét hồ sơ</h2>
+    <p>{{ stats.selectedApplications | number }} hồ sơ được chọn · {{ stats.rejectedApplications | number }} hồ sơ bị từ chối.</p>
+    <p class="muted">Matching cung cấp bằng chứng và giải thích. Quyết định tuyển dụng thuộc về nhà tuyển dụng.</p>
+  </section>
+</ng-container>

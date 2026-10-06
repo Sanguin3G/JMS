@@ -14,11 +14,7 @@ namespace APIServer.Controllers.AdminModule;
 public sealed class AiProviderProfilesController(IAiProviderProfileService profileService) : ControllerBase
 {
     [HttpGet("capabilities")]
-    public ActionResult<IReadOnlyList<AiModelCapability>> GetCapabilities() => Ok(GeminiModelCatalog.GetOptions());
-
-    // Kept as a route-compatible alias for existing development clients.
-    [HttpGet("gemini-options")]
-    public ActionResult<IReadOnlyList<AiModelCapability>> GetGeminiOptions() => Ok(GeminiModelCatalog.GetOptions());
+    public ActionResult<IReadOnlyList<AiModelCapability>> GetCapabilities() => Ok(AiModelCatalog.GetOptions());
 
     [HttpGet]
     public async Task<BaseResponseBody<IReadOnlyList<AiProviderProfileSummary>>> GetAll(CancellationToken cancellationToken)

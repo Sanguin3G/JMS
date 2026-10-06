@@ -1,19 +1,23 @@
 import { ViewportScroller } from '@angular/common';
-import { Component } from '@angular/core';
+import { inject, Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { getRequest } from 'src/app/service/api-requests';
+import { ApiService } from 'src/app/core/http/api.service';
 import { AuthorizationMode, apiRecruiter } from 'src/app/service/constant';
-import { getProfile } from 'src/app/service/localstorage';
+import { AuthService } from 'src/app/core/auth/auth.service';
 import { environment } from 'src/environments/environment';
 
 @Component({
   standalone: false,
    selector: 'app-company-view',
    templateUrl: './company-view.component.html',
-   styleUrls: ['./company-view.component.css']
+   styleUrls: ['../../../../shared/company-profile.css']
 })
 export class CompanyViewComponent {
+   private readonly auth = inject(AuthService);
+   private readonly api = inject(ApiService);
    company: any;
+   loading = true;
+   error = '';
    Url = environment.Url;
    linkMap: any;
    htmlContent: any;
@@ -21,16 +25,17 @@ export class CompanyViewComponent {
 
    constructor(public router: Router, private viewportScroller: ViewportScroller) {
       this.viewportScroller.scrollToPosition([0, 0]);
-      this.profile = getProfile();
-      getRequest(apiRecruiter.GET_COMPANY_BY_ID + "/" + this.profile.companyId, AuthorizationMode.PUBLIC)
+      this.profile = this.auth.getProfile();
+      this.api.getRequest(apiRecruiter.GET_COMPANY_BY_ID + "/" + this.profile.companyId, AuthorizationMode.PUBLIC)
          .then(res => {
-            this.company = res?.data
+            if (res.statusCode !== 200 || !res.data) throw new Error();
+            this.company = res.data
             this.htmlContent = this.company?.description;
-            console.log(this.company)
+
          })
          .catch(data => {
-            console.warn("Get API fail!" + data);
-         })
+            this.error = 'Không thể tải thông tin công ty. Hãy tải lại trang để thử lại.';
+         }).finally(() => { this.loading = false; });
    }
 
    onClickView(jd: any) {
