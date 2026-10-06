@@ -101,10 +101,22 @@ public sealed class AnthropicProviderAdapter(IHttpClientFactory clients) : AiPro
         request.Headers.Add("anthropic-version", "2023-06-01");
         if (prompt is not null)
         {
-            object thinking = profile.ReasoningLevel == "budget-1024"
-                ? new { type = "enabled", budget_tokens = 1024 } : new { type = "disabled" };
-            request.Content = JsonContent.Create(new { model = profile.ModelId, max_tokens = 2048, thinking,
-                messages = new[] { new { role = "user", content = prompt } } });
+            if (profile.ModelId == "claude-sonnet-5-5")
+            {
+                // This bounded explanation has no tools; avoid paying for up-front thinking.
+                // Sonnet 5.5 does not accept thinking.type=disabled.
+                request.Content = JsonContent.Create(new { model = profile.ModelId, max_tokens = 2048,
+                    thinking = new { type = "between_tools" },
+                    output_config = new { effort = profile.ReasoningLevel },
+                    messages = new[] { new { role = "user", content = prompt } } });
+            }
+            else
+            {
+                object thinking = profile.ReasoningLevel == "budget-1024"
+                    ? new { type = "enabled", budget_tokens = 1024 } : new { type = "disabled" };
+                request.Content = JsonContent.Create(new { model = profile.ModelId, max_tokens = 2048, thinking,
+                    messages = new[] { new { role = "user", content = prompt } } });
+            }
         }
         return request;
     }

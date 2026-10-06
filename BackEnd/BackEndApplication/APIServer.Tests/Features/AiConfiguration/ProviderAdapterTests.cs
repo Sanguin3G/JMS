@@ -8,6 +8,18 @@ namespace APIServer.Tests.Features.AiConfiguration;
 
 public sealed class ProviderAdapterTests
 {
+    [Fact]
+    public async Task SonnetUsesEffortAndBetweenToolsInsteadOfHaikusThinkingBudget()
+    {
+        var handler = new RecordingHandler("anthropic");
+        var adapter = Create("anthropic", new ClientFactory(handler));
+        await adapter.GenerateAsync(new("anthropic", "test-key", "claude-sonnet-5-5", "low"), "Return JSON", default);
+        using var body = JsonDocument.Parse(handler.Body!);
+        Assert.Equal("between_tools", body.RootElement.GetProperty("thinking").GetProperty("type").GetString());
+        Assert.Equal("low", body.RootElement.GetProperty("output_config").GetProperty("effort").GetString());
+        Assert.False(body.RootElement.GetProperty("thinking").TryGetProperty("budget_tokens", out _));
+    }
+
     [Theory]
     [InlineData("gemini", "gemini-3.1-flash-lite", "low")]
     [InlineData("openai", "gpt-5-mini", "minimal")]
